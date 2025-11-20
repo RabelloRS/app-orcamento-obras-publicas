@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  resolve-django:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: resolve_django_app
+    restart: unless-stopped
+    expose:
+      - 8000
+    volumes:
+      - .:/app
+      - /var/www/resolve_django/static:/app/static
+      - /var/www/resolve_django/media:/app/media
+    environment:
+      - DEBUG=False
+      - ALLOWED_HOSTS=resolve.eng.br,www.resolve.eng.br
+      - DATABASE_URL=sqlite:////app/db.sqlite3
+    networks:
+      - npm-network
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py collectstatic --noinput &&
+             gunicorn --bind 0.0.0.0:8000 --workers 4 --timeout 60 setup.wsgi:application"
+
+networks:
+  npm-network:
+    external: true
+
+volumes:
+  static_volume:
+  media_volume:
