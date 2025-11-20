@@ -18,8 +18,17 @@ class DDoSProtectionMiddleware:
 
     def __call__(self, request):
         # Get client IP
+        # SECURITY NOTE: 'HTTP_X_FORWARDED_FOR' can be spoofed if the application is not behind a trusted proxy
+        # that correctly handles this header.
+        # Ideally, you should configure your web server (Nginx, Apache, AWS LB) to set this header reliably
+        # and filter out spoofed values.
+        # As a fallback, we take the first IP in the list, which is standard for X-Forwarded-For chains
+        # (client, proxy1, proxy2...), but unsafe if edge is exposed directly to internet.
         x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-        client_ip = x_forwarded_for.split(',')[0].strip() if x_forwarded_for else request.META.get('REMOTE_ADDR')
+        if x_forwarded_for:
+            client_ip = x_forwarded_for.split(',')[0].strip()
+        else:
+            client_ip = request.META.get('REMOTE_ADDR')
 
         # Create cache key for this IP
         cache_key = f'ddos_limit_{client_ip}'
