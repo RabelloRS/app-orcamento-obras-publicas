@@ -70,9 +70,14 @@ Este diretório contém scripts `.bat` para facilitar o acesso ao servidor Djang
   - Servidor remoto desligado
   - Chave SSH não configurada
   - Firewall bloqueando porta SSH (22)
+  - Port forwarding não funcionando corretamente
 - **Solução**: Teste a conexão manualmente:
   ```cmd
   ssh -p 22 root@srv557898.hstgr.cloud
+  ```
+  Se conectar, é um problema de port forwarding. Teste também:
+  ```cmd
+  ssh -p 22 -L 8081:localhost:8081 root@srv557898.hstgr.cloud
   ```
 
 ### "Servidor não responde"
@@ -83,6 +88,7 @@ Este diretório contém scripts `.bat` para facilitar o acesso ao servidor Djang
 
 ```
 Host: srv557898.hstgr.cloud
+IP: 85.209.93.171
 Usuário: root
 Porta SSH: 22
 Aplicação: Django (porta 8081)
