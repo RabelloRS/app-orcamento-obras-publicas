@@ -2,18 +2,229 @@
 
 {% block title %}{{ title }} - Resolve Eng{% endblock %}
 
+{% block head_extra %}
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+     crossorigin=""/>
+<style>
+    #map {
+        height: 600px;
+        width: 100%;
+        border-radius: 8px;
+        z-index: 1;
+    }
+    .thumbnail-popup {
+        text-align: center;
+    }
+    .thumbnail-popup img {
+        width: 150px;
+        height: auto;
+        margin-bottom: 5px;
+        cursor: pointer;
+        border-radius: 4px;
+    }
+    .leaflet-popup-content-wrapper {
+        border-radius: 8px;
+        padding: 5px;
+    }
+    .custom-file-upload {
+        border: 2px dashed #ccc;
+        display: inline-block;
+        padding: 20px 40px;
+        cursor: pointer;
+        width: 100%;
+        text-align: center;
+        margin-bottom: 20px;
+        border-radius: 8px;
+        background-color: #f8f9fa;
+        transition: all 0.3s;
+    }
+    .custom-file-upload:hover {
+        background-color: #e9ecef;
+        border-color: #0d6efd;
+    }
+    .hidden-input {
+        display: none;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container py-4">
-    <h1>{{ title }}</h1>
-    <p class="text-muted">Mapeamento interativo de fotos com coordenadas GPS.</p>
-    {% if points %}
-        <div id="map" class="alert alert-info">
-            Mapa com {{ points|length }} foto(s) será exibido aqui.
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h2">{{ title }}</h1>
+            <p class="text-muted mb-0">Carregue fotos com geolocalização para visualizá-las no mapa. Nada é enviado ao servidor.</p>
         </div>
-    {% else %}
-        <div class="alert alert-warning" role="alert">
-            <strong>Nenhuma foto enviada.</strong> <a href="{% url 'mapa_fotos:upload' %}">Envie fotos</a> para visualizá-las no mapa.
+        <div>
+            <button class="btn btn-outline-primary" onclick="document.getElementById('folderInput').click()">
+                <i class="bi bi-folder-plus me-2"></i>Selecionar Pasta
+            </button>
+            <button class="btn btn-primary" onclick="document.getElementById('fileInput').click()">
+                <i class="bi bi-images me-2"></i>Selecionar Fotos
+            </button>
         </div>
-    {% endif %}
+    </div>
+
+    <!-- Hidden Inputs -->
+    <input type="file" id="fileInput" class="hidden-input" multiple accept="image/*">
+    <input type="file" id="folderInput" class="hidden-input" webkitdirectory directory multiple>
+
+    <!-- Status Area -->
+    <div id="statusArea" class="alert alert-info d-none" role="alert">
+        <span id="statusText">Processando...</span>
+        <div class="progress mt-2" style="height: 5px;">
+            <div id="progressBar" class="progress-bar" role="progressbar" style="width: 0%"></div>
+        </div>
+    </div>
+
+    <!-- Map Container -->
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            <div id="map"></div>
+        </div>
+    </div>
 </div>
+
+<!-- Modal for Full Image -->
+<div class="modal fade" id="imageModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h5 class="modal-title" id="imageModalTitle">Visualização</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center p-0 bg-dark">
+                <img id="fullImage" src="" class="img-fluid" style="max-height: 85vh;" alt="Full size">
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+     crossorigin=""></script>
+<!-- ExifReader (better than exif-js for modern usage) or exif-js -->
+<script src="https://cdn.jsdelivr.net/npm/exif-js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize Map
+        const map = L.map('map').setView([-14.235, -51.925], 4); // Center of Brazil
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        const markers = L.layerGroup().addTo(map);
+        const fileInput = document.getElementById('fileInput');
+        const folderInput = document.getElementById('folderInput');
+        const statusArea = document.getElementById('statusArea');
+        const statusText = document.getElementById('statusText');
+        const progressBar = document.getElementById('progressBar');
+        const imageModal = new bootstrap.Modal(document.getElementById('imageModal'));
+        const fullImage = document.getElementById('fullImage');
+        const imageModalTitle = document.getElementById('imageModalTitle');
+
+        function handleFiles(files) {
+            if (!files || files.length === 0) return;
+
+            statusArea.classList.remove('d-none');
+            statusText.textContent = `Processando ${files.length} arquivos...`;
+            progressBar.style.width = '0%';
+
+            // Clear existing markers
+            markers.clearLayers();
+
+            let processedCount = 0;
+            const bounds = L.latLngBounds();
+            let hasPhotos = false;
+
+            Array.from(files).forEach((file, index) => {
+                // Only process images
+                if (!file.type.match('image.*')) {
+                    checkFinished();
+                    return;
+                }
+
+                EXIF.getData(file, function() {
+                    const lat = EXIF.getTag(this, "GPSLatitude");
+                    const lon = EXIF.getTag(this, "GPSLongitude");
+                    const latRef = EXIF.getTag(this, "GPSLatitudeRef");
+                    const lonRef = EXIF.getTag(this, "GPSLongitudeRef");
+
+                    if (lat && lon && latRef && lonRef) {
+                        const latDec = convertDMSToDD(lat, latRef);
+                        const lonDec = convertDMSToDD(lon, lonRef);
+
+                        if (!isNaN(latDec) && !isNaN(lonDec)) {
+                            const objectUrl = URL.createObjectURL(file);
+
+                            const marker = L.marker([latDec, lonDec]);
+                            const popupContent = `
+                                <div class="thumbnail-popup">
+                                    <img src="${objectUrl}" onclick="openModal('${objectUrl}', '${file.name.replace(/'/g, "\\'")}')">
+                                    <br>
+                                    <button class="btn btn-sm btn-primary mt-1" onclick="openModal('${objectUrl}', '${file.name.replace(/'/g, "\\'")}')">
+                                        <i class="bi bi-zoom-in"></i> Expandir
+                                    </button>
+                                </div>
+                            `;
+
+                            marker.bindPopup(popupContent);
+                            markers.addLayer(marker);
+                            bounds.extend([latDec, lonDec]);
+                            hasPhotos = true;
+                        }
+                    }
+
+                    checkFinished();
+                });
+
+                function checkFinished() {
+                    processedCount++;
+                    const percent = (processedCount / files.length) * 100;
+                    progressBar.style.width = `${percent}%`;
+
+                    if (processedCount === files.length) {
+                        statusText.textContent = `Concluído! ${markers.getLayers().length} fotos mapeadas.`;
+                        setTimeout(() => {
+                            statusArea.classList.add('d-none');
+                        }, 3000);
+
+                        if (hasPhotos) {
+                            map.fitBounds(bounds, { padding: [50, 50], maxZoom: 18 });
+                        } else {
+                            alert('Nenhuma informação de GPS encontrada nas fotos selecionadas.');
+                        }
+                    }
+                }
+            });
+        }
+
+        // DMS to Decimal Degrees converter
+        function convertDMSToDD(dms, ref) {
+            let dd = dms[0] + dms[1] / 60 + dms[2] / 3600;
+            if (ref === "S" || ref === "W") {
+                dd = dd * -1;
+            }
+            return dd;
+        }
+
+        // Global function for modal (needs to be on window because it's called from HTML string in popup)
+        window.openModal = function(url, title) {
+            fullImage.src = url;
+            imageModalTitle.textContent = title || 'Visualização';
+            imageModal.show();
+        };
+
+        fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
+        folderInput.addEventListener('change', (e) => handleFiles(e.target.files));
+    });
+</script>
 {% endblock %}
