@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
     {% load static %}
     <meta charset="UTF-8">
@@ -22,83 +23,94 @@
 
     {% block head_extra %}{% endblock %}
 </head>
+
 <body>
 
-<div class="wrapper">
-    <nav class="sidebar" id="appSidebar">
-        <div class="brand d-flex align-items-center justify-content-between">
-            <a href="{% url 'home' %}" class="d-flex align-items-center gap-2 text-decoration-none text-white">
-                <img src="{% static 'img/logo.svg' %}" alt="Resolve Eng" style="width:34px;height:34px;" />
-                <div class="brand-text">Resolve Eng</div>
-            </a>
-            <button id="sidebarCollapse" class="btn btn-sm btn-light d-none d-md-inline-flex" title="Colapsar menu" style="margin-left:8px;">
-                <i class="bi bi-chevron-left"></i>
-            </button>
-        </div>
-
-        <div class="sidebar-menu">
-            <div class="menu-label">Principal</div>
-            <a href="{% url 'home' %}" class="{% if request.resolver_match.url_name == 'home' %}active{% endif %}">
-                <i class="bi bi-speedometer2"></i> <span class="ms-1">Dashboard</span>
-            </a>
-
-            <div class="menu-label">Ferramentas</div>
-            <a href="{% url 'ferramenta_drenagem:calculo_volume' %}" class="{% if 'drenagem' in request.path %}active{% endif %}">
-                <i class="bi bi-water"></i> <span class="ms-1">Drenagem Urbana</span>
-            </a>
-            <a href="#">
-                <i class="bi bi-building"></i> <span class="ms-1">Estrutural</span> <span class="badge bg-secondary ms-auto" style="font-size: 0.6rem">Em breve</span>
-            </a>
-            <a href="#">
-                <i class="bi bi-calculator"></i> <span class="ms-1">Orçamentos</span> <span class="badge bg-secondary ms-auto" style="font-size: 0.6rem">Em breve</span>
-            </a>
-        </div>
-
-        <div class="user-profile">
-            <div class="d-flex align-items-center justify-content-between">
-                <div class="d-flex align-items-center gap-2">
-                    <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center text-white fw-bold" style="width: 35px; height: 35px;">
-                        {{ user.username|slice:":1"|upper }}
-                    </div>
-                    <div style="line-height: 1.2;">
-                        <small class="d-block text-light fw-bold">{{ user.username }}</small>
-                        <small class="d-block text-muted" style="font-size: 0.7rem">Engenheiro</small>
-                    </div>
-                </div>
-                <form action="{% url 'logout' %}" method="post" class="m-0">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-link text-danger p-0" title="Sair">
-                        <i class="bi bi-box-arrow-right fs-5"></i>
-                    </button>
-                </form>
+    <div class="wrapper">
+        <nav class="sidebar" id="appSidebar">
+            <div class="brand d-flex align-items-center">
+                <a href="{% url 'home' %}" class="d-flex align-items-center gap-2 text-decoration-none text-white">
+                    <img src="{% static 'img/logo.svg' %}" alt="Resolve Eng" style="width:34px;height:34px;" />
+                    <div class="brand-text">Resolve Eng</div>
+                </a>
+                <button id="sidebarCollapse"
+                    class="sidebar-toggle-btn btn btn-primary btn-sm rounded-circle p-0 d-none d-md-flex align-items-center justify-content-center shadow-sm"
+                    title="Colapsar menu">
+                    <i class="bi bi-chevron-left"></i>
+                </button>
             </div>
-        </div>
-    </nav>
 
-    <main class="content">
-        <!-- Mobile toggle button -->
-        <div class="d-flex d-md-none mb-3">
-            <button id="sidebarToggleTop" class="btn btn-outline-secondary me-2"><i class="bi bi-list"></i></button>
-            <div class="flex-grow-1"></div>
-        </div>
+            <div class="sidebar-menu">
+                <div class="menu-label">Principal</div>
+                <a href="{% url 'home' %}" class="{% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+                    <i class="bi bi-speedometer2"></i> <span class="ms-1">Dashboard</span>
+                </a>
 
-        {% if messages %}
-            {% for message in messages %}
-                <div class="alert alert-{{ message.tags }} shadow-sm border-0 rounded-3 mb-4">
-                    <i class="bi bi-info-circle-fill me-2"></i> {{ message }}
+                <div class="menu-label">Ferramentas</div>
+                <a href="{% url 'ferramenta_drenagem:calculo_volume' %}"
+                    class="{% if 'drenagem' in request.path %}active{% endif %}">
+                    <i class="bi bi-water"></i> <span class="ms-1">Drenagem Urbana</span>
+                </a>
+                <a href="{% url 'mapa_fotos:mapa' %}" class="{% if 'mapa' in request.path %}active{% endif %}">
+                    <i class="bi bi-map"></i> <span class="ms-1">Mapa de Fotos</span>
+                </a>
+                <a href="#">
+                    <i class="bi bi-building"></i> <span class="ms-1">Estrutural</span> <span
+                        class="badge bg-secondary ms-auto" style="font-size: 0.6rem">Em breve</span>
+                </a>
+                <a href="#">
+                    <i class="bi bi-calculator"></i> <span class="ms-1">Orçamentos</span> <span
+                        class="badge bg-secondary ms-auto" style="font-size: 0.6rem">Em breve</span>
+                </a>
+            </div>
+
+            <div class="user-profile">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center text-white fw-bold"
+                            style="width: 35px; height: 35px;">
+                            {{ user.username|slice:":1"|upper }}
+                        </div>
+                        <div style="line-height: 1.2;">
+                            <small class="d-block text-light fw-bold">{{ user.username }}</small>
+                            <small class="d-block text-muted" style="font-size: 0.7rem">Engenheiro</small>
+                        </div>
+                    </div>
+                    <form action="{% url 'logout' %}" method="post" class="m-0">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-link text-danger p-0" title="Sair">
+                            <i class="bi bi-box-arrow-right fs-5"></i>
+                        </button>
+                    </form>
                 </div>
+            </div>
+        </nav>
+
+        <main class="content">
+            <!-- Mobile toggle button -->
+            <div class="d-flex d-md-none mb-3">
+                <button id="sidebarToggleTop" class="btn btn-outline-secondary me-2"><i class="bi bi-list"></i></button>
+                <div class="flex-grow-1"></div>
+            </div>
+
+            {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} shadow-sm border-0 rounded-3 mb-4">
+                <i class="bi bi-info-circle-fill me-2"></i> {{ message }}
+            </div>
             {% endfor %}
-        {% endif %}
+            {% endif %}
 
-        {% block content %}{% endblock %}
-    </main>
-</div>
+            {% block content %}{% endblock %}
+        </main>
+    </div>
 
-<!-- Bootstrap JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="{% static 'js/sidebar.js' %}"></script>
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{% static 'js/sidebar.js' %}"></script>
 
-{% block scripts %}{% endblock %}
+    {% block scripts %}{% endblock %}
 
 </body>
+
 </html>
