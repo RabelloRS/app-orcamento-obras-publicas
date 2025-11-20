@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Painel - Resolve Eng</title>
+    <style>body{font-family:sans-serif;padding:20px;}</style>
+</head>
+<body>
+    <h1>Olá, {{ user.username }}!</h1>
+    <p>Bem-vindo ao sistema Resolve Engenharia.</p>
+    <p>Seus acessos ativos: <strong>Nenhum (Por enquanto)</strong></p>
+    
+    <form action="{% url 'logout' %}" method="post">
+        {% csrf_token %}
+        <button type="submit">Sair do Sistema</button>
+    </form>
+</body>
+</html>
