@@ -1,18 +1,41 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <title>Painel - Resolve Eng</title>
-    <style>body{font-family:sans-serif;padding:20px;}</style>
-</head>
-<body>
-    <h1>Olá, {{ user.username }}!</h1>
-    <p>Bem-vindo ao sistema Resolve Engenharia.</p>
-    <p>Seus acessos ativos: <strong>Nenhum (Por enquanto)</strong></p>
-    
-    <form action="{% url 'logout' %}" method="post">
-        {% csrf_token %}
-        <button type="submit">Sair do Sistema</button>
-    </form>
-</body>
-</html>
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - Resolve Eng{% endblock %}
+
+{% block content %}
+    <div class="container-fluid">
+        <h2 class="mb-4">Bem-vindo, {{ user.first_name|default:user.username }}!</h2>
+        
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="bi bi-water text-primary"></i> Drenagem Urbana</h5>
+                        <p class="card-text">Ferramentas para cálculo de galerias e bueiros.</p>
+                        <a href="#" class="btn btn-primary btn-sm">Acessar</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="bi bi-building text-success"></i> Estrutural</h5>
+                        <p class="card-text">Cálculo de vigas, pilares e lajes de concreto.</p>
+                        <a href="#" class="btn btn-success btn-sm">Acessar</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="bi bi-file-earmark-spreadsheet text-warning"></i> Orçamentos</h5>
+                        <p class="card-text">Composições de custo e BDI para obras públicas.</p>
+                        <a href="#" class="btn btn-warning btn-sm">Acessar</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
