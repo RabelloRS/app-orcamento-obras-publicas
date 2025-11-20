@@ -18,19 +18,19 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-from django.views.generic import RedirectView
+from django.views.generic import RedirectView, TemplateView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('contas/', include('django.contrib.auth.urls')),
-    path('', include('usuarios.urls')),
-    path('drenagem/', include('ferramenta_drenagem.urls')),
-    # Old `/mapa/` route pointed to the legacy photo-mapping app.
-    # Disable the old map route by redirecting to the newer visualizer
-    # and expose the photo upload/map endpoints under `/fotos/`.
-    path('mapa/', RedirectView.as_view(url='/ferramentas/visualizador/', permanent=False)),
-    path('fotos/', include('mapa_fotos.urls')),
-    path('ferramentas/', include('ferramenta_mapa.urls')),
+    # Root: simple homepage while apps are archived.
+    path('', TemplateView.as_view(template_name='home.html'), name='home'),
+    # The project apps were archived to `archived_apps/` during reset.
+    # Reintroduce their URL includes after re-adding them to INSTALLED_APPS.
+    # path('drenagem/', include('ferramenta_drenagem.urls')),
+    # path('mapa/', RedirectView.as_view(url='/ferramentas/visualizador/', permanent=False)),
+    # path('fotos/', include('mapa_fotos.urls')),
+    # path('ferramentas/', include('ferramenta_mapa.urls')),
 ]
 
 if settings.DEBUG:
