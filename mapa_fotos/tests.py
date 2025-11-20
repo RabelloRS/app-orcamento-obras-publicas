@@ -24,13 +24,9 @@ class MapaFotosTestCase(TestCase):
         response = self.client.get(reverse('mapa_fotos:mapa'))
         self.assertEqual(response.status_code, 200)
 
-    def test_upload_login_required(self):
-        """Test that upload view requires authentication."""
-        response = self.client.get(reverse('mapa_fotos:upload'))
-        self.assertEqual(response.status_code, 302)
-
-    def test_upload_authenticated(self):
-        """Test upload view for authenticated user."""
+    def test_upload_redirect(self):
+        """Test that upload view redirects to mapa since we moved to client-side only."""
         self.client.login(username='testuser', password='testpass123')
         response = self.client.get(reverse('mapa_fotos:upload'))
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, reverse('mapa_fotos:mapa'))

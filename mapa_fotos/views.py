@@ -6,17 +6,13 @@ from django.contrib.auth.decorators import login_required
 def mapa(request):
     """Display photo map view."""
     context = {
-        'title': 'Mapa de Fotos',
-        'points': []  # Placeholder for future photo data
+        'title': 'Mapa de Fotos Local',
     }
     return render(request, 'mapa_fotos/mapa.html', context)
 
 
 @login_required
 def upload_photos(request):
-    """Handle photo uploads."""
-    if request.method == 'POST':
-        # Placeholder for file handling
-        return redirect('mapa_fotos:mapa')
-    context = {'title': 'Enviar Fotos'}
-    return render(request, 'mapa_fotos/upload.html', context)
+    """Handle photo uploads. (Legacy/Unused for client-side only version)"""
+    # Redirect to the main map view since upload is now client-side
+    return redirect('mapa_fotos:mapa')
