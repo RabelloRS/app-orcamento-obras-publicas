@@ -16,9 +16,30 @@ class UsuariosAuthTestCase(TestCase):
         )
 
     def test_home_redirect_when_not_authenticated(self):
-        """Test that unauthenticated users are allowed on home but can see login link."""
+        """Test that unauthenticated users are redirected from home to public_home."""
         response = self.client.get(reverse('usuarios:home'))
+        self.assertEqual(response.status_code, 302)
+        # Should redirect to public_home
+        self.assertTrue(response.url.endswith(reverse('usuarios:public_home')))
+
+    def test_home_redirect_when_authenticated(self):
+        """Test that authenticated users are redirected from home to dashboard."""
+        self.client.login(username='testuser', password='testpass123')
+        response = self.client.get(reverse('usuarios:home'))
+        self.assertEqual(response.status_code, 302)
+        # Should redirect to dashboard
+        self.assertTrue(response.url.endswith(reverse('usuarios:dashboard')))
+
+    def test_public_home_accessible_without_auth(self):
+        """Test that public home is accessible without authentication."""
+        response = self.client.get(reverse('usuarios:public_home'))
         self.assertEqual(response.status_code, 200)
+
+    def test_dashboard_requires_auth(self):
+        """Test that dashboard requires authentication."""
+        response = self.client.get(reverse('usuarios:dashboard'))
+        # Should redirect to login
+        self.assertEqual(response.status_code, 302)
 
     def test_login_view_get(self):
         """Test GET request to login page."""
