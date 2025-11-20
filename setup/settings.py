@@ -39,11 +39,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    # Project apps are archived during reset. Add back when ready to reintroduce.
-    # 'usuarios',
-    # 'ferramenta_drenagem',
-    # 'mapa_fotos',
-    # 'ferramenta_mapa',
+    # Project apps
+    'usuarios',
+    'ferramenta_drenagem',
+    'mapa_fotos',
+    'ferramenta_mapa',
 ]
 
 

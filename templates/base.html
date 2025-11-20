@@ -29,7 +29,7 @@
     <div class="wrapper">
         <nav class="sidebar" id="appSidebar">
             <div class="brand d-flex align-items-center">
-                <a href="{% url 'home' %}" class="d-flex align-items-center gap-2 text-decoration-none text-white">
+                <a href="{% url 'usuarios:home' %}" class="d-flex align-items-center gap-2 text-decoration-none text-white">
                     <img src="{% static 'img/logo.svg' %}" alt="Resolve Eng" style="width:34px;height:34px;" />
                     <div class="brand-text">Resolve Eng</div>
                 </a>
@@ -42,17 +42,17 @@
 
             <div class="sidebar-menu">
                 <div class="menu-label">Principal</div>
-                <a href="{% url 'home' %}" class="{% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+                <a href="{% url 'usuarios:home' %}" class="{% if request.resolver_match.url_name == 'home' %}active{% endif %}">
                     <i class="bi bi-speedometer2"></i> <span class="ms-1">Dashboard</span>
                 </a>
 
                 <div class="menu-label">Ferramentas</div>
                 <a href="{% url 'ferramenta_drenagem:calculo_volume' %}"
                     class="{% if 'drenagem' in request.path %}active{% endif %}">
-                    <i class="bi bi-water"></i> <span class="ms-1">Drenagem Urbana</span>
+                    <i class="bi bi-droplet"></i> <span class="ms-1">Drenagem Urbana</span>
                 </a>
-                <a href="{% url 'mapa_fotos:mapa' %}" class="{% if 'mapa' in request.path %}active{% endif %}">
-                    <i class="bi bi-map"></i> <span class="ms-1">Mapa de Fotos</span>
+                <a href="{% url 'mapa_fotos:mapa' %}" class="{% if 'fotos' in request.path %}active{% endif %}">
+                    <i class="bi bi-images"></i> <span class="ms-1">Mapa de Fotos</span>
                 </a>
                 <a href="#">
                     <i class="bi bi-building"></i> <span class="ms-1">Estrutural</span> <span
@@ -76,7 +76,7 @@
                             <small class="d-block text-muted" style="font-size: 0.7rem">Engenheiro</small>
                         </div>
                     </div>
-                    <form action="{% url 'logout' %}" method="post" class="m-0">
+                    <form action="{% url 'usuarios:logout' %}" method="post" class="m-0">
                         {% csrf_token %}
                         <button type="submit" class="btn btn-link text-danger p-0" title="Sair">
                             <i class="bi bi-box-arrow-right fs-5"></i>

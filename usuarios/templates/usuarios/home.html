@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - Resolve Eng{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+
+    <!-- Cabeçalho de Boas-vindas -->
+    <div class="d-flex justify-content-between align-items-center mb-5">
+        <div>
+            <h2 class="fw-bold text-dark mb-1">
+                {% if user.is_authenticated %}
+                    Olá, {{ user.first_name|default:user.username }}! 👋
+                {% else %}
+                    Bem-vindo ao Resolve! 👋
+                {% endif %}
+            </h2>
+            <p class="text-secondary mb-0">
+                {% if user.is_authenticated %}
+                    Painel de controle de engenharia
+                {% else %}
+                    Faça login para acessar as ferramentas
+                {% endif %}
+            </p>
+        </div>
+        <div class="d-none d-md-block text-end text-secondary">
+            <small class="d-block fw-bold text-uppercase tracking-wider">Hoje</small>
+            <span>{% now "d \d\e F \d\e Y" %}</span>
+        </div>
+    </div>
+
+    {% if user.is_authenticated %}
+        <h5 class="text-uppercase text-muted fs-6 fw-bold mb-3 ls-1">Ferramentas Disponíveis</h5>
+        
+        <div class="row g-4">
+            <!-- Placeholder para ferramentas futuras -->
+            <div class="col-md-6 col-xl-4">
+                <div class="card h-100 border-0 shadow-sm opacity-75">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-start justify-content-between mb-3">
+                            <div class="rounded-3 p-3 bg-primary bg-opacity-10 text-primary">
+                                <i class="bi bi-droplet fs-3"></i>
+                            </div>
+                            <span class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill px-3 py-2">Em breve</span>
+                        </div>
+                        <h4 class="card-title fw-bold text-dark">Drenagem Urbana</h4>
+                        <p class="card-text text-secondary mb-4">
+                            Cálculo de volume de escavação e dimensionamento de galerias pluviais.
+                        </p>
+                        <button class="btn btn-outline-secondary w-100 py-2 fw-medium rounded-3" disabled>
+                            Aguardando módulo
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-xl-4">
+                <div class="card h-100 border-0 shadow-sm opacity-75">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-start justify-content-between mb-3">
+                            <div class="rounded-3 p-3 bg-info bg-opacity-10 text-info">
+                                <i class="bi bi-images fs-3"></i>
+                            </div>
+                            <span class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill px-3 py-2">Em breve</span>
+                        </div>
+                        <h4 class="card-title fw-bold text-dark">Mapa de Fotos</h4>
+                        <p class="card-text text-secondary mb-4">
+                            Upload de fotos com coordenadas GPS (EXIF) e visualização em mapa.
+                        </p>
+                        <button class="btn btn-outline-secondary w-100 py-2 fw-medium rounded-3" disabled>
+                            Aguardando módulo
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-xl-4">
+                <div class="card h-100 border-0 shadow-sm opacity-75">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-start justify-content-between mb-3">
+                            <div class="rounded-3 p-3 bg-success bg-opacity-10 text-success">
+                                <i class="bi bi-building fs-3"></i>
+                            </div>
+                            <span class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill px-3 py-2">Em breve</span>
+                        </div>
+                        <h4 class="card-title fw-bold text-dark">Estrutural</h4>
+                        <p class="card-text text-secondary mb-4">
+                            Dimensionamento de vigas, pilares e lajes de concreto armado.
+                        </p>
+                        <button class="btn btn-outline-secondary w-100 py-2 fw-medium rounded-3" disabled>
+                            Aguardando módulo
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="alert alert-info" role="alert">
+            <h4 class="alert-heading">Acesso Restrito</h4>
+            <p>Para acessar as ferramentas do Resolve, você deve estar autenticado.</p>
+            <hr>
+            <div class="d-flex gap-2">
+                <a href="{% url 'usuarios:login' %}" class="btn btn-primary">Fazer login</a>
+                <a href="{% url 'usuarios:register' %}" class="btn btn-outline-primary">Cadastrar</a>
+            </div>
+        </div>
+    {% endif %}
+
+</div>
+{% endblock %}
