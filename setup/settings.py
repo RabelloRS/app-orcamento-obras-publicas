@@ -39,7 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    # Meus Apps
+    # Project apps
     'usuarios',
     'ferramenta_drenagem',
     'mapa_fotos',
@@ -55,6 +55,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'setup.middleware.DDoSProtectionMiddleware',  # DDoS protection
 ]
 
 ROOT_URLCONF = 'setup.urls'
@@ -137,6 +138,18 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 # Configurações de Login
-LOGIN_REDIRECT_URL = '/'  # Vai para a home (que configuramos)
-LOGOUT_REDIRECT_URL = '/contas/login/'
-LOGIN_URL = '/contas/login/'
+LOGIN_REDIRECT_URL = 'usuarios:dashboard'  # Vai para o dashboard quando faz login
+LOGOUT_REDIRECT_URL = 'usuarios:public_home'
+LOGIN_URL = 'usuarios:login'
+
+# Cache Configuration for DDoS Protection
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'resolve_cache',
+    }
+}
+
+# DDoS Protection Settings
+DDOS_RATE_LIMIT = 100  # requests
+DDOS_RATE_PERIOD = 60  # seconds

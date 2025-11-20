@@ -1,18 +1,16 @@
 {% extends 'base.html' %}
 
-{% block title %}Upload de Fotos{% endblock %}
+{% block title %}{{ title }} - Resolve Eng{% endblock %}
 
 {% block content %}
-<div class="container">
-  <h3 class="mb-4">Selecione fotos para enviar</h3>
-  <form method="post" enctype="multipart/form-data" class="card card-body shadow-sm">
-    {% csrf_token %}
-    <input type="file" name="images" multiple accept="image/*" class="form-control mb-3" />
-    <button class="btn btn-primary" type="submit">Enviar</button>
-  </form>
-  <p class="mt-3"><a href="{% url 'mapa_fotos:mapa' %}">Ver mapa</a></p>
-  <p class="mt-1"><small>EXIF GPS será extraído automaticamente quando disponível.</small></p>
-  <p class="mt-1"><small>Para enviar uma pasta, selecione todas as imagens da pasta.</small></p>
-  <p class="mt-1"><small>Fotos sem EXIF serão exibidas sem posição (não aparecem no mapa).</small></p>
+<div class="container py-4">
+    <h1>{{ title }}</h1>
+    <p class="text-muted">Envie fotos com coordenadas GPS (EXIF) para mapeamento automático.</p>
+    <div class="alert alert-info" role="alert">
+        <strong>Função de upload em desenvolvimento.</strong> Em breve você poderá enviar múltiplas fotos.
+    </div>
+    <div class="mt-3">
+        <a href="{% url 'mapa_fotos:mapa' %}" class="btn btn-secondary">Ver mapa</a>
+    </div>
 </div>
 {% endblock %}

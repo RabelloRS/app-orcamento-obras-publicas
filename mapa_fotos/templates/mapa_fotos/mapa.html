@@ -1,49 +1,19 @@
 {% extends 'base.html' %}
 
-{% block title %}Mapa de Fotos{% endblock %}
-
-{% block head_extra %}
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
-{% endblock %}
+{% block title %}{{ title }} - Resolve Eng{% endblock %}
 
 {% block content %}
-<div class="container">
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h3>Mapa de Fotos</h3>
-    <a href="{% url 'mapa_fotos:upload' %}" class="btn btn-outline-primary">Enviar Fotos</a>
-  </div>
-  <div id="map" style="height: 70vh;" class="shadow-sm rounded"></div>
+<div class="container py-4">
+    <h1>{{ title }}</h1>
+    <p class="text-muted">Mapeamento interativo de fotos com coordenadas GPS.</p>
+    {% if points %}
+        <div id="map" class="alert alert-info">
+            Mapa com {{ points|length }} foto(s) será exibido aqui.
+        </div>
+    {% else %}
+        <div class="alert alert-warning" role="alert">
+            <strong>Nenhuma foto enviada.</strong> <a href="{% url 'mapa_fotos:upload' %}">Envie fotos</a> para visualizá-las no mapa.
+        </div>
+    {% endif %}
 </div>
-{% endblock %}
-
-{% block scripts %}
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script>
-    (function init(){
-      if (!window.L) {
-        if (!document.getElementById('leaflet-fallback')) {
-          var s=document.createElement('script');
-          s.id='leaflet-fallback';
-          s.src='https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js';
-          document.head.appendChild(s);
-        }
-        return setTimeout(init, 100);
-      }
-      const map = L.map('map').setView([-14.2350, -51.9253], 4);
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        attribution: '&copy; OpenStreetMap contributors'
-      }).addTo(map);
-      const points = [
-        {% for p in points %}
-          {lat: {{ p.latitude|default:'null' }}, lng: {{ p.longitude|default:'null' }}, url: '{{ p.image.url }}'},
-        {% endfor %}
-      ];
-      points.filter(pt => pt.lat !== null && pt.lng !== null).forEach(pt => {
-        const m = L.marker([pt.lat, pt.lng]).addTo(map);
-        m.bindPopup(`<img src="${pt.url}" alt="foto" style="max-width:200px;max-height:150px;"/>`);
-      });
-    })();
-  </script>
 {% endblock %}

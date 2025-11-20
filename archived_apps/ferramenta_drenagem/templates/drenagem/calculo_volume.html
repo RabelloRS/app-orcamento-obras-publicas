@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+
+{% block title %}Cálculo Drenagem - Resolve Eng{% endblock %}
+
+{% block content %}
+<div id="app" class="container">
+    <h2 class="mb-4">Calculadora de Vala - Drenagem</h2>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <form @submit.prevent>
+                <div class="row">
+                    <div class="col-md-3">
+                        <label class="form-label">Diâmetro (m)</label>
+                        <input type="number" step="0.001" v-model.number="diametro" class="form-control">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Comprimento (m)</label>
+                        <input type="number" step="0.01" v-model.number="length" class="form-control">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Cota h1 (m)</label>
+                        <input type="number" step="0.01" v-model.number="h1" class="form-control">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Cota h2 (m)</label>
+                        <input type="number" step="0.01" v-model.number="h2" class="form-control">
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h5>Resultados</h5>
+                    <p><strong>Espessura da parede:</strong> <span v-text="espessura_parede.toFixed(3)"></span> m</p>
+                    <p><strong>Diâmetro Externo:</strong> <span v-text="diam_ext.toFixed(3)"></span> m</p>
+                    <p><strong>Largura da Vala (B):</strong> <span v-text="largura_vala.toFixed(3)"></span> m</p>
+                    <p><strong>Profundidade de Escavação:</strong> <span v-text="profundidade.toFixed(3)"></span> m</p>
+                    <p><strong>Volume de Escavação (aprox):</strong> <span v-text="volume_excavacao.toFixed(3)"></span> m³</p>
+                    <p><strong>Volume de Lastro (brita) (0.10m espessura):</strong> <span v-text="volume_brita.toFixed(3)"></span> m³</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h5>Observações</h5>
+                    <ul>
+                        <li>Espessura da parede = 10% do diâmetro</li>
+                        <li>Diâmetro Externo = Diâmetro + 2 x Espessura</li>
+                        <li>Largura da vala = max(0.60m, DiâmetroExterno + 0.40m)</li>
+                        <li>Profundidade = média(h1,h2) + 0.10m (brita)</li>
+                        <li>Volumes aproximados — verifique coeficientes e tolerâncias locais</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+<script>
+const { createApp } = Vue;
+createApp({
+    data() {
+        return {
+            diametro: 0.6,
+            length: 1.0,
+            h1: 0.0,
+            h2: 0.0,
+        }
+    },
+    computed: {
+        espessura_parede() {
+            return this.diametro * 0.10;
+        },
+        diam_ext() {
+            return this.diametro + 2 * this.espessura_parede;
+        },
+        largura_vala() {
+            const val = this.diam_ext + 2 * 0.20; // adicionar guarda de 0.20m cada lado
+            return Math.max(0.60, val);
+        },
+        profundidade() {
+            return ((this.h1 + this.h2) / 2) + 0.10;
+        },
+        volume_excavacao() {
+            const p = Math.max(this.profundidade, 0);
+            return this.largura_vala * this.length * p;
+        },
+        volume_brita() {
+            return this.largura_vala * this.length * 0.10;
+        }
+    }
+}).mount('#app')
+</script>
+
+{% endblock %}

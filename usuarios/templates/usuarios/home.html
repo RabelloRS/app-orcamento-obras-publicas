@@ -8,134 +8,103 @@
     <!-- Cabeçalho de Boas-vindas -->
     <div class="d-flex justify-content-between align-items-center mb-5">
         <div>
-            <h2 class="fw-bold text-dark mb-1">Olá, {{ user.first_name|default:user.username }}! 👋</h2>
-            <p class="text-secondary mb-0">Bem-vindo ao seu painel de controle de engenharia.</p>
+            <h2 class="fw-bold text-dark mb-1">
+                {% if user.is_authenticated %}
+                    Olá, {{ user.first_name|default:user.username }}! 👋
+                {% else %}
+                    Bem-vindo ao Resolve! 👋
+                {% endif %}
+            </h2>
+            <p class="text-secondary mb-0">
+                {% if user.is_authenticated %}
+                    Painel de controle de engenharia
+                {% else %}
+                    Faça login para acessar as ferramentas
+                {% endif %}
+            </p>
         </div>
-        <!-- Data Atual (Opcional) -->
         <div class="d-none d-md-block text-end text-secondary">
             <small class="d-block fw-bold text-uppercase tracking-wider">Hoje</small>
             <span>{% now "d \d\e F \d\e Y" %}</span>
         </div>
     </div>
 
-    <h5 class="text-uppercase text-muted fs-6 fw-bold mb-3 ls-1">Ferramentas Disponíveis</h5>
-
-    <div class="row g-4">
-
-        <!-- Módulo: Drenagem Urbana (Ativo) -->
-        <div class="col-md-6 col-xl-4">
-            <div class="card h-100 border-0 shadow-sm position-relative overflow-hidden">
-                <div class="card-body p-4 position-relative z-1">
-                    <div class="d-flex align-items-start justify-content-between mb-3">
-                        <div class="rounded-3 p-3 bg-primary bg-opacity-10 text-primary">
-                            <i class="bi bi-droplet fs-3"></i>
+    {% if user.is_authenticated %}
+        <h5 class="text-uppercase text-muted fs-6 fw-bold mb-3 ls-1">Ferramentas Disponíveis</h5>
+        
+        <div class="row g-4">
+            <!-- Placeholder para ferramentas futuras -->
+            <div class="col-md-6 col-xl-4">
+                <div class="card h-100 border-0 shadow-sm opacity-75">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-start justify-content-between mb-3">
+                            <div class="rounded-3 p-3 bg-primary bg-opacity-10 text-primary">
+                                <i class="bi bi-droplet fs-3"></i>
+                            </div>
+                            <span class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill px-3 py-2">Em breve</span>
                         </div>
-                        <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-2">Ativo</span>
+                        <h4 class="card-title fw-bold text-dark">Drenagem Urbana</h4>
+                        <p class="card-text text-secondary mb-4">
+                            Cálculo de volume de escavação e dimensionamento de galerias pluviais.
+                        </p>
+                        <button class="btn btn-outline-secondary w-100 py-2 fw-medium rounded-3" disabled>
+                            Aguardando módulo
+                        </button>
                     </div>
-                    <h4 class="card-title fw-bold text-dark">Drenagem Urbana</h4>
-                    <p class="card-text text-secondary mb-4">
-                        Cálculo de volume de escavação, dimensionamento de galerias pluviais e quantitativos de bueiros.
-                    </p>
-                    <a href="{% url 'ferramenta_drenagem:calculo_volume' %}"
-                        class="btn btn-primary w-100 py-2 fw-medium rounded-3">
-                        Acessar Ferramenta <i class="bi bi-arrow-right ms-2"></i>
-                    </a>
-                </div>
-                <!-- Detalhe visual decorativo -->
-                    <div class="position-absolute bottom-0 end-0 p-3 opacity-10 text-primary"
-                    style="transform: translate(30%, 30%) rotate(-15deg);">
-                    <i class="bi bi-droplet" style="font-size: 10rem;"></i>
                 </div>
             </div>
-        </div>
 
-        <!-- Módulo: Mapa de Fotos (Ativo) -->
-        <div class="col-md-6 col-xl-4">
-            <div class="card h-100 border-0 shadow-sm position-relative overflow-hidden">
-                <div class="card-body p-4 position-relative z-1">
-                    <div class="d-flex align-items-start justify-content-between mb-3">
-                        <div class="rounded-3 p-3 bg-info bg-opacity-10 text-info">
-                            <i class="bi bi-images fs-3"></i>
+            <div class="col-md-6 col-xl-4">
+                <div class="card h-100 border-0 shadow-sm opacity-75">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-start justify-content-between mb-3">
+                            <div class="rounded-3 p-3 bg-info bg-opacity-10 text-info">
+                                <i class="bi bi-images fs-3"></i>
+                            </div>
+                            <span class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill px-3 py-2">Em breve</span>
                         </div>
-                        <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-2">Ativo</span>
+                        <h4 class="card-title fw-bold text-dark">Mapa de Fotos</h4>
+                        <p class="card-text text-secondary mb-4">
+                            Upload de fotos com coordenadas GPS (EXIF) e visualização em mapa.
+                        </p>
+                        <button class="btn btn-outline-secondary w-100 py-2 fw-medium rounded-3" disabled>
+                            Aguardando módulo
+                        </button>
                     </div>
-                    <h4 class="card-title fw-bold text-dark">Mapa de Fotos</h4>
-                    <p class="card-text text-secondary mb-4">
-                        Faça upload de fotos e visualize no mapa as imagens com coordenadas GPS (EXIF).
-                    </p>
-                    <div class="d-grid gap-2">
-                        <a href="{% url 'mapa_fotos:upload' %}"
-                            class="btn btn-info w-100 py-2 fw-medium rounded-3 text-white">
-                            Enviar Fotos <i class="bi bi-upload ms-2"></i>
-                        </a>
-                        <a href="{% url 'mapa_fotos:mapa' %}"
-                            class="btn btn-outline-info w-100 py-2 fw-medium rounded-3">
-                            Ver Mapa <i class="bi bi-map ms-2"></i>
-                        </a>
-                    </div>
-                </div>
-                <div class="position-absolute bottom-0 end-0 p-3 opacity-10 text-info"
-                    style="transform: translate(30%, 30%) rotate(-15deg);">
-                    <i class="bi bi-images" style="font-size: 10rem;"></i>
                 </div>
             </div>
-        </div>
 
-        <!-- Módulo: Estrutural (Futuro) -->
-        <div class="col-md-6 col-xl-4">
-            <div class="card h-100 border-0 shadow-sm opacity-75">
-                <div class="card-body p-4">
-                    <div class="d-flex align-items-start justify-content-between mb-3">
-                        <div class="rounded-3 p-3 bg-success bg-opacity-10 text-success">
-                            <i class="bi bi-building fs-3"></i>
+            <div class="col-md-6 col-xl-4">
+                <div class="card h-100 border-0 shadow-sm opacity-75">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-start justify-content-between mb-3">
+                            <div class="rounded-3 p-3 bg-success bg-opacity-10 text-success">
+                                <i class="bi bi-building fs-3"></i>
+                            </div>
+                            <span class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill px-3 py-2">Em breve</span>
                         </div>
-                        <span class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill px-3 py-2">Em
-                            breve</span>
+                        <h4 class="card-title fw-bold text-dark">Estrutural</h4>
+                        <p class="card-text text-secondary mb-4">
+                            Dimensionamento de vigas, pilares e lajes de concreto armado.
+                        </p>
+                        <button class="btn btn-outline-secondary w-100 py-2 fw-medium rounded-3" disabled>
+                            Aguardando módulo
+                        </button>
                     </div>
-                    <h4 class="card-title fw-bold text-dark">Estrutural</h4>
-                    <p class="card-text text-secondary mb-4">
-                        Dimensionamento de vigas, pilares e lajes de concreto armado conforme NBR 6118.
-                    </p>
-                    <button class="btn btn-outline-secondary w-100 py-2 fw-medium rounded-3" disabled>
-                        Aguardando módulo
-                    </button>
                 </div>
             </div>
         </div>
-
-        <!-- Módulo: Orçamentos (Futuro) -->
-        <div class="col-md-6 col-xl-4">
-            <div class="card h-100 border-0 shadow-sm opacity-75">
-                <div class="card-body p-4">
-                    <div class="d-flex align-items-start justify-content-between mb-3">
-                        <div class="rounded-3 p-3 bg-warning bg-opacity-10 text-warning">
-                            <i class="bi bi-file-earmark-spreadsheet fs-3"></i>
-                        </div>
-                        <span class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill px-3 py-2">Em
-                            breve</span>
-                    </div>
-                    <h4 class="card-title fw-bold text-dark">Orçamentos</h4>
-                    <p class="card-text text-secondary mb-4">
-                        Composição de preços unitários, cálculo de BDI e geração de curvas ABC para obras públicas.
-                    </p>
-                    <button class="btn btn-outline-secondary w-100 py-2 fw-medium rounded-3" disabled>
-                        Aguardando módulo
-                    </button>
-                </div>
+    {% else %}
+        <div class="alert alert-info" role="alert">
+            <h4 class="alert-heading">Acesso Restrito</h4>
+            <p>Para acessar as ferramentas do Resolve, você deve estar autenticado.</p>
+            <hr>
+            <div class="d-flex gap-2">
+                <a href="{% url 'usuarios:login' %}" class="btn btn-primary">Fazer login</a>
+                <a href="{% url 'usuarios:register' %}" class="btn btn-outline-primary">Cadastrar</a>
             </div>
         </div>
-    </div>
-
-    <!-- Seção Inferior (Opcional - Acesso Rápido ou Status) -->
-    <div class="mt-5">
-        <h5 class="text-uppercase text-muted fs-6 fw-bold mb-3 ls-1">Atividade Recente</h5>
-        <div class="card border-0 shadow-sm">
-            <div class="card-body text-center py-5 text-muted">
-                <i class="bi bi-clock-history fs-1 mb-3 d-block text-light-emphasis"></i>
-                <p>Nenhum cálculo recente registrado.</p>
-            </div>
-        </div>
-    </div>
+    {% endif %}
 
 </div>
 {% endblock %}
