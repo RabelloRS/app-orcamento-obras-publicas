@@ -36,12 +36,12 @@
             <div class="card mb-3">
                 <div class="card-body">
                     <h5>Resultados</h5>
-                    <p><strong>Espessura da parede:</strong> {{ espessura_parede.toFixed(3) }} m</p>
-                    <p><strong>Diâmetro Externo:</strong> {{ diam_ext.toFixed(3) }} m</p>
-                    <p><strong>Largura da Vala (B):</strong> {{ largura_vala.toFixed(3) }} m</p>
-                    <p><strong>Profundidade de Escavação:</strong> {{ profundidade.toFixed(3) }} m</p>
-                    <p><strong>Volume de Escavação (aprox):</strong> {{ volume_excavacao.toFixed(3) }} m³</p>
-                    <p><strong>Volume de Lastro (brita) (0.10m espessura):</strong> {{ volume_brita.toFixed(3) }} m³</p>
+                    <p><strong>Espessura da parede:</strong> <span v-text="espessura_parede.toFixed(3)"></span> m</p>
+                    <p><strong>Diâmetro Externo:</strong> <span v-text="diam_ext.toFixed(3)"></span> m</p>
+                    <p><strong>Largura da Vala (B):</strong> <span v-text="largura_vala.toFixed(3)"></span> m</p>
+                    <p><strong>Profundidade de Escavação:</strong> <span v-text="profundidade.toFixed(3)"></span> m</p>
+                    <p><strong>Volume de Escavação (aprox):</strong> <span v-text="volume_excavacao.toFixed(3)"></span> m³</p>
+                    <p><strong>Volume de Lastro (brita) (0.10m espessura):</strong> <span v-text="volume_brita.toFixed(3)"></span> m³</p>
                 </div>
             </div>
         </div>
