@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # Meus Apps
     'usuarios',
+    'ferramenta_drenagem',
 ]
 
 
