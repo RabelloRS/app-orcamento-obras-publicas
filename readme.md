@@ -23,32 +23,77 @@ python [manage.py](http://_vscodecontentref_/15) runserver 8001
 Controle de versão:
 Repositório remoto: GitHub RabelloRS/DJANGO (branch padrão: main)
 origin configurado via SSH (git@github.com:RabelloRS/DJANGO.git)
-O que eu quero agora:
-Objetivo: [Descreva aqui — ex.: "Criar app calculo_vigas com API JSON e página Vue para cálculo de vigas" ou "Corrigir cálculo no app ferramenta_drenagem"]
-Critérios de aceite / testes esperados: [ex.: "Página deve calcular momento fletor e retornar JSON com detalhes; testes unitários devem passar."]
-Restrições: usar Vue via CDN (sem build tool), Bootstrap 5, manter compatibilidade com Python 3.11 e Django 5.2.
-Prioridade / prazo: [opcional]
-Para bugs, inclua também:
-Passos exatos para reproduzir
-Saída esperada vs saída atual
-Traceback/erros completos
-Branch/commit onde o erro aparece
-Para features, inclua:
-Especificação mínima (campos, endpoints, inputs/outputs, comportamento esperado)
-Exemplos de payloads (JSON) e respostas
-Regras de negócio ou fórmulas (se aplicável)
-Permissões e operação:
-Autorizo que o assistente gere patches para aplicar localmente. [Marque se também quer commits/push automáticos; se sim, forneça autorização e indique a branch alvo.]
-Se precisar, gere também:
+Resolve — Monólito Django para ferramentas de engenharia
 
-Um branch com a implementação (ex.: feature/calculo_vigas) e eu posso commitar/pushar (preciso autorizar explicitamente).
-Um conjunto de testes unitários mínimos (tests.py) para validar fórmulas.
-Checklist rápido que costumo colar junto com o prompt:
+Resumo
+- Projeto Django modular (monólito) com apps por funcionalidade: `ferramenta_drenagem`, `ferramenta_mapa`, `mapa_fotos`, `usuarios`.
+- Frontend híbrido: Django Templates + Vue 3 via CDN e Bootstrap 5.
 
-URL do repo / permissão de leitura (se necessário)
-Comandos para instalar/rodar (dependências / venv)
-Versões (Python/Django/DB)
-Branch alvo
-Objetivo claro + critérios de aceite
-Tracebacks (para bugs)
-Indicação se o assistente pode commitar/push
+Propósito deste README
+- Fornecer onboarding rápido e específico para agentes IA e desenvolvedores que acessam o repositório pela primeira vez.
+
+Arquitetura e organização
+- Configurações centrais: `setup/settings.py` e roteamento global em `setup/urls.py`.
+- Entrypoint: `manage.py`.
+- Templates globais em `templates/` e templates por app em `*/templates/<app_name>/`.
+- Uploads e mídia em `media/` (ex.: `media/photos`). Banco local: `db.sqlite3`.
+
+Requisitos (versões observadas)
+- Python 3.11.x
+- Django 5.2.x
+- Dependências listadas em `requirements.txt`
+
+Quickstart (Linux / macOS)
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py createsuperuser   # opcional
+python manage.py runserver
+```
+
+Quickstart (Windows PowerShell)
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py runserver
+```
+
+Testes
+- Rodar todos: `python manage.py test`
+- Isolar um app: `python manage.py test mapa_fotos`
+
+Padrões e convenções do projeto
+- Frontend: usar Vue 3 via CDN (sem build tools) e Bootstrap 5. Mantemos páginas simples com Vue injetado onde necessário.
+- Templates: manter a estrutura por app (ex.: `mapa_fotos/templates/mapa_fotos/upload.html`).
+- Migrations: antes de aplicar, execute `python manage.py makemigrations <app>` e revise as mudanças.
+
+Integrações e pontos-chave para inspecionar
+- `setup/settings.py`: variáveis de `MEDIA_ROOT`, `STATIC_ROOT`, `ALLOWED_HOSTS`.
+- `setup/urls.py`: inclusão das `urls.py` de cada app.
+- `mapa_fotos/models.py` e campos `ImageField`/`FileField` para referência de uploads.
+- `ferramenta_mapa/views.py`, `mapa_fotos/views.py`, `ferramenta_drenagem/views.py`: exemplos de padrões `render(...)` e tratamento de formulários.
+
+Como preparar solicitações úteis para um agente IA
+- Forneça sempre:
+	- Objetivo claro (o que implementar/arrumar).
+	- Critérios de aceite (o que significa "pronto").
+	- Passos exatos para reproduzir (para bugs), incluindo tracebacks.
+	- Branch alvo e permissão explícita para commits/push automáticos (se desejar).
+- Exemplo mínimo de prompt:
+	- Objetivo: "Adicionar endpoint JSON `/api/calculo_vigas/` que retorne momento fletor"
+	- Critério: endpoint retorna `{'moment': <float>, 'reacoes': [...]}` e testes em `tests.py` passam.
+
+Controle de versão e fluxo de trabalho recomendado
+- Branch padrão: `main` (repo remoto: https://github.com/RabelloRS/DJANGO).
+- Recomenda-se criar branches `feature/*` ou `bugfix/*` e abrir PRs para revisão. Solicite autorização explícita antes de permitir commits/push automáticos pelo agente.
+
+Notas específicas (corrigidas do arquivo anterior)
+- Removidas referências internas do VS Code e instruções exclusivas para Windows. O repositório pode ser executado em Linux/macOS e Windows.
+- Observação: o `origin` pode usar HTTPS ou SSH — confirme localmente (`git remote -v`).
+
+Próximo passo
+- Se quiser, aplico uma versão em inglês, adiciono exemplos de testes unitários ou crio um PR em vez de commit direto.
