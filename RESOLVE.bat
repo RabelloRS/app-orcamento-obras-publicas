@@ -56,6 +56,7 @@ REM -N = não executa comando remoto
 REM -f = background (opcional, comentado para manter janela visível)
 
 echo Iniciando tunel SSH com port forwarding...
+echo Comando: ssh -L %LOCAL_PORT%:localhost:%REMOTE_DJANGO_PORT% ...
 echo.
 
 REM Método 1: Mantém janela SSH aberta para monitoramento
@@ -65,8 +66,8 @@ start "RESOLVE - SSH Tunnel" cmd /k ^
 
 REM Aguarda tunel e servidor iniciar
 echo.
-echo Aguardando inicializacao (5 segundos)...
-timeout /t 5 /nobreak
+echo Aguardando inicializacao (10 segundos)...
+timeout /t 10 /nobreak
 
 REM Abre navegador
 echo.
