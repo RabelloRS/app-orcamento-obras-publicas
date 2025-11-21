@@ -1,0 +1,689 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ title }} - Resolve Eng{% endblock %}
+
+{% block head_extra %}
+<style>
+    /* Custom styles for the calculator */
+    .calc-card {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        transition: transform 0.2s ease;
+        background: #fff;
+        margin-bottom: 20px;
+    }
+
+    .calc-header {
+        background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+        color: white;
+        padding: 20px;
+        border-radius: 12px 12px 0 0;
+    }
+
+    .form-label {
+        font-weight: 500;
+        color: #495057;
+        font-size: 0.9rem;
+    }
+
+    .input-group-text {
+        background-color: #f8f9fa;
+        border-color: #dee2e6;
+        color: #6c757d;
+        font-size: 0.85rem;
+    }
+
+    .result-box {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 15px;
+        border-left: 4px solid #0d6efd;
+        margin-top: 15px;
+    }
+
+    .result-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #0d6efd;
+    }
+
+    .result-label {
+        font-size: 0.85rem;
+        color: #6c757d;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .method-badge {
+        font-size: 0.7rem;
+        padding: 4px 8px;
+        border-radius: 4px;
+        background-color: #e9ecef;
+        color: #495057;
+        margin-left: 8px;
+    }
+
+    /* Print Styles */
+    @media print {
+
+        .sidebar,
+        .navbar,
+        .btn-no-print,
+        footer {
+            display: none !important;
+        }
+
+        .content {
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+
+        .calc-card {
+            box-shadow: none !important;
+            border: 1px solid #dee2e6 !important;
+            break-inside: avoid;
+        }
+
+        .card-body {
+            padding: 10px !important;
+        }
+
+        body {
+            background-color: white !important;
+        }
+    }
+
+    .nav-pills .nav-link {
+        color: #495057;
+        border-radius: 8px;
+        padding: 10px 20px;
+    }
+
+    .nav-pills .nav-link.active {
+        background-color: #0d6efd;
+        color: white;
+    }
+
+    .diagram-container {
+        height: 200px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        margin-bottom: 15px;
+        overflow: hidden;
+        position: relative;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Dimensionamento Hidráulico</h1>
+        <button onclick="window.print()" class="btn btn-outline-secondary btn-no-print">
+            <i class="bi bi-printer me-2"></i>Imprimir Memória
+        </button>
+    </div>
+
+    <div class="row">
+        <!-- Input Section -->
+        <div class="col-lg-5">
+            <div class="calc-card">
+                <div class="calc-header">
+                    <h5 class="mb-0"><i class="bi bi-sliders me-2"></i>Dados de Entrada</h5>
+                </div>
+                <div class="card-body">
+                    <form id="calcForm">
+                        <!-- Hydrology -->
+                        <h6 class="text-primary mb-3 border-bottom pb-2">Hidrologia (Método Racional)</h6>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Área de Contribuição (A)</label>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" id="area" value="10" step="0.01">
+                                    <span class="input-group-text">ha</span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Coef. Runoff (C)</label>
+                                <input type="number" class="form-control" id="runoff" value="0.60" step="0.01" max="1"
+                                    min="0">
+                                <div class="form-text" style="font-size: 0.75rem;">Ex: 0.90 (Impermeável), 0.30 (Verde)
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Tempo de Retorno (TR)</label>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" id="tr" value="10" step="1">
+                                    <span class="input-group-text">anos</span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Equação de Chuva</label>
+                                <button type="button" class="btn btn-outline-primary btn-sm w-100"
+                                    data-bs-toggle="modal" data-bs-target="#rainModal">
+                                    Configurar (SP)
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Geometry -->
+                        <h6 class="text-primary mb-3 border-bottom pb-2 mt-4">Geometria do Talvegue</h6>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Comprimento (L)</label>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" id="length" value="500" step="1">
+                                    <span class="input-group-text">m</span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Desnível (ΔH)</label>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" id="deltaH" value="5" step="0.1">
+                                    <span class="input-group-text">m</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Declividade Calculada (S)</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control bg-light" id="slope" readonly>
+                                <span class="input-group-text">m/m</span>
+                            </div>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div class="col-lg-7">
+            <!-- Hydrology Results -->
+            <div class="calc-card mb-4">
+                <div class="card-body">
+                    <h6 class="text-muted text-uppercase mb-3" style="font-size: 0.8rem; letter-spacing: 1px;">
+                        Resultados Hidrológicos</h6>
+                    <div class="row text-center">
+                        <div class="col-md-4">
+                            <div class="result-label">Tempo de Concentração (tc)</div>
+                            <div class="result-value" id="res-tc">--</div>
+                            <small class="text-muted">min</small>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="result-label">Intensidade (I)</div>
+                            <div class="result-value" id="res-i">--</div>
+                            <small class="text-muted">mm/h</small>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="result-label">Vazão de Projeto (Q)</div>
+                            <div class="result-value text-success" id="res-q">--</div>
+                            <small class="text-muted">m³/s</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hydraulics Sizing -->
+            <div class="calc-card">
+                <div class="calc-header bg-secondary">
+                    <h5 class="mb-0"><i class="bi bi-bounding-box me-2"></i>Dimensionamento da Seção</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="pills-pipe-tab" data-bs-toggle="pill"
+                                data-bs-target="#pills-pipe" type="button" role="tab">Tubulação</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="pills-box-tab" data-bs-toggle="pill"
+                                data-bs-target="#pills-box" type="button" role="tab">Galeria Celular</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="pills-channel-tab" data-bs-toggle="pill"
+                                data-bs-target="#pills-channel" type="button" role="tab">Canal Aberto</button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content" id="pills-tabContent">
+
+                        <!-- Pipe Sizing -->
+                        <div class="tab-pane fade show active" id="pills-pipe" role="tabpanel">
+                            <div class="row align-items-center">
+                                <div class="col-md-6">
+                                    <label class="form-label">Coef. Rugosidade (n)</label>
+                                    <input type="number" class="form-control mb-3" id="n-pipe" value="0.013"
+                                        step="0.001">
+
+                                    <div class="result-box">
+                                        <div class="result-label">Diâmetro Necessário (Teórico)</div>
+                                        <div class="result-value" id="res-d-theo">--</div>
+                                        <small class="text-muted">m (Seção Plena)</small>
+                                    </div>
+
+                                    <div class="mt-3">
+                                        <label class="form-label">Sugestão Comercial:</label>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <select class="form-select" id="pipe-count">
+                                                <option value="1">Simples (1x)</option>
+                                                <option value="2">Dupla (2x)</option>
+                                                <option value="3">Tripla (3x)</option>
+                                            </select>
+                                            <span class="fw-bold fs-5">Ø</span>
+                                            <input type="text" class="form-control fw-bold text-primary" id="res-d-comm"
+                                                readonly>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 text-center">
+                                    <div class="diagram-container">
+                                        <!-- Simple SVG representation -->
+                                        <svg width="150" height="150" viewBox="0 0 100 100">
+                                            <circle cx="50" cy="50" r="45" fill="#e9ecef" stroke="#6c757d"
+                                                stroke-width="2" />
+                                            <path d="M 50 95 A 45 45 0 0 1 50 95" fill="#0d6efd" opacity="0.5"
+                                                id="water-level-pipe" />
+                                            <text x="50" y="55" text-anchor="middle" font-size="12" fill="#495057">D =
+                                                <tspan id="svg-d">--</tspan>
+                                            </text>
+                                        </svg>
+                                    </div>
+                                    <small class="text-muted">Seção Circular</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Box Culvert Sizing -->
+                        <div class="tab-pane fade" id="pills-box" role="tabpanel">
+                            <div class="row align-items-center">
+                                <div class="col-md-6">
+                                    <label class="form-label">Coef. Rugosidade (n)</label>
+                                    <input type="number" class="form-control mb-3" id="n-box" value="0.015"
+                                        step="0.001">
+
+                                    <label class="form-label">Base Fixada (B)</label>
+                                    <div class="input-group mb-3">
+                                        <input type="number" class="form-control" id="box-base" value="2.0" step="0.5">
+                                        <span class="input-group-text">m</span>
+                                    </div>
+
+                                    <div class="result-box">
+                                        <div class="result-label">Altura d'água (y)</div>
+                                        <div class="result-value" id="res-box-h">--</div>
+                                        <small class="text-muted">m (Regime Uniforme)</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 text-center">
+                                    <div class="diagram-container">
+                                        <svg width="180" height="120" viewBox="0 0 180 120">
+                                            <rect x="10" y="10" width="160" height="100" fill="none" stroke="#6c757d"
+                                                stroke-width="2" />
+                                            <rect x="10" y="80" width="160" height="30" fill="#0d6efd" opacity="0.5"
+                                                id="water-level-box" />
+                                            <text x="90" y="130" text-anchor="middle" font-size="12" fill="#495057">B =
+                                                <tspan id="svg-box-b">--</tspan>
+                                            </text>
+                                        </svg>
+                                    </div>
+                                    <small class="text-muted">Galeria Retangular</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Channel Sizing -->
+                        <div class="tab-pane fade" id="pills-channel" role="tabpanel">
+                            <div class="row align-items-center">
+                                <div class="col-md-6">
+                                    <label class="form-label">Coef. Rugosidade (n)</label>
+                                    <input type="number" class="form-control mb-3" id="n-channel" value="0.025"
+                                        step="0.001">
+
+                                    <div class="row g-2">
+                                        <div class="col-6">
+                                            <label class="form-label">Base (b)</label>
+                                            <input type="number" class="form-control" id="channel-b" value="3.0"
+                                                step="0.5">
+                                        </div>
+                                        <div class="col-6">
+                                            <label class="form-label">Talude (z)</label>
+                                            <input type="number" class="form-control" id="channel-z" value="1.5"
+                                                step="0.1">
+                                            <div class="form-text" style="font-size: 0.7rem;">H:V (z:1)</div>
+                                        </div>
+                                    </div>
+
+                                    <div class="result-box mt-3">
+                                        <div class="result-label">Altura Normal (yn)</div>
+                                        <div class="result-value" id="res-channel-y">--</div>
+                                        <small class="text-muted">m</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 text-center">
+                                    <div class="diagram-container">
+                                        <svg width="180" height="120" viewBox="0 0 180 120">
+                                            <!-- Trapezoid -->
+                                            <polyline points="10,10 50,110 130,110 170,10" fill="none" stroke="#6c757d"
+                                                stroke-width="2" />
+                                            <!-- Water -->
+                                            <path d="M 30 60 L 50 110 L 130 110 L 150 60 Z" fill="#0d6efd" opacity="0.5"
+                                                id="water-level-channel" />
+                                        </svg>
+                                    </div>
+                                    <small class="text-muted">Canal Trapezoidal</small>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Rain Modal -->
+<div class="modal fade" id="rainModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Parâmetros da Chuva (IDF)</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <ul class="nav nav-tabs mb-3" id="rainTab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="select-tab" data-bs-toggle="tab"
+                            data-bs-target="#select-pane" type="button" role="tab">Selecionar Cidade</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="new-tab" data-bs-toggle="tab" data-bs-target="#new-pane"
+                            type="button" role="tab">Nova Equação</button>
+                    </li>
+                </ul>
+
+                <div class="tab-content">
+                    <!-- Select Pane -->
+                    <div class="tab-pane fade show active" id="select-pane" role="tabpanel">
+                        <div class="mb-3">
+                            <label class="form-label">Cidade / Localidade</label>
+                            <select class="form-select" id="city-select">
+                                <option value="" selected disabled>Escolha uma cidade...</option>
+                                {% for eq in equations %}
+                                <option value="{{ eq.id }}" data-k="{{ eq.k }}" data-a="{{ eq.a }}" data-b="{{ eq.b }}"
+                                    data-c="{{ eq.c }}">{{ eq.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <hr>
+                        <p class="small text-muted">Equação: i = K * TR^a / (t + b)^c</p>
+                        <div class="row g-3">
+                            <div class="col-6 col-md-3">
+                                <label class="form-label">K</label>
+                                <input type="number" class="form-control" id="rain-k" value="3358.33">
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <label class="form-label">a</label>
+                                <input type="number" class="form-control" id="rain-a" value="0.172">
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <label class="form-label">b</label>
+                                <input type="number" class="form-control" id="rain-b" value="23">
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <label class="form-label">c</label>
+                                <input type="number" class="form-control" id="rain-c" value="0.983">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- New Pane -->
+                    <div class="tab-pane fade" id="new-pane" role="tabpanel">
+                        <form id="new-eq-form">
+                            <div class="mb-3">
+                                <label class="form-label">Nome da Cidade / Localidade</label>
+                                <input type="text" class="form-control" id="new-name" required>
+                            </div>
+                            <div class="row g-3">
+                                <div class="col-6 col-md-3">
+                                    <label class="form-label">K</label>
+                                    <input type="number" class="form-control" id="new-k" required step="any">
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <label class="form-label">a</label>
+                                    <input type="number" class="form-control" id="new-a" required step="any">
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <label class="form-label">b</label>
+                                    <input type="number" class="form-control" id="new-b" required step="any">
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <label class="form-label">c</label>
+                                    <input type="number" class="form-control" id="new-c" required step="any">
+                                </div>
+                            </div>
+                            <div class="mt-3 text-end">
+                                <button type="submit" class="btn btn-success">
+                                    <i class="bi bi-plus-circle me-1"></i> Adicionar
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Usar Parâmetros</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Elements
+        const inputs = document.querySelectorAll('input, select');
+
+        // Attach listeners
+        inputs.forEach(input => {
+            input.addEventListener('input', calculateAll);
+            input.addEventListener('change', calculateAll);
+        });
+
+        // Initial Calc
+        calculateAll();
+
+        function calculateAll() {
+            // 1. Get Inputs
+            const A = parseFloat(document.getElementById('area').value) || 0;
+            const C = parseFloat(document.getElementById('runoff').value) || 0;
+            const TR = parseFloat(document.getElementById('tr').value) || 0;
+            const L = parseFloat(document.getElementById('length').value) || 0;
+            const dH = parseFloat(document.getElementById('deltaH').value) || 0;
+
+            // Rain Params
+            const K = parseFloat(document.getElementById('rain-k').value);
+            const a = parseFloat(document.getElementById('rain-a').value);
+            const b = parseFloat(document.getElementById('rain-b').value);
+            const c = parseFloat(document.getElementById('rain-c').value);
+
+            // 2. Calculate Slope
+            let S = 0;
+            if (L > 0) S = dH / L;
+            document.getElementById('slope').value = S.toFixed(4);
+
+            // 3. Calculate Tc (Kirpich)
+            // tc = 57 * (L^3 / dH)^0.385  (L in km, dH in m) -> result in min
+            // Using standard metric form: tc = 0.0195 * (L^0.77 * S^-0.385) (L in m, S in m/m) -> result in min
+            let tc = 10; // min default
+            if (L > 0 && S > 0) {
+                tc = 0.0195 * Math.pow(L, 0.77) * Math.pow(S, -0.385);
+            }
+            if (tc < 10) tc = 10; // Minimum 10 min usually
+            document.getElementById('res-tc').innerText = tc.toFixed(1);
+
+            // 4. Calculate Intensity
+            // i = K * TR^a / (tc + b)^c
+            let I = 0;
+            if (tc > 0) {
+                I = (K * Math.pow(TR, a)) / Math.pow(tc + b, c);
+            }
+            document.getElementById('res-i').innerText = I.toFixed(1);
+
+            // 5. Calculate Q (Rational)
+            // Q = (C * I * A) / 360
+            let Q = 0;
+            if (A > 0) {
+                Q = (C * I * A) / 360;
+            }
+            document.getElementById('res-q').innerText = Q.toFixed(3);
+
+            // 6. Hydraulics
+            if (Q > 0 && S > 0) {
+                calcPipe(Q, S);
+                calcBox(Q, S);
+                calcChannel(Q, S);
+            }
+        }
+
+        function calcPipe(Q, S) {
+            const n = parseFloat(document.getElementById('n-pipe').value) || 0.013;
+            const count = parseInt(document.getElementById('pipe-count').value) || 1;
+            const Q_target = Q / count;
+
+            // Manning for full pipe: Q = (1/n) * A * R^(2/3) * S^(1/2)
+            // A = pi*D^2/4, P = pi*D, R = D/4
+            // Q = (1/n) * (pi*D^2/4) * (D/4)^(2/3) * S^0.5
+            // Q = (0.3117 / n) * D^(8/3) * S^0.5
+            // D = [ (Q * n) / (0.3117 * S^0.5) ] ^ (3/8)
+
+            const D_theo = Math.pow((Q_target * n) / (0.3117 * Math.sqrt(S)), 0.375);
+            document.getElementById('res-d-theo').innerText = D_theo.toFixed(3);
+
+            // Commercial sizes
+            const commercial = [0.4, 0.6, 0.8, 1.0, 1.2, 1.5];
+            let D_comm = "Sob Medida";
+            for (let d of commercial) {
+                if (d >= D_theo) {
+                    D_comm = d.toFixed(1) + " m";
+                    break;
+                }
+            }
+            if (D_theo > 1.5) D_comm = "> 1.5 m";
+            document.getElementById('res-d-comm').value = D_comm;
+            document.getElementById('svg-d').textContent = D_theo.toFixed(2) + 'm';
+        }
+
+        function calcBox(Q, S) {
+            const n = parseFloat(document.getElementById('n-box').value) || 0.015;
+            const B = parseFloat(document.getElementById('box-base').value) || 2.0;
+
+            // Iterative solution for normal depth y
+            // Q = (1/n) * (B*y) * (B*y / (B+2y))^(2/3) * S^0.5
+            // Solve for y
+            let y = 0.1;
+            for (let i = 0; i < 20; i++) {
+                let A = B * y;
+                let P = B + 2 * y;
+                let R = A / P;
+                let Q_calc = (1 / n) * A * Math.pow(R, 2 / 3) * Math.sqrt(S);
+
+                if (Math.abs(Q_calc - Q) < 0.001) break;
+
+                // Simple Newton-Raphson or just increment for simplicity in this demo
+                // Using a simple adjustment factor here for robustness
+                y = y * Math.pow(Q / Q_calc, 0.6);
+            }
+
+            document.getElementById('res-box-h').innerText = y.toFixed(2);
+            document.getElementById('svg-box-b').textContent = B.toFixed(1) + 'm';
+        }
+
+        function calcChannel(Q, S) {
+            const n = parseFloat(document.getElementById('n-channel').value) || 0.025;
+            document.getElementById('res-channel-y').innerText = y.toFixed(2);
+        }
+
+        // Rain Modal Logic
+        const citySelect = document.getElementById('city-select');
+        if (citySelect) {
+            citySelect.addEventListener('change', function () {
+                const option = this.options[this.selectedIndex];
+                if (option.value) {
+                    document.getElementById('rain-k').value = option.dataset.k;
+                    document.getElementById('rain-a').value = option.dataset.a;
+                    document.getElementById('rain-b').value = option.dataset.b;
+                    document.getElementById('rain-c').value = option.dataset.c;
+                    calculateAll();
+                }
+            });
+        }
+
+        const newEqForm = document.getElementById('new-eq-form');
+        if (newEqForm) {
+            newEqForm.addEventListener('submit', function (e) {
+                e.preventDefault();
+                const name = document.getElementById('new-name').value;
+                const k = document.getElementById('new-k').value;
+                const a = document.getElementById('new-a').value;
+                const b = document.getElementById('new-b').value;
+                const c = document.getElementById('new-c').value;
+
+                fetch('{% url "ferramenta_drenagem:add_equation" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({ name, k, a, b, c })
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            // Add to select and select it
+                            const option = document.createElement('option');
+                            option.value = data.id;
+                            option.text = data.name;
+                            option.dataset.k = k;
+                            option.dataset.a = a;
+                            option.dataset.b = b;
+                            option.dataset.c = c;
+                            citySelect.add(option);
+                            citySelect.value = data.id;
+
+                            // Update inputs
+                            document.getElementById('rain-k').value = k;
+                            document.getElementById('rain-a').value = a;
+                            document.getElementById('rain-b').value = b;
+                            document.getElementById('rain-c').value = c;
+
+                            // Switch tab
+                            const bsTab = new bootstrap.Tab(document.getElementById('select-tab'));
+                            bsTab.show();
+
+                            // Clear form
+                            newEqForm.reset();
+                            calculateAll();
+                            alert('Equação adicionada com sucesso!');
+                        } else {
+                            alert('Erro ao adicionar: ' + data.message);
+                        }
+                    })
+                    .catch(err => alert('Erro de conexão.'));
+            });
+        }
+    });
+</script>
+{% endblock %}

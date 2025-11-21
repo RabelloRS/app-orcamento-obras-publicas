@@ -7,6 +7,8 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
      crossorigin=""/>
+<!-- Leaflet-measure CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet-measure@3.1.0/dist/leaflet-measure.css"/>
 <style>
     #map {
         height: calc(100vh - 300px);
@@ -48,6 +50,25 @@
     .hidden-input {
         display: none;
     }
+    /* Cursor styles for measurement tools */
+    .cursor-crosshair {
+        cursor: crosshair !important;
+    }
+    /* Measurement info box */
+    #measureInfo {
+        position: absolute;
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(255, 255, 255, 0.9);
+        padding: 8px 15px;
+        border-radius: 20px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        z-index: 1000;
+        font-weight: 500;
+        display: none;
+        pointer-events: none;
+    }
 </style>
 {% endblock %}
 
@@ -81,7 +102,8 @@
     </div>
 
     <!-- Map Container -->
-    <div class="card shadow-sm">
+    <div class="card shadow-sm position-relative">
+        <div id="measureInfo"></div>
         <div class="card-body p-0">
             <div id="map"></div>
         </div>
@@ -109,6 +131,8 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
      crossorigin=""></script>
+<!-- Leaflet-measure plugin for distance, area, and route measurements -->
+<script src="https://unpkg.com/leaflet-measure@3.1.0/dist/leaflet-measure.umd.js"></script>
 <!-- ExifReader (better than exif-js for modern usage) or exif-js -->
 <script src="https://cdn.jsdelivr.net/npm/exif-js"></script>
 
@@ -117,10 +141,448 @@
         // Initialize Map
         const map = L.map('map').setView([-14.235, -51.925], 4); // Center of Brazil
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        // Define different tile layers
+        const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        }).addTo(map);
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            name: 'Mapa Padrão'
+        });
+
+        const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+            maxZoom: 18,
+            attribution: '&copy; <a href="https://www.arcgisonline.com/">Esri</a>',
+            name: 'Satélite'
+        });
+
+        const topoLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="https://www.arcgisonline.com/">Esri</a>',
+            name: 'Relevo com Rios'
+        });
+
+        // Add default layer
+        osmLayer.addTo(map);
+
+        // Layer control for switching between maps
+        const baseMaps = {
+            'Mapa Padrão': osmLayer,
+            'Satélite': satelliteLayer,
+            'Relevo com Rios': topoLayer
+        };
+
+        L.control.layers(baseMaps).addTo(map);
+
+        // Variables for measurement
+        let drawingMode = null;
+        let completedMode = null;
+        let points = [];
+        let polyline = null;
+        let polygon = null;
+        let tempLine = null;
+        let markerGroup = L.featureGroup().addTo(map);
+        let measurementClickHandler = null;
+        let measurementMoveHandler = null;
+
+        // Add measurement button to map
+        const MeasureControl = L.Control.extend({
+            onAdd: function(map) {
+                const container = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
+                
+                const measureBtn = L.DomUtil.create('button', 'leaflet-control-custom', container);
+                measureBtn.innerHTML = '📏';
+                measureBtn.title = 'Ferramentas de Medida';
+                measureBtn.style.width = '34px';
+                measureBtn.style.height = '34px';
+                measureBtn.style.backgroundColor = 'white';
+                measureBtn.style.border = '2px solid rgba(0,0,0,0.2)';
+                measureBtn.style.borderRadius = '4px';
+                measureBtn.style.cursor = 'pointer';
+                measureBtn.style.fontSize = '18px';
+                
+                L.DomEvent.on(measureBtn, 'click', function(e) {
+                    L.DomEvent.stopPropagation(e);
+                    toggleMeasurementPanel();
+                });
+                
+                return container;
+            }
+        });
+
+        const measureControl = new MeasureControl({ position: 'topleft' });
+        measureControl.addTo(map);
+
+        // Create measurement panel
+        const measurePanel = L.control({ position: 'topleft' });
+        
+        measurePanel.onAdd = function(map) {
+            const div = L.DomUtil.create('div', 'leaflet-control leaflet-control-layers');
+            div.id = 'measurePanel';
+            div.style.display = 'none';
+            div.style.minWidth = '200px';
+            div.style.background = 'white';
+            div.style.borderRadius = '4px';
+            div.style.border = '2px solid rgba(0,0,0,0.2)';
+            div.style.padding = '10px';
+            div.innerHTML = `
+                <div style="font-weight: bold; margin-bottom: 10px; border-bottom: 1px solid #ddd; padding-bottom: 5px;">
+                    Ferramentas de Medida
+                </div>
+                <div style="margin-bottom: 10px;">
+                    <label style="font-size: 12px; font-weight: bold; display: block; margin-bottom: 4px;">Unidade:</label>
+                    <select id="unitSelector" class="form-select form-select-sm" style="width: 100%; padding: 4px; border: 1px solid #ccc; border-radius: 4px;">
+                        <option value="meters" selected>Metros (m / m²)</option>
+                        <option value="auto">Automático (m/km)</option>
+                        <option value="imperial">Imperial (ft / mi)</option>
+                    </select>
+                </div>
+                <div id="measureOptions">
+                    <label style="display: block; margin: 8px 0; cursor: pointer; user-select: none;">
+                        <input type="radio" name="measureType" value="distance"> 
+                        <span>📏 Distância</span>
+                    </label>
+                    <label style="display: block; margin: 8px 0; cursor: pointer; user-select: none;">
+                        <input type="radio" name="measureType" value="area"> 
+                        <span>📐 Área</span>
+                    </label>
+                    <label style="display: block; margin: 8px 0; cursor: pointer; user-select: none;">
+                        <input type="radio" name="measureType" value="route"> 
+                        <span>🛣️ Percurso</span>
+                    </label>
+                    <hr style="margin: 10px 0;">
+                    <div style="font-size: 12px; color: #666; margin-bottom: 8px;">
+                        <strong>Modo:</strong> <span id="currentMode">Nenhum</span><br>
+                        <strong>Pontos:</strong> <span id="pointCount">0</span><br>
+                        <div id="liveResult" style="margin-top: 5px; font-weight: bold; color: #0d6efd;"></div>
+                    </div>
+                    <button id="clearBtn" style="width: 100%; padding: 8px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">
+                        Limpar
+                    </button>
+                </div>
+            `;
+            return div;
+        };
+
+        measurePanel.addTo(map);
+
+        function toggleMeasurementPanel() {
+            const panel = document.getElementById('measurePanel');
+            panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function clearMeasurements() {
+            map.off('click', measurementClickHandler);
+            map.off('mousemove', measurementMoveHandler);
+            if (polyline) map.removeLayer(polyline);
+            if (polygon) map.removeLayer(polygon);
+            if (tempLine) map.removeLayer(tempLine);
+            markerGroup.clearLayers();
+            points = [];
+            drawingMode = null;
+            completedMode = null;
+            document.querySelectorAll('input[name="measureType"]').forEach(el => el.checked = false);
+            document.getElementById('currentMode').textContent = 'Nenhum';
+            document.getElementById('pointCount').textContent = '0';
+            document.getElementById('liveResult').textContent = '';
+            document.getElementById('measureInfo').style.display = 'none';
+            document.querySelector('.leaflet-container').classList.remove('cursor-crosshair');
+        }
+
+        // Event listeners for measurement selection
+        document.addEventListener('change', function(e) {
+            if (e.target.name === 'measureType') {
+                // Stop previous mode
+                map.off('click', measurementClickHandler);
+                map.off('mousemove', measurementMoveHandler);
+                clearMeasurements();
+                
+                // Re-check the radio button since clearMeasurements unchecks it
+                e.target.checked = true;
+                
+                drawingMode = e.target.value;
+                const modeNames = {
+                    'distance': 'Distância (2 pontos)',
+                    'area': 'Área (3+ pontos)',
+                    'route': 'Percurso (2+ pontos)'
+                };
+                
+                document.getElementById('currentMode').textContent = modeNames[drawingMode];
+                document.querySelector('.leaflet-container').classList.add('cursor-crosshair');
+                
+                // Set up handlers
+                measurementClickHandler = handleMeasurementClick;
+                measurementMoveHandler = handleMeasurementMove;
+                map.on('click', measurementClickHandler);
+                map.on('mousemove', measurementMoveHandler);
+                
+                // Show info box
+                const infoBox = document.getElementById('measureInfo');
+                infoBox.style.display = 'block';
+                infoBox.innerHTML = 'Clique no mapa para começar';
+            }
+        });
+
+        function handleMeasurementMove(e) {
+            if (!drawingMode || points.length === 0) return;
+
+            const currentLatLng = e.latlng;
+            const lastPoint = points[points.length - 1];
+            
+            // Draw temp line
+            if (tempLine) map.removeLayer(tempLine);
+            
+            // For area, close the loop visually
+            let tempPoints = [lastPoint, currentLatLng];
+            if (drawingMode === 'area' && points.length >= 2) {
+                tempPoints = [lastPoint, currentLatLng, points[0]];
+            }
+            
+            tempLine = L.polyline(tempPoints, {
+                color: '#666',
+                weight: 2,
+                dashArray: '5, 10',
+                opacity: 0.6
+            }).addTo(map);
+
+            // Calculate live results
+            let resultText = '';
+            
+            if (drawingMode === 'distance') {
+                const dist = calculateDistance(lastPoint, currentLatLng);
+                resultText = `Distância: ${formatDistance(dist.meters)}`;
+            } else if (drawingMode === 'route') {
+                const currentTotal = calculateTotalDistance(points).meters;
+                const segment = calculateDistance(lastPoint, currentLatLng).meters;
+                resultText = `Total: ${formatDistance(currentTotal + segment)}`;
+            } else if (drawingMode === 'area' && points.length >= 2) {
+                // Calculate area with potential new point
+                const tempPolyPoints = [...points, currentLatLng];
+                const area = calculateArea(tempPolyPoints);
+                resultText = `Área: ${formatArea(area)}`;
+            }
+
+            if (resultText) {
+                document.getElementById('measureInfo').innerHTML = resultText;
+                document.getElementById('liveResult').innerHTML = resultText;
+            }
+        }
+
+        function handleMeasurementClick(e) {
+            if (!drawingMode) return;
+            
+            const latlng = e.latlng;
+            points.push(latlng);
+            document.getElementById('pointCount').textContent = points.length;
+            
+            // Draw point marker
+            const marker = L.circleMarker(latlng, {
+                radius: 6,
+                fillColor: '#0d6efd',
+                color: '#fff',
+                weight: 2,
+                opacity: 1,
+                fillOpacity: 0.8
+            });
+            markerGroup.addLayer(marker);
+
+            if (points.length > 1) {
+                if (drawingMode === 'distance' && points.length === 2) {
+                    const distance = calculateDistance(points[0], points[1]);
+                    const text = `Distância Final: ${formatDistance(distance.meters)}`;
+                    document.getElementById('measureInfo').innerHTML = text;
+                    document.getElementById('liveResult').innerHTML = text;
+                    
+                    completedMode = 'distance';
+                    finishMeasurement();
+                }
+                
+                if (drawingMode === 'route') {
+                    // Draw line for route
+                    if (polyline) map.removeLayer(polyline);
+                    polyline = L.polyline(points, {
+                        color: '#0d6efd',
+                        weight: 3,
+                        opacity: 0.8
+                    }).addTo(map);
+                }
+                
+                if (drawingMode === 'area' && points.length >= 3) {
+                    // Draw polygon for area
+                    if (polygon) map.removeLayer(polygon);
+                    polygon = L.polygon(points, {
+                        color: '#0d6efd',
+                        fillColor: '#0d6efd',
+                        fillOpacity: 0.3,
+                        weight: 2
+                    }).addTo(map);
+                }
+            }
+        }
+
+        function finishMeasurement() {
+            map.off('click', measurementClickHandler);
+            map.off('mousemove', measurementMoveHandler);
+            if (tempLine) map.removeLayer(tempLine);
+            document.querySelector('.leaflet-container').classList.remove('cursor-crosshair');
+            document.getElementById('currentMode').textContent = 'Completo';
+        }
+
+        function calculateDistance(latlng1, latlng2) {
+            const R = 6371e3; // metres
+            const φ1 = latlng1.lat * Math.PI/180; // φ, λ in radians
+            const φ2 = latlng2.lat * Math.PI/180;
+            const Δφ = (latlng2.lat-latlng1.lat) * Math.PI/180;
+            const Δλ = (latlng2.lng-latlng1.lng) * Math.PI/180;
+
+            const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
+                      Math.cos(φ1) * Math.cos(φ2) *
+                      Math.sin(Δλ/2) * Math.sin(Δλ/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+
+            const d = R * c; // in metres
+            return {
+                km: d / 1000,
+                meters: d
+            };
+        }
+
+        function calculateTotalDistance(pts) {
+            let total = 0;
+            for (let i = 0; i < pts.length - 1; i++) {
+                total += calculateDistance(pts[i], pts[i + 1]).meters;
+            }
+            return { km: total / 1000, meters: total };
+        }
+
+        function calculateArea(pts) {
+            if (pts.length < 3) return 0;
+            // Simple planar approximation for small areas (sufficient for this use case)
+            // For better accuracy on large scales, spherical excess should be used
+            let area = 0;
+            for (let i = 0; i < pts.length; i++) {
+                const p1 = pts[i];
+                const p2 = pts[(i + 1) % pts.length];
+                area += p1.lng * p2.lat - p2.lng * p1.lat;
+            }
+            // Convert square degrees to square meters (approximate at polygon center latitude)
+            const center = getPolygonCenter(pts);
+            const latRad = center.lat * Math.PI / 180;
+            const metersPerDegreeLat = 111132.954 - 559.822 * Math.cos(2 * latRad) + 1.175 * Math.cos(4 * latRad);
+            const metersPerDegreeLng = 111132.954 * Math.cos(latRad);
+            
+            return Math.abs(area) / 2 * metersPerDegreeLat * metersPerDegreeLng;
+        }
+
+        function getPolygonCenter(pts) {
+            let lat = 0, lng = 0;
+            pts.forEach(p => {
+                lat += p.lat;
+                lng += p.lng;
+            });
+            return L.latLng(lat / pts.length, lng / pts.length);
+        }
+
+        function formatDistance(meters) {
+            const unit = document.getElementById('unitSelector').value;
+            
+            if (unit === 'imperial') {
+                const feet = meters * 3.28084;
+                if (feet >= 5280) {
+                    return `${(feet / 5280).toFixed(2)} mi`;
+                }
+                return `${feet.toFixed(0)} ft`;
+            }
+            
+            if (unit === 'auto') {
+                if (meters >= 1000) {
+                    return `${(meters / 1000).toFixed(2)} km`;
+                }
+                return `${meters.toFixed(0)} m`;
+            }
+            
+            // Default 'meters'
+            return `${meters.toFixed(2)} m`;
+        }
+
+        function formatArea(sqMeters) {
+            const unit = document.getElementById('unitSelector').value;
+            
+            if (unit === 'imperial') {
+                const sqFeet = sqMeters * 10.7639;
+                if (sqFeet >= 43560) { // 1 acre
+                    return `${(sqFeet / 43560).toFixed(2)} ac`;
+                }
+                return `${sqFeet.toFixed(0)} ft²`;
+            }
+            
+            if (unit === 'auto') {
+                if (sqMeters >= 1000000) {
+                    return `${(sqMeters / 1000000).toFixed(2)} km²`;
+                }
+                if (sqMeters >= 10000) {
+                    return `${(sqMeters / 10000).toFixed(2)} ha`;
+                }
+                return `${sqMeters.toFixed(0)} m²`;
+            }
+            
+            // Default 'meters'
+            return `${sqMeters.toFixed(2)} m²`;
+        }
+
+        // Handle ESC key to finish measurement
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && drawingMode && points.length > 0) {
+                completedMode = drawingMode;
+                finishMeasurement();
+                
+                if (completedMode === 'area') {
+                    // Close the polygon visually
+                    if (polygon) map.removeLayer(polygon);
+                    polygon = L.polygon(points, {
+                        color: '#0d6efd',
+                        fillColor: '#0d6efd',
+                        fillOpacity: 0.3,
+                        weight: 2
+                    }).addTo(map);
+                    
+                    const area = calculateArea(points);
+                    const text = `Área Final: ${formatArea(area)}`;
+                    document.getElementById('measureInfo').innerHTML = text;
+                    document.getElementById('liveResult').innerHTML = text;
+                }
+                
+                if (completedMode === 'route') {
+                    const totalDistance = calculateTotalDistance(points);
+                    const text = `Percurso Total: ${formatDistance(totalDistance.meters)}`;
+                    document.getElementById('measureInfo').innerHTML = text;
+                    document.getElementById('liveResult').innerHTML = text;
+                }
+            }
+        });
+
+        // Unit selector handler
+        document.getElementById('unitSelector').addEventListener('change', function() {
+            if (completedMode && points.length > 0) {
+                let text = '';
+                if (completedMode === 'distance') {
+                     const dist = calculateDistance(points[0], points[1]);
+                     text = `Distância Final: ${formatDistance(dist.meters)}`;
+                } else if (completedMode === 'route') {
+                     const total = calculateTotalDistance(points);
+                     text = `Percurso Total: ${formatDistance(total.meters)}`;
+                } else if (completedMode === 'area') {
+                     const area = calculateArea(points);
+                     text = `Área Final: ${formatArea(area)}`;
+                }
+                
+                if (text) {
+                    document.getElementById('measureInfo').innerHTML = text;
+                    document.getElementById('liveResult').innerHTML = text;
+                }
+            }
+        });
+
+        // Clear button handler
+        document.getElementById('clearBtn').addEventListener('click', clearMeasurements);
 
         const markers = L.layerGroup().addTo(map);
         const fileInput = document.getElementById('fileInput');
