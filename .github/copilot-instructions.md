@@ -1,70 +1,40 @@
 <!-- Copilot / AI agent instructions for this Django project -->
 # Copilot instructions — Projeto Django (Resolve)
 
-Objetivo curto
-- Ajude desenvolvedores a entender rapidamente a arquitetura, padrões e comandos essenciais deste projeto Django para serem produtivos sem contexto adicional.
+## Propósito imediato
+- Onboard agentes rapidamente: entender estrutura, comandos e deploy sem depender de contexto externo.
 
-Arquitetura geral (big picture)
-- Projeto Django monolítico com apps por funcionalidade em top-level: `ferramenta_drenagem`, `ferramenta_mapa`, `mapa_fotos`, `usuarios`.
-- Configurações do projeto estão em `setup/settings.py`; roteamento central em `setup/urls.py`; entrypoint `manage.py`.
-- Persistência: banco SQLite local `db.sqlite3` (pequeno, local). Uploads e arquivos de mídia em `media/` (ex: `media/photos`).
+## Arquitetura e apps
+- Monólito Django (Python 3.11.9 / Django 5.2.8) com apps por domínio: `ferramenta_drenagem`, `ferramenta_mapa`, `mapa_fotos`, `usuarios`; versões antigas ficam em `archived_apps/`.
+- Configuração central em `setup/settings.py` (ALLOWED_HOSTS, MEDIA/STATIC roots, middlewares) e roteamento em `setup/urls.py`; entrypoint `manage.py`.
+- Templates globais em `templates/` (ex.: `base.html`, `base_authenticated.html`) e templates por app em `*/templates/<app>/...`.
+- Persistência padrão é SQLite (`db.sqlite3`); uploads são gravados em `media/` (ex.: `media/photos`).
 
-Padrões de código e convenções do projeto
-- Cada app segue o padrão Django clássico: `models.py`, `views.py`, `urls.py`, `admin.py`, `templates/`, `migrations/`.
-- Templates por app: `templates/<app_template_folder>/...` ou `templates/<app_name>/...`. Exemplos:
-  - `ferramenta_drenagem/templates/drenagem/calculo_volume.html`
-  - `ferramenta_mapa/templates/mapa/mapa_fotos.html`
-  - `mapa_fotos/templates/mapa_fotos/upload.html`
-- Arquivos estáticos estão em `static/` (CSS em `static/css`, JS em `static/js`, imagens em `static/img`). `templates/base.html` é o layout base.
-- URLs das aplicações geralmente são incluídas no roteamento global (`setup/urls.py`) através de `include()`.
+## Frontend e padrões de código
+- Layout Bootstrap 5 com Vue 3 via CDN quando há interatividade (ver `readme.md`); evite tooling pesado.
+- Views seguem `render(request, 'app/template.html', context)`; mantenha nomes explícitos e caminhos consistentes.
+- Static assets em `static/` e coletados para `staticfiles/`; cuide para referenciar via `{% static %}` e rodar `python manage.py collectstatic --noinput` em deploys.
+- Cada app segue a convenção Django clássica (`models.py`, `views.py`, `urls.py`, `templates/`, `migrations/`).
 
-Fluxos de desenvolvedor (comandos úteis)
-- Ativar virtualenv (exemplo usado neste ambiente):
-```
-source .venv/bin/activate
-```
-- Instalar dependências:
-```
-pip install -r requirements.txt
-```
-- Rodar migrações / criar superuser / iniciar servidor de desenvolvimento:
-```
-python manage.py migrate
-python manage.py createsuperuser
-python manage.py runserver
-```
-- Rodar testes:
-```
-python manage.py test
-```
-- Coletar estáticos (deploy):
-```
-python manage.py collectstatic --noinput
-```
+## Fluxos de desenvolvimento
+- Ambiente local: `python -m venv .venv`, `source .venv/bin/activate`, `pip install -r requirements.txt`, `python manage.py migrate`, `python manage.py runserver`.
+- Testes: `python manage.py test` global ou `python manage.py test mapa_fotos` para isolar apps.
+- Antes de alterar modelos, rode `python manage.py makemigrations <app>` e revise o diff antes de `migrate`.
+- Ajustes em URLs exigem atualizar `setup/urls.py` e validar carregamento manualmente via `runserver` ou requests automatizados.
 
-Pontos de integração e arquivos-chave a inspecionar
-- Configurações e middlewares: `setup/settings.py` — ver variáveis relativas a `MEDIA_ROOT`, `STATIC_ROOT`, `ALLOWED_HOSTS`.
-- Roteamento principal: `setup/urls.py` — ver como os apps são incluídos.
-- Uploads / armazenamento: `media/` e referências em `models.py` dos apps (procure `ImageField`/`FileField`).
-- Exemplos de handlers / views: abrir `ferramenta_mapa/views.py`, `mapa_fotos/views.py`, `ferramenta_drenagem/views.py` para ver os padrões de render/redirect.
+## Deploy, operações e scripts
+- O repo já está preparado para Docker/Gunicorn: `Dockerfile`, `docker-compose.yml` e `deploy.sh` automatizam backup → build → subida do container `resolve_django_app` na rede `npm-network` (ver `DEPLOY_GUIDE.md` e `README_DEPLOYMENT.md`).
+- Para deploy manual use `docker build -t resolve-django:latest .` seguido de `docker-compose up -d`; valide com `docker logs -f resolve_django_app` e `curl -I https://resolve.eng.br`.
+- Variáveis de ambiente vivem em `.env`; nunca commitá-lo. Deploy script já faz `collectstatic` e migrações durante o boot.
+- Usuários Windows podem tunelar para o host via `RESOLVE.bat` e scripts em `WINDOWS_SCRIPTS_README.md`; mantenha credenciais SSH fora do repo.
 
-Práticas observadas neste repositório
-- Templates são renderizados com nomes explícitos (ex: `render(request, 'mapa/mapa_fotos.html', {...})`).
-- Organização por app: cada app possui suas próprias templates e eventualmente URLs locais (não centralizados em um pacote de templates global).
-- Pequeno DB local (sqlite) — alterações de schema normalmente via `makemigrations` + `migrate`.
+## Referências úteis
+- `DEPLOY_GUIDE.md`, `README_DEPLOYMENT.md`, `QUICK_COMMANDS.md` e `GUIA_ATUALIZACOES.md` documentam passo a passo de deploy, rollback e atualizações.
+- `ferramenta_mapa/views.py`, `mapa_fotos/views.py` e `ferramenta_drenagem/views.py` mostram padrões de manipulação de formulários e uploads.
+- Logs e mídia: containers montam `static/` e `media/`; problemas recorrentes são permissões (`chown -R 1000:1000 ...`) conforme guias.
 
-Recomendações específicas para agentes IA
-- Ao editar templates, preserve a estrutura de diretórios em `templates/` e verifique referências relativas no código.
-- Ao alterar URLs, atualize `setup/urls.py` e valide carregamento das views manualmente com `runserver`.
-- Antes de fazer migrations: execute `python manage.py makemigrations <app>` e revise o diff.
-- Testes: use `python manage.py test <app>` para isolar falhas por app.
-
-Exemplos rápidos (buscas úteis)
-- Encontrar onde uma view é usada: procurar por `render(request, 'mapa/` ou `include('mapa_fotos.urls')`.
-- Localizar templates: `ferramenta_mapa/templates/`, `mapa_fotos/templates/`, `ferramenta_drenagem/templates/`.
-
-Notas finais
-- Evite supor serviços externos (não há configurações claras de DB remoto, cache ou broker). Se precisar integrar, atualize `setup/settings.py` e documente a variável de ambiente.
-- Se algo não estiver claro, pedir ao mantenedor por detalhes sobre deploy/CI. Pergunte sempre onde as credenciais sensíveis (se houver) deveriam ser armazenadas — não as adicione ao repo.
-
-Se quiseres, posso expandir isto com exemplos de commits, regras de revisão ou trechos de código mais detalhados.
+## Boas práticas para agentes
+- Preserve a separação de templates por app e mantenha nomes coerentes; quebras em paths costumam falhar só em runtime.
+- Ao tocar em migration ou dependências registre passos no guia correspondente e atualize `requirements.txt` (Gunicorn já incluído).
+- Nunca introduza serviços externos sem ajustar `setup/settings.py` e documentar novos env vars.
+- Consulte `archived_apps/` apenas como referência histórica; novas features devem viver nas pastas ativas na raiz do projeto.

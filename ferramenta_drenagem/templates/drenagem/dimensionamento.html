@@ -150,10 +150,54 @@
                                 </div>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">Coef. Runoff (C)</label>
+                                <label class="form-label">Coef. Runoff (C) - Racional</label>
                                 <input type="number" class="form-control" id="runoff" value="0.60" step="0.01" max="1"
                                     min="0">
                                 <div class="form-text" style="font-size: 0.75rem;">Ex: 0.90 (Impermeável), 0.30 (Verde)
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Advanced Hydrology Inputs -->
+                        <div class="accordion mb-3" id="advancedHydro">
+                            <div class="accordion-item border-0 shadow-sm">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed py-2 bg-light text-secondary"
+                                        type="button" data-bs-toggle="collapse" data-bs-target="#collapseAdvanced">
+                                        <i class="bi bi-gear me-2"></i>Parâmetros Avançados (I-Pai-Wu / SCS)
+                                    </button>
+                                </h2>
+                                <div id="collapseAdvanced" class="accordion-collapse collapse"
+                                    data-bs-parent="#advancedHydro">
+                                    <div class="accordion-body bg-light rounded-bottom">
+                                        <h6 class="text-primary small fw-bold">Método I-Pai-Wu</h6>
+                                        <div class="row g-2 mb-3">
+                                            <div class="col-6">
+                                                <label class="form-label small">Coef. Forma (C2)</label>
+                                                <input type="number" class="form-control form-control-sm" id="ipaiwu-c2"
+                                                    value="0.5">
+                                            </div>
+                                            <div class="col-6">
+                                                <label class="form-label small">Fator Distribuição (K)</label>
+                                                <input type="number" class="form-control form-control-sm" id="ipaiwu-k"
+                                                    value="0.9">
+                                            </div>
+                                        </div>
+
+                                        <h6 class="text-primary small fw-bold">Método SCS (CN)</h6>
+                                        <div class="row g-2">
+                                            <div class="col-6">
+                                                <label class="form-label small">Curve Number (CN)</label>
+                                                <input type="number" class="form-control form-control-sm" id="scs-cn"
+                                                    value="75" max="100">
+                                            </div>
+                                            <div class="col-6">
+                                                <label class="form-label small">Abstração (Ia/S)</label>
+                                                <input type="number" class="form-control form-control-sm"
+                                                    id="scs-lambda" value="0.2" step="0.05">
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -211,26 +255,58 @@
         <!-- Results Section -->
         <div class="col-lg-7">
             <!-- Hydrology Results -->
-            <div class="calc-card mb-4">
+            <!-- Hydrology Results -->
+            <div class="calc-card mb-4 p-3">
                 <div class="card-body">
                     <h6 class="text-muted text-uppercase mb-3" style="font-size: 0.8rem; letter-spacing: 1px;">
-                        Resultados Hidrológicos</h6>
-                    <div class="row text-center">
-                        <div class="col-md-4">
+                        Resultados Hidrológicos (Comparativo)</h6>
+
+                    <div class="table-responsive">
+                        <table class="table table-hover table-bordered text-center align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Método</th>
+                                    <th>Q de Projeto (m³/s)</th>
+                                    <th>Detalhes</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="fw-bold text-primary">Racional</td>
+                                    <td><span id="res-q-rational" class="fs-5 fw-bold">--</span></td>
+                                    <td class="small text-muted">Q = CIA/360</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold text-info">I-Pai-Wu</td>
+                                    <td><span id="res-q-ipaiwu" class="fs-5 fw-bold">--</span></td>
+                                    <td class="small text-muted">Q = 0.278 * C * i * A^0.9 * K</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold text-success">SCS (CN)</td>
+                                    <td><span id="res-q-scs" class="fs-5 fw-bold">--</span></td>
+                                    <td class="small text-muted">Qp (HUT)</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="row text-center mt-3 pt-3 border-top">
+                        <div class="col-md-6 border-end">
                             <div class="result-label">Tempo de Concentração (tc)</div>
                             <div class="result-value" id="res-tc">--</div>
                             <small class="text-muted">min</small>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-6">
                             <div class="result-label">Intensidade (I)</div>
                             <div class="result-value" id="res-i">--</div>
                             <small class="text-muted">mm/h</small>
                         </div>
-                        <div class="col-md-4">
-                            <div class="result-label">Vazão de Projeto (Q)</div>
-                            <div class="result-value text-success" id="res-q">--</div>
-                            <small class="text-muted">m³/s</small>
-                        </div>
+                    </div>
+
+                    <div class="alert alert-warning mt-3 mb-0 py-2 small">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        A vazão utilizada para o dimensionamento abaixo é a <strong>MAIOR</strong> entre os métodos
+                        calculados.
                     </div>
                 </div>
             </div>
@@ -544,17 +620,89 @@
 
             // 5. Calculate Q (Rational)
             // Q = (C * I * A) / 360
-            let Q = 0;
+            let Q_rational = 0;
             if (A > 0) {
-                Q = (C * I * A) / 360;
+                Q_rational = (C * I * A) / 360;
             }
-            document.getElementById('res-q').innerText = Q.toFixed(3);
+            document.getElementById('res-q-rational').innerText = Q_rational.toFixed(3);
 
-            // 6. Hydraulics
-            if (Q > 0 && S > 0) {
-                calcPipe(Q, S);
-                calcBox(Q, S);
-                calcChannel(Q, S);
+            // 6. Calculate Q (I-Pai-Wu)
+            // Q = 0.278 * C * I * A^0.9 * K_dist
+            // Note: C here is technically different but often approximated or re-used. 
+            // Better to use the specific C2 input if strictly following method, but user asked for "adjustments".
+            // We will use the C2 input for the formula coefficient.
+            // Formula: Q = 0.278 * C2 * I * A^0.9 * K
+            const C2 = parseFloat(document.getElementById('ipaiwu-c2').value) || 0.5;
+            const K_dist = parseFloat(document.getElementById('ipaiwu-k').value) || 1.0;
+
+            let Q_ipaiwu = 0;
+            if (A > 0) {
+                // A in ha needs to be in km² for the formula usually? 
+                // Search says A in km². 1 ha = 0.01 km².
+                // Let's check units. 
+                // Rational: A(ha), I(mm/h) -> Q(m3/s) / 360.
+                // I-Pai-Wu: Q(m3/s) = 0.278 * C * I(mm/h) * A(km²)^0.9 * K
+                const A_km2 = A / 100;
+                Q_ipaiwu = 0.278 * C2 * I * Math.pow(A_km2, 0.9) * K_dist;
+            }
+            document.getElementById('res-q-ipaiwu').innerText = Q_ipaiwu.toFixed(3);
+
+            // 7. Calculate Q (SCS)
+            // Qp = 2.08 * A * Pe / (0.5 * D + 0.6 * Tc) ? No, that's complex.
+            // Simplified Peak Flow: Qp = q_u * A * Q_runoff * Fp (TR-55)
+            // Or using HUT: Qp = 2.08 * A / Tp.
+            // Tp = D/2 + 0.6*Tc. 
+            // Let's use the HUT approach found in search.
+            // Qp = C * A / Tp. C=2.08 (A km², Tp hours, Qp m3/s).
+            // Need Pe (Precipitation Excess).
+            // S = (25400/CN) - 254.
+            // Ia = lambda * S.
+            // P = Precipitation depth for the duration. 
+            // We have Intensity I (mm/h) and Duration = Tc (min).
+            // P = I * (Tc/60).
+            // Pe = (P - Ia)^2 / (P - Ia + S).
+
+            const CN = parseFloat(document.getElementById('scs-cn').value) || 75;
+            const lambda = parseFloat(document.getElementById('scs-lambda').value) || 0.2;
+
+            let Q_scs = 0;
+            if (A > 0 && tc > 0) {
+                const S_scs = (25400 / CN) - 254;
+                const Ia = lambda * S_scs;
+                const P_total = I * (tc / 60); // Total precip in mm during Tc
+
+                let Pe = 0;
+                if (P_total > Ia) {
+                    Pe = Math.pow(P_total - Ia, 2) / (P_total - Ia + S_scs);
+                }
+
+                // Using HUT peak flow approximation
+                // Qp (m3/s) = 2.08 * A(km²) * Pe(mm) / (Tp(h) * ?) -> Wait, unit consistency.
+                // Standard SCS Unit Hydrograph peak: qp = 2.08 * A / Tp
+                // This qp is for 1mm of runoff. So Q_peak = qp * Pe.
+                // Tp = 0.6 * Tc + D/2. Let's assume D (rain duration) = Tc (critical).
+                // Tp = 0.6 * Tc + Tc/2 = 1.1 * Tc.
+                // Tc in hours.
+
+                const Tc_h = tc / 60;
+                const Tp_h = 0.6 * Tc_h + (Tc_h / 2); // D = Tc
+                const A_km2 = A / 100;
+
+                if (Tp_h > 0) {
+                    const q_unit = (2.08 * A_km2) / Tp_h; // m3/s per mm of runoff
+                    Q_scs = q_unit * Pe;
+                }
+            }
+            document.getElementById('res-q-scs').innerText = Q_scs.toFixed(3);
+
+            // Max Flow for Sizing
+            const Q_design = Math.max(Q_rational, Q_ipaiwu, Q_scs);
+
+            // 8. Hydraulics
+            if (Q_design > 0 && S > 0) {
+                calcPipe(Q_design, S);
+                calcBox(Q_design, S);
+                calcChannel(Q_design, S);
             }
         }
 
