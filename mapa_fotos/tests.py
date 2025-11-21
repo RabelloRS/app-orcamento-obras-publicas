@@ -13,10 +13,17 @@ class MapaFotosTestCase(TestCase):
             password='testpass123'
         )
 
+    def test_mapa_publico_public_access(self):
+        """Test that mapa_publico view is publicly accessible."""
+        response = self.client.get(reverse('mapa_fotos:mapa_publico'))
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('title', response.context)
+
     def test_mapa_login_required(self):
         """Test that mapa view requires authentication."""
         response = self.client.get(reverse('mapa_fotos:mapa'))
         self.assertEqual(response.status_code, 302)
+        self.assertIn('/contas/login/', response.url)
 
     def test_mapa_authenticated(self):
         """Test mapa view for authenticated user."""

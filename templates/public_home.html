@@ -20,40 +20,28 @@
         <div class="col-md-4 mb-4">
             <div class="card shadow-sm h-100 border-0">
                 <div class="card-body">
-                    <i class="bi bi-droplet-fill mb-3" style="font-size: 2rem; color: #0099ff;"></i>
-                    <h5 class="card-title fw-bold">Cálculo de Drenagem</h5>
+                    <i class="bi bi-images mb-3" style="font-size: 2rem; color: #ff6b6b;"></i>
+                    <h5 class="card-title fw-bold">Mapa de Fotos</h5>
                     <p class="card-text text-muted small">
-                        Calcule volumes para sistemas de drenagem com precisão.
+                        Envie e organize suas fotos em um mapa interativo com geolocalização.
                     </p>
-                    {% if user.is_authenticated %}
-                    <a href="{% url 'ferramenta_drenagem:calculo_volume' %}" class="btn btn-sm btn-primary">
+                    <a href="{% url 'mapa_fotos:mapa_publico' %}" class="btn btn-sm btn-primary">
                         <i class="bi bi-arrow-right me-1"></i>Acessar
                     </a>
-                    {% else %}
-                    <a href="{% url 'usuarios:login' %}" class="btn btn-sm btn-outline-primary">
-                        <i class="bi bi-lock me-1"></i>Fazer Login
-                    </a>
-                    {% endif %}
                 </div>
             </div>
         </div>
         <div class="col-md-4 mb-4">
             <div class="card shadow-sm h-100 border-0">
                 <div class="card-body">
-                    <i class="bi bi-images mb-3" style="font-size: 2rem; color: #ff6b6b;"></i>
-                    <h5 class="card-title fw-bold">Mapa de Fotos</h5>
+                    <i class="bi bi-droplet-fill mb-3" style="font-size: 2rem; color: #0099ff;"></i>
+                    <h5 class="card-title fw-bold">Cálculo de Drenagem</h5>
                     <p class="card-text text-muted small">
-                        Envie e organize suas fotos em um mapa interativo.
+                        Calcule volumes para sistemas de drenagem com precisão.
                     </p>
-                    {% if user.is_authenticated %}
-                    <a href="{% url 'mapa_fotos:mapa' %}" class="btn btn-sm btn-primary">
+                    <a href="{% url 'ferramenta_drenagem:calculo_volume' %}" class="btn btn-sm btn-primary">
                         <i class="bi bi-arrow-right me-1"></i>Acessar
                     </a>
-                    {% else %}
-                    <a href="{% url 'usuarios:login' %}" class="btn btn-sm btn-outline-primary">
-                        <i class="bi bi-lock me-1"></i>Fazer Login
-                    </a>
-                    {% endif %}
                 </div>
             </div>
         </div>
@@ -65,15 +53,9 @@
                     <p class="card-text text-muted small">
                         Visualize fotos georeferenciadas em mapa interativo.
                     </p>
-                    {% if user.is_authenticated %}
                     <a href="{% url 'ferramenta_mapa:mapa_fotos' %}" class="btn btn-sm btn-primary">
                         <i class="bi bi-arrow-right me-1"></i>Acessar
                     </a>
-                    {% else %}
-                    <a href="{% url 'usuarios:login' %}" class="btn btn-sm btn-outline-primary">
-                        <i class="bi bi-lock me-1"></i>Fazer Login
-                    </a>
-                    {% endif %}
                 </div>
             </div>
         </div>
