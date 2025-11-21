@@ -117,6 +117,25 @@
         overflow: hidden;
         position: relative;
     }
+
+    .method-selector .btn-check:checked + .btn {
+        border-color: #0d6efd;
+        background-color: rgba(13, 110, 253, 0.08);
+        color: #0d6efd;
+    }
+
+    .method-selector select:disabled {
+        background-color: #f8f9fa;
+    }
+
+    .method-highlight {
+        transition: background-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .method-highlight.active-row {
+        background-color: rgba(13, 110, 253, 0.08) !important;
+        box-shadow: inset 0 0 0 2px rgba(13, 110, 253, 0.3);
+    }
 </style>
 {% endblock %}
 
@@ -271,23 +290,57 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
+                                <tr data-method-row="rational" class="method-highlight">
                                     <td class="fw-bold text-primary">Racional</td>
                                     <td><span id="res-q-rational" class="fs-5 fw-bold">--</span></td>
                                     <td class="small text-muted">Q = CIA/360</td>
                                 </tr>
-                                <tr>
+                                <tr data-method-row="ipaiwu" class="method-highlight">
                                     <td class="fw-bold text-info">I-Pai-Wu</td>
                                     <td><span id="res-q-ipaiwu" class="fs-5 fw-bold">--</span></td>
                                     <td class="small text-muted">Q = 0.278 * C * i * A^0.9 * K</td>
                                 </tr>
-                                <tr>
+                                <tr data-method-row="scs" class="method-highlight">
                                     <td class="fw-bold text-success">SCS (CN)</td>
                                     <td><span id="res-q-scs" class="fs-5 fw-bold">--</span></td>
                                     <td class="small text-muted">Qp (HUT)</td>
                                 </tr>
                             </tbody>
                         </table>
+                    </div>
+
+                    <div class="method-selector mt-3">
+                        <div class="d-flex flex-wrap align-items-center gap-3">
+                            <div class="btn-group" role="group" aria-label="Modo de dimensionamento">
+                                <input type="radio" class="btn-check" name="dimensioning-mode" id="mode-auto"
+                                    value="auto" checked>
+                                <label class="btn btn-outline-secondary" for="mode-auto">Maior vazão</label>
+
+                                <input type="radio" class="btn-check" name="dimensioning-mode" id="mode-manual"
+                                    value="manual">
+                                <label class="btn btn-outline-secondary" for="mode-manual">Escolher método</label>
+                            </div>
+
+                            <div class="d-flex align-items-center gap-2">
+                                <select class="form-select" id="method-select" style="min-width: 190px;"
+                                    disabled>
+                                    <option value="rational">Racional</option>
+                                    <option value="ipaiwu">I-Pai-Wu</option>
+                                    <option value="scs">SCS (CN)</option>
+                                </select>
+                                <span class="badge bg-light text-dark border"><span class="fw-semibold"
+                                        id="method-mode-label">Automático</span></span>
+                            </div>
+
+                            <div class="ms-auto">
+                                <span class="badge bg-primary-subtle text-primary border border-primary">
+                                    Método em uso: <span id="method-active-label" class="fw-semibold">--</span>
+                                </span>
+                                <span class="badge bg-success-subtle text-success border border-success ms-2">
+                                    Q selecionado: <span id="method-active-flow">--</span> m³/s
+                                </span>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="row text-center mt-3 pt-3 border-top">
@@ -305,8 +358,7 @@
 
                     <div class="alert alert-warning mt-3 mb-0 py-2 small">
                         <i class="bi bi-exclamation-triangle me-2"></i>
-                        A vazão utilizada para o dimensionamento abaixo é a <strong>MAIOR</strong> entre os métodos
-                        calculados.
+                        A vazão utilizada para o dimensionamento abaixo acompanha o método destacado acima.
                     </div>
                 </div>
             </div>
@@ -568,208 +620,317 @@
 
 {% block scripts %}
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        // Elements
-        const inputs = document.querySelectorAll('input, select');
+    document.addEventListener('DOMContentLoaded', () => {
+        const inputs = document.querySelectorAll('#calcForm input, #calcForm select, #pills-tabContent input, #pills-tabContent select');
+        const modeRadios = document.querySelectorAll('input[name="dimensioning-mode"]');
+        const methodSelect = document.getElementById('method-select');
+        const methodBadge = document.getElementById('method-active-label');
+        const methodFlowBadge = document.getElementById('method-active-flow');
+        const modeLabel = document.getElementById('method-mode-label');
+        const methodRows = document.querySelectorAll('[data-method-row]');
+        const modeManual = document.getElementById('mode-manual');
+        const modeAuto = document.getElementById('mode-auto');
 
-        // Attach listeners
         inputs.forEach(input => {
             input.addEventListener('input', calculateAll);
             input.addEventListener('change', calculateAll);
         });
+        modeRadios.forEach(radio => radio.addEventListener('change', () => {
+            handleModeChange();
+            calculateAll();
+        }));
+        if (methodSelect) {
+            methodSelect.addEventListener('change', calculateAll);
+        }
 
-        // Initial Calc
+        handleModeChange();
         calculateAll();
 
+        function handleModeChange() {
+            const manual = modeManual && modeManual.checked;
+            if (methodSelect) {
+                methodSelect.disabled = !manual;
+                methodSelect.classList.toggle('opacity-50', !manual);
+            }
+            if (modeLabel) {
+                modeLabel.textContent = manual ? 'Manual' : 'Automático';
+            }
+        }
+
         function calculateAll() {
-            // 1. Get Inputs
+            const inputsExist = ['area', 'runoff', 'tr', 'length', 'deltaH', 'rain-k', 'rain-a', 'rain-b', 'rain-c'];
+            const missing = inputsExist.some(id => !document.getElementById(id));
+            if (missing) {
+                return;
+            }
+
             const A = parseFloat(document.getElementById('area').value) || 0;
             const C = parseFloat(document.getElementById('runoff').value) || 0;
             const TR = parseFloat(document.getElementById('tr').value) || 0;
             const L = parseFloat(document.getElementById('length').value) || 0;
             const dH = parseFloat(document.getElementById('deltaH').value) || 0;
 
-            // Rain Params
-            const K = parseFloat(document.getElementById('rain-k').value);
-            const a = parseFloat(document.getElementById('rain-a').value);
-            const b = parseFloat(document.getElementById('rain-b').value);
-            const c = parseFloat(document.getElementById('rain-c').value);
+            const K = parseFloat(document.getElementById('rain-k').value) || 0;
+            const a = parseFloat(document.getElementById('rain-a').value) || 0;
+            const b = parseFloat(document.getElementById('rain-b').value) || 0;
+            const c = parseFloat(document.getElementById('rain-c').value) || 0;
 
-            // 2. Calculate Slope
             let S = 0;
-            if (L > 0) S = dH / L;
-            document.getElementById('slope').value = S.toFixed(4);
+            if (L > 0) {
+                S = dH / L;
+            }
+            document.getElementById('slope').value = S > 0 ? S.toFixed(4) : '--';
 
-            // 3. Calculate Tc (Kirpich)
-            // tc = 57 * (L^3 / dH)^0.385  (L in km, dH in m) -> result in min
-            // Using standard metric form: tc = 0.0195 * (L^0.77 * S^-0.385) (L in m, S in m/m) -> result in min
-            let tc = 10; // min default
+            let tc = 10;
             if (L > 0 && S > 0) {
                 tc = 0.0195 * Math.pow(L, 0.77) * Math.pow(S, -0.385);
             }
-            if (tc < 10) tc = 10; // Minimum 10 min usually
-            document.getElementById('res-tc').innerText = tc.toFixed(1);
+            tc = Math.max(tc, 10);
+            setText('res-tc', tc, 1);
 
-            // 4. Calculate Intensity
-            // i = K * TR^a / (tc + b)^c
             let I = 0;
             if (tc > 0) {
-                I = (K * Math.pow(TR, a)) / Math.pow(tc + b, c);
+                I = (K * Math.pow(TR, a)) / Math.pow(tc + b, c || 1);
             }
-            document.getElementById('res-i').innerText = I.toFixed(1);
+            setText('res-i', I);
 
-            // 5. Calculate Q (Rational)
-            // Q = (C * I * A) / 360
-            let Q_rational = 0;
-            if (A > 0) {
-                Q_rational = (C * I * A) / 360;
-            }
-            document.getElementById('res-q-rational').innerText = Q_rational.toFixed(3);
+            const flows = calculateFlows({ A, C, I, tc });
+            const activeMethod = resolveActiveMethod(flows);
+            updateMethodUI(activeMethod, flows[activeMethod]?.value || 0);
+            highlightMethodRow(activeMethod);
 
-            // 6. Calculate Q (I-Pai-Wu)
-            // Q = 0.278 * C * I * A^0.9 * K_dist
-            // Note: C here is technically different but often approximated or re-used. 
-            // Better to use the specific C2 input if strictly following method, but user asked for "adjustments".
-            // We will use the C2 input for the formula coefficient.
-            // Formula: Q = 0.278 * C2 * I * A^0.9 * K
-            const C2 = parseFloat(document.getElementById('ipaiwu-c2').value) || 0.5;
-            const K_dist = parseFloat(document.getElementById('ipaiwu-k').value) || 1.0;
-
-            let Q_ipaiwu = 0;
-            if (A > 0) {
-                // A in ha needs to be in km² for the formula usually? 
-                // Search says A in km². 1 ha = 0.01 km².
-                // Let's check units. 
-                // Rational: A(ha), I(mm/h) -> Q(m3/s) / 360.
-                // I-Pai-Wu: Q(m3/s) = 0.278 * C * I(mm/h) * A(km²)^0.9 * K
-                const A_km2 = A / 100;
-                Q_ipaiwu = 0.278 * C2 * I * Math.pow(A_km2, 0.9) * K_dist;
-            }
-            document.getElementById('res-q-ipaiwu').innerText = Q_ipaiwu.toFixed(3);
-
-            // 7. Calculate Q (SCS)
-            // Qp = 2.08 * A * Pe / (0.5 * D + 0.6 * Tc) ? No, that's complex.
-            // Simplified Peak Flow: Qp = q_u * A * Q_runoff * Fp (TR-55)
-            // Or using HUT: Qp = 2.08 * A / Tp.
-            // Tp = D/2 + 0.6*Tc. 
-            // Let's use the HUT approach found in search.
-            // Qp = C * A / Tp. C=2.08 (A km², Tp hours, Qp m3/s).
-            // Need Pe (Precipitation Excess).
-            // S = (25400/CN) - 254.
-            // Ia = lambda * S.
-            // P = Precipitation depth for the duration. 
-            // We have Intensity I (mm/h) and Duration = Tc (min).
-            // P = I * (Tc/60).
-            // Pe = (P - Ia)^2 / (P - Ia + S).
-
-            const CN = parseFloat(document.getElementById('scs-cn').value) || 75;
-            const lambda = parseFloat(document.getElementById('scs-lambda').value) || 0.2;
-
-            let Q_scs = 0;
-            if (A > 0 && tc > 0) {
-                const S_scs = (25400 / CN) - 254;
-                const Ia = lambda * S_scs;
-                const P_total = I * (tc / 60); // Total precip in mm during Tc
-
-                let Pe = 0;
-                if (P_total > Ia) {
-                    Pe = Math.pow(P_total - Ia, 2) / (P_total - Ia + S_scs);
-                }
-
-                // Using HUT peak flow approximation
-                // Qp (m3/s) = 2.08 * A(km²) * Pe(mm) / (Tp(h) * ?) -> Wait, unit consistency.
-                // Standard SCS Unit Hydrograph peak: qp = 2.08 * A / Tp
-                // This qp is for 1mm of runoff. So Q_peak = qp * Pe.
-                // Tp = 0.6 * Tc + D/2. Let's assume D (rain duration) = Tc (critical).
-                // Tp = 0.6 * Tc + Tc/2 = 1.1 * Tc.
-                // Tc in hours.
-
-                const Tc_h = tc / 60;
-                const Tp_h = 0.6 * Tc_h + (Tc_h / 2); // D = Tc
-                const A_km2 = A / 100;
-
-                if (Tp_h > 0) {
-                    const q_unit = (2.08 * A_km2) / Tp_h; // m3/s per mm of runoff
-                    Q_scs = q_unit * Pe;
-                }
-            }
-            document.getElementById('res-q-scs').innerText = Q_scs.toFixed(3);
-
-            // Max Flow for Sizing
-            const Q_design = Math.max(Q_rational, Q_ipaiwu, Q_scs);
-
-            // 8. Hydraulics
+            const Q_design = flows[activeMethod]?.value || 0;
             if (Q_design > 0 && S > 0) {
                 calcPipe(Q_design, S);
                 calcBox(Q_design, S);
                 calcChannel(Q_design, S);
+            } else {
+                resetHydraulicOutputs();
             }
+        }
+
+        function calculateFlows({ A, C, I, tc }) {
+            const flows = {
+                rational: { label: 'Racional', value: 0 },
+                ipaiwu: { label: 'I-Pai-Wu', value: 0 },
+                scs: { label: 'SCS (CN)', value: 0 }
+            };
+
+            if (A > 0) {
+                flows.rational.value = (C * I * A) / 360;
+            }
+            setText('res-q-rational', flows.rational.value, 3);
+
+            const C2 = parseFloat(document.getElementById('ipaiwu-c2').value) || 0.5;
+            const K_dist = parseFloat(document.getElementById('ipaiwu-k').value) || 1.0;
+            if (A > 0) {
+                const A_km2 = A / 100;
+                flows.ipaiwu.value = 0.278 * C2 * I * Math.pow(A_km2, 0.9) * K_dist;
+            }
+            setText('res-q-ipaiwu', flows.ipaiwu.value, 3);
+
+            const CN = parseFloat(document.getElementById('scs-cn').value) || 75;
+            const lambda = parseFloat(document.getElementById('scs-lambda').value) || 0.2;
+            if (A > 0 && tc > 0) {
+                const S_scs = (25400 / CN) - 254;
+                const Ia = lambda * S_scs;
+                const P_total = I * (tc / 60);
+                let Pe = 0;
+                if (P_total > Ia) {
+                    Pe = Math.pow(P_total - Ia, 2) / (P_total - Ia + S_scs);
+                }
+                const Tc_h = tc / 60;
+                const Tp_h = 0.6 * Tc_h + (Tc_h / 2);
+                const A_km2 = A / 100;
+                if (Tp_h > 0) {
+                    const q_unit = (2.08 * A_km2) / Tp_h;
+                    flows.scs.value = q_unit * Pe;
+                }
+            }
+            setText('res-q-scs', flows.scs.value, 3);
+
+            return flows;
+        }
+
+        function resolveActiveMethod(flows) {
+            const available = Object.keys(flows).filter(key => flows[key].value > 0);
+            if (!available.length) {
+                return 'rational';
+            }
+
+            if (modeManual && modeManual.checked && methodSelect) {
+                const chosen = methodSelect.value;
+                if (flows[chosen]?.value > 0) {
+                    return chosen;
+                }
+            }
+
+            return available.reduce((best, key) => flows[key].value > flows[best].value ? key : best, available[0]);
+        }
+
+        function updateMethodUI(methodKey, flowValue) {
+            if (methodBadge) {
+                methodBadge.textContent = methodKey ? {
+                    rational: 'Racional',
+                    ipaiwu: 'I-Pai-Wu',
+                    scs: 'SCS (CN)'
+                }[methodKey] : '--';
+            }
+            if (methodFlowBadge) {
+                methodFlowBadge.textContent = flowValue > 0 ? flowValue.toFixed(3) : '--';
+            }
+            if (methodSelect && (!modeManual || !modeManual.checked)) {
+                methodSelect.value = methodKey;
+            }
+        }
+
+        function highlightMethodRow(methodKey) {
+            methodRows.forEach(row => {
+                row.classList.toggle('active-row', row.dataset.methodRow === methodKey);
+            });
         }
 
         function calcPipe(Q, S) {
             const n = parseFloat(document.getElementById('n-pipe').value) || 0.013;
             const count = parseInt(document.getElementById('pipe-count').value) || 1;
+            if (Q <= 0 || S <= 0 || n <= 0 || count <= 0) {
+                setText('res-d-theo', 0);
+                document.getElementById('res-d-comm').value = '';
+                const svgText = document.getElementById('svg-d');
+                if (svgText) {
+                    svgText.textContent = '--';
+                }
+                return;
+            }
+
             const Q_target = Q / count;
-
-            // Manning for full pipe: Q = (1/n) * A * R^(2/3) * S^(1/2)
-            // A = pi*D^2/4, P = pi*D, R = D/4
-            // Q = (1/n) * (pi*D^2/4) * (D/4)^(2/3) * S^0.5
-            // Q = (0.3117 / n) * D^(8/3) * S^0.5
-            // D = [ (Q * n) / (0.3117 * S^0.5) ] ^ (3/8)
-
             const D_theo = Math.pow((Q_target * n) / (0.3117 * Math.sqrt(S)), 0.375);
-            document.getElementById('res-d-theo').innerText = D_theo.toFixed(3);
+            setText('res-d-theo', D_theo, 3);
 
-            // Commercial sizes
             const commercial = [0.4, 0.6, 0.8, 1.0, 1.2, 1.5];
-            let D_comm = "Sob Medida";
-            for (let d of commercial) {
+            let D_comm = 'Sob Medida';
+            for (const d of commercial) {
                 if (d >= D_theo) {
-                    D_comm = d.toFixed(1) + " m";
+                    D_comm = `${d.toFixed(1)} m`;
                     break;
                 }
             }
-            if (D_theo > 1.5) D_comm = "> 1.5 m";
+            if (D_theo > 1.5) {
+                D_comm = '> 1.5 m';
+            }
             document.getElementById('res-d-comm').value = D_comm;
-            document.getElementById('svg-d').textContent = D_theo.toFixed(2) + 'm';
+            document.getElementById('svg-d').textContent = `${D_theo.toFixed(2)}m`;
         }
 
         function calcBox(Q, S) {
             const n = parseFloat(document.getElementById('n-box').value) || 0.015;
             const B = parseFloat(document.getElementById('box-base').value) || 2.0;
-
-            // Iterative solution for normal depth y
-            // Q = (1/n) * (B*y) * (B*y / (B+2y))^(2/3) * S^0.5
-            // Solve for y
-            let y = 0.1;
-            for (let i = 0; i < 20; i++) {
-                let A = B * y;
-                let P = B + 2 * y;
-                let R = A / P;
-                let Q_calc = (1 / n) * A * Math.pow(R, 2 / 3) * Math.sqrt(S);
-
-                if (Math.abs(Q_calc - Q) < 0.001) break;
-
-                // Simple Newton-Raphson or just increment for simplicity in this demo
-                // Using a simple adjustment factor here for robustness
-                y = y * Math.pow(Q / Q_calc, 0.6);
+            if (Q <= 0 || S <= 0 || n <= 0 || B <= 0) {
+                setText('res-box-h', 0);
+                return;
             }
 
-            document.getElementById('res-box-h').innerText = y.toFixed(2);
-            document.getElementById('svg-box-b').textContent = B.toFixed(1) + 'm';
+            let y = 0.5;
+            for (let i = 0; i < 25; i++) {
+                const A = B * y;
+                const P = B + 2 * y;
+                const R = A / P;
+                const Q_calc = (1 / n) * A * Math.pow(R, 2 / 3) * Math.sqrt(S);
+                if (!isFinite(Q_calc) || Q_calc <= 0) {
+                    break;
+                }
+                const ratio = Q / Q_calc;
+                if (Math.abs(1 - ratio) < 0.001) {
+                    break;
+                }
+                y *= Math.pow(ratio, 0.6);
+            }
+
+            setText('res-box-h', y, 2);
+            document.getElementById('svg-box-b').textContent = `${B.toFixed(1)}m`;
         }
 
         function calcChannel(Q, S) {
             const n = parseFloat(document.getElementById('n-channel').value) || 0.025;
-            document.getElementById('res-channel-y').innerText = y.toFixed(2);
+            const b = parseFloat(document.getElementById('channel-b').value) || 3.0;
+            const z = parseFloat(document.getElementById('channel-z').value) || 1.5;
+            if (Q <= 0 || S <= 0 || n <= 0 || b <= 0) {
+                setText('res-channel-y', 0);
+                updateChannelSvg(0, z);
+                return;
+            }
+
+            let y = 0.5;
+            for (let i = 0; i < 30; i++) {
+                const topWidth = b + 2 * z * y;
+                const area = y * (b + z * y);
+                const perimeter = b + 2 * y * Math.sqrt(1 + z * z);
+                const R = area / perimeter;
+                const Q_calc = (1 / n) * area * Math.pow(R, 2 / 3) * Math.sqrt(S);
+                if (!isFinite(Q_calc) || Q_calc <= 0) {
+                    break;
+                }
+                const ratio = Q / Q_calc;
+                if (Math.abs(1 - ratio) < 0.001) {
+                    break;
+                }
+                y *= Math.pow(ratio, 0.6);
+            }
+
+            setText('res-channel-y', y, 2);
+            updateChannelSvg(y, z);
         }
 
-        // Rain Modal Logic
+        function updateChannelSvg(y, z) {
+            const water = document.getElementById('water-level-channel');
+            if (!water) {
+                return;
+            }
+            const maxDepth = 5;
+            const depth = Math.max(0, Math.min(y, maxDepth));
+            const baseY = 110;
+            const minY = 30;
+            const heightPx = (depth / maxDepth) * (baseY - minY);
+            const topY = baseY - heightPx;
+            const spread = 20 + (depth / maxDepth) * 25 * (z / 1.5);
+            const leftTopX = 90 - spread;
+            const rightTopX = 90 + spread;
+            const path = `M ${leftTopX} ${topY} L ${50} 110 L 130 110 L ${rightTopX} ${topY} Z`;
+            water.setAttribute('d', path);
+        }
+
+        function resetHydraulicOutputs() {
+            setText('res-d-theo', 0);
+            document.getElementById('res-d-comm').value = '';
+            setText('res-box-h', 0);
+            setText('res-channel-y', 0);
+            const svgText = document.getElementById('svg-d');
+            if (svgText) {
+                svgText.textContent = '--';
+            }
+            const zInput = document.getElementById('channel-z');
+            const zValue = zInput ? parseFloat(zInput.value) : 1.5;
+            updateChannelSvg(0, zValue || 1.5);
+        }
+
+        function setText(id, value, decimals = 1) {
+            const el = document.getElementById(id);
+            if (!el) {
+                return;
+            }
+            if (value > 0) {
+                const digits = typeof decimals === 'number' ? decimals : 1;
+                el.textContent = value.toFixed(digits);
+            } else {
+                el.textContent = '--';
+            }
+        }
+
         const citySelect = document.getElementById('city-select');
         if (citySelect) {
             citySelect.addEventListener('change', function () {
                 const option = this.options[this.selectedIndex];
-                if (option.value) {
+                if (option && option.value) {
                     document.getElementById('rain-k').value = option.dataset.k;
                     document.getElementById('rain-a').value = option.dataset.a;
                     document.getElementById('rain-b').value = option.dataset.b;
@@ -800,7 +961,6 @@
                     .then(response => response.json())
                     .then(data => {
                         if (data.status === 'success') {
-                            // Add to select and select it
                             const option = document.createElement('option');
                             option.value = data.id;
                             option.text = data.name;
@@ -811,17 +971,14 @@
                             citySelect.add(option);
                             citySelect.value = data.id;
 
-                            // Update inputs
                             document.getElementById('rain-k').value = k;
                             document.getElementById('rain-a').value = a;
                             document.getElementById('rain-b').value = b;
                             document.getElementById('rain-c').value = c;
 
-                            // Switch tab
                             const bsTab = new bootstrap.Tab(document.getElementById('select-tab'));
                             bsTab.show();
 
-                            // Clear form
                             newEqForm.reset();
                             calculateAll();
                             alert('Equação adicionada com sucesso!');
@@ -829,7 +986,7 @@
                             alert('Erro ao adicionar: ' + data.message);
                         }
                     })
-                    .catch(err => alert('Erro de conexão.'));
+                    .catch(() => alert('Erro de conexão.'));
             });
         }
     });
