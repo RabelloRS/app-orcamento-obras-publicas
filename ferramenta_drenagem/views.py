@@ -23,6 +23,10 @@ def dimensionamento(request):
     }
     return render(request, 'drenagem/dimensionamento.html', context)
 
+def idfgeo(request):
+    """Interactive Map for Rainfall Equations (IDF) in RS."""
+    return render(request, 'drenagem/idfgeo.html')
+
 @require_POST
 def add_equation(request):
     try:

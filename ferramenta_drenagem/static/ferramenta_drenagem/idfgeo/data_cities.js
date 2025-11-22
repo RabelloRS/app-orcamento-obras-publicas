@@ -1,0 +1,22 @@
+export const CITIES = [
+    { name: "Porto Alegre", lat: -30.0328, lon: -51.2302 },
+    { name: "Caxias do Sul", lat: -29.1685, lon: -51.1790 },
+    { name: "Pelotas", lat: -31.7649, lon: -52.3365 },
+    { name: "Santa Maria", lat: -29.6868, lon: -53.8147 },
+    { name: "Passo Fundo", lat: -28.2612, lon: -52.4083 },
+    { name: "Rio Grande", lat: -32.0353, lon: -52.0986 },
+    { name: "Uruguaiana", lat: -29.7643, lon: -57.0869 },
+    { name: "Santa Cruz do Sul", lat: -29.7134, lon: -52.4273 },
+    { name: "Bagé", lat: -31.3303, lon: -54.1070 },
+    { name: "Bento Gonçalves", lat: -29.1705, lon: -51.5189 },
+    { name: "Erechim", lat: -27.6344, lon: -52.2736 },
+    { name: "Santana do Livramento", lat: -30.8866, lon: -55.5300 },
+    { name: "Ijuí", lat: -28.3879, lon: -53.9158 },
+    { name: "Lajeado", lat: -29.4597, lon: -51.9649 },
+    { name: "Santa Rosa", lat: -27.8724, lon: -54.4780 },
+    { name: "Torres", lat: -29.3388, lon: -49.7264 },
+    { name: "São Borja", lat: -28.6594, lon: -56.0042 },
+    { name: "Gramado", lat: -29.3746, lon: -50.8737 },
+    { name: "Chuí", lat: -33.6866, lon: -53.4569 },
+    { name: "Capão da Canoa", lat: -29.7534, lon: -50.0292 }
+];

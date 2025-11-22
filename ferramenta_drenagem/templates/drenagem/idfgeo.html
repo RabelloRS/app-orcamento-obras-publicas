@@ -1,0 +1,263 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>IDFGeo RS | Ferramenta Interativa</title>
+    <meta name="description" content="Mapa interativo de equações de chuva (IDF) para o Rio Grande do Sul.">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+
+    <!-- Styles -->
+    <style type="text/tailwindcss">
+        @tailwind base;
+        @tailwind components;
+        @tailwind utilities;
+
+        /* Design System */
+        :root {
+            --glass-bg: rgba(255, 255, 255, 0.85);
+            --glass-border: rgba(255, 255, 255, 0.6);
+            --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.05);
+        }
+
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Leaflet Overrides */
+        .leaflet-container {
+            background: #f1f5f9;
+            font-family: 'Inter', sans-serif;
+        }
+        .leaflet-control-zoom {
+            border: none !important;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
+        }
+        .leaflet-control-zoom a {
+            background: white !important;
+            color: #475569 !important;
+            border-radius: 8px !important;
+            margin-bottom: 4px !important;
+            width: 32px !important;
+            height: 32px !important;
+            line-height: 32px !important;
+            transition: all 0.2s;
+        }
+        .leaflet-control-zoom a:hover {
+            background: #f8fafc !important;
+            color: #2563eb !important;
+        }
+
+        /* Glassmorphism Components */
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+        }
+
+        /* Buttons */
+        .btn-secondary {
+            @apply flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-slate-600 bg-slate-50 hover:bg-slate-100 rounded-md transition-all border border-slate-200 shadow-sm hover:shadow;
+        }
+        .btn-icon {
+            @apply p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors;
+        }
+
+        /* Layer Selector Logic */
+        .layer-option {
+            @apply relative flex items-center cursor-pointer p-2 rounded-lg hover:bg-white/60 transition-all select-none;
+        }
+        .layer-preview {
+            @apply w-9 h-9 rounded-md bg-gradient-to-br shadow-sm ring-1 ring-slate-900/5 transition-transform group-active:scale-95;
+        }
+        .status-dot {
+            @apply absolute right-2 w-2 h-2 rounded-full bg-blue-600 scale-0 transition-transform shadow-sm;
+        }
+        input:checked ~ .status-dot {
+            @apply scale-100;
+        }
+        input:checked ~ .layer-preview {
+            @apply ring-2 ring-blue-500 ring-offset-2;
+        }
+
+        /* Popup Styling - The "Apple" feel */
+        .premium-popup .leaflet-popup-content-wrapper {
+            @apply bg-white/95 backdrop-blur-xl rounded-xl shadow-2xl p-0 border border-slate-100;
+        }
+        .premium-popup .leaflet-popup-content {
+            @apply m-0 w-[300px] !important;
+        }
+        .premium-popup .leaflet-popup-tip {
+            @apply bg-white/95;
+        }
+        .premium-popup a.leaflet-popup-close-button {
+            @apply text-slate-400 hover:text-slate-600 top-3 right-3 text-lg font-light opacity-0 group-hover:opacity-100 transition-opacity;
+        }
+
+        /* Custom Range Slider for Calculator */
+        input[type=range] {
+            @apply h-1 w-full bg-slate-200 rounded-lg appearance-none cursor-pointer;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            @apply appearance-none w-3 h-3 rounded-full bg-blue-600 shadow ring-2 ring-white transition-transform hover:scale-110;
+        }
+
+        /* Map Marker */
+        .city-marker-pulse {
+            animation: markerPulse 2s infinite;
+        }
+        @keyframes markerPulse {
+            0% { stroke-opacity: 1; stroke-width: 1; }
+            50% { stroke-opacity: 0.5; stroke-width: 8; }
+            100% { stroke-opacity: 1; stroke-width: 1; }
+        }
+    </style>
+
+    <!-- Libraries -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <!-- Define global variable for static URL base and specific worker URL -->
+    <script>
+        window.STATIC_URL = "{% static 'ferramenta_drenagem/idfgeo/' %}";
+        window.WORKER_URL = "{% static 'ferramenta_drenagem/idfgeo/idw_worker.js' %}";
+    </script>
+</head>
+<body class="bg-slate-50 h-screen w-screen overflow-hidden flex flex-col text-slate-900 antialiased selection:bg-blue-100 selection:text-blue-900">
+
+    <!-- Loading Overlay -->
+    <div id="loading-indicator" class="fixed inset-0 z-[9999] bg-white/80 backdrop-blur-md flex flex-col items-center justify-center transition-opacity duration-700">
+        <div class="relative mb-4">
+            <div class="w-16 h-16 border-[3px] border-slate-100 border-t-blue-600 rounded-full animate-spin"></div>
+            <div class="absolute inset-0 flex items-center justify-center text-blue-600">
+                <i data-lucide="map" class="w-6 h-6 opacity-50"></i>
+            </div>
+        </div>
+        <h2 class="text-sm font-medium text-slate-900 tracking-tight">Construindo Modelos Espaciais</h2>
+        <p class="text-xs text-slate-500 mt-2 font-mono bg-slate-100 px-2 py-1 rounded">Processando IDW (p=2.5)</p>
+    </div>
+
+    <!-- Header -->
+    <header class="h-14 bg-white/90 backdrop-blur border-b border-slate-200/60 flex items-center justify-between px-4 md:px-6 z-30 absolute top-0 w-full shadow-sm">
+        <div class="flex items-center gap-3">
+            <div class="bg-blue-600 text-white p-1.5 rounded-lg shadow-blue-200 shadow-md">
+                <i data-lucide="cloud-rain" class="w-5 h-5"></i>
+            </div>
+            <div class="flex flex-col">
+                <h1 class="text-sm font-semibold text-slate-900 leading-none">IDFGeo <span class="text-slate-400 font-normal">RS</span></h1>
+                <span class="text-[10px] text-slate-500 mt-0.5 font-medium">Baseado em Rodrigues et al. (2023)</span>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+            <button id="toggle-cities" class="btn-secondary hidden sm:flex" title="Mostrar/Ocultar Cidades">
+                <i data-lucide="map-pin" class="w-4 h-4"></i>
+                <span>Cidades</span>
+            </button>
+            <div class="h-4 w-px bg-slate-200 mx-1 hidden sm:block"></div>
+            <button onclick="window.open('https://wp.ufpel.edu.br/hidrologiaemodelagemhidrologica/idfgeo-2/', '_blank')" class="btn-icon" title="Sobre o Projeto">
+                <i data-lucide="info" class="w-4 h-4"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-1 relative mt-14 h-[calc(100vh-3.5rem)]">
+        <div id="map-container" class="w-full h-full bg-slate-100 z-0 outline-none"></div>
+
+        <!-- Controls Layer (Floating) -->
+        <aside class="absolute top-4 right-4 z-[400] flex flex-col gap-3 w-auto pointer-events-none">
+
+            <!-- Layer Selector -->
+            <div class="glass-panel p-1.5 rounded-xl shadow-xl pointer-events-auto ring-1 ring-black/5">
+                <div class="flex flex-col gap-1">
+                    <label class="layer-option group">
+                        <input type="radio" name="layer-select" value="a" checked class="peer sr-only">
+                        <div class="layer-preview from-blue-500 to-red-500"></div>
+                        <div class="flex flex-col ml-3 mr-2">
+                            <span class="text-xs font-semibold text-slate-700 group-hover:text-blue-700 transition-colors">Coeficiente A</span>
+                            <span class="text-[9px] text-slate-400">Magnitude (K)</span>
+                        </div>
+                        <div class="status-dot"></div>
+                    </label>
+
+                    <div class="h-px bg-slate-100 mx-2 my-0.5"></div>
+
+                    <label class="layer-option group">
+                        <input type="radio" name="layer-select" value="b" class="peer sr-only">
+                        <div class="layer-preview from-blue-400 to-red-600"></div>
+                        <div class="flex flex-col ml-3 mr-2">
+                            <span class="text-xs font-semibold text-slate-700 group-hover:text-blue-700 transition-colors">Fator B</span>
+                            <span class="text-[9px] text-slate-400">Frequência (Expoente)</span>
+                        </div>
+                        <div class="status-dot"></div>
+                    </label>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Interactive Legend (Bottom Right) -->
+        <div class="absolute bottom-8 right-4 z-[400] w-64 pointer-events-auto transition-transform duration-300 translate-y-0" id="legend-panel">
+            <div class="glass-panel rounded-xl shadow-2xl ring-1 ring-black/5 overflow-hidden">
+                <div class="bg-slate-50/50 px-4 py-3 border-b border-slate-100 flex justify-between items-center">
+                    <h3 id="legend-title" class="text-[11px] font-bold text-slate-800 uppercase tracking-wider">Legenda</h3>
+                    <div class="flex gap-1">
+                        <div class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></div>
+                    </div>
+                </div>
+
+                <div class="p-4">
+                    <div class="flex gap-4 items-stretch h-24">
+                        <!-- Gradient Bar -->
+                        <div class="w-3 rounded-full relative shadow-inner overflow-hidden" id="legend-gradient"></div>
+
+                        <!-- Labels -->
+                        <div class="flex flex-col justify-between text-[10px] font-mono text-slate-500 py-0.5 flex-1">
+                            <div class="flex items-center gap-2">
+                                <span class="text-slate-800 font-bold" id="legend-max">--</span>
+                                <span class="w-full h-px bg-slate-200"></span>
+                            </div>
+                            <div class="flex items-center gap-2 opacity-60">
+                                <span>Médio</span>
+                                <span class="w-full h-px border-t border-dashed border-slate-300"></span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-slate-800 font-bold" id="legend-min">--</span>
+                                <span class="w-full h-px bg-slate-200"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <p id="legend-desc" class="mt-3 text-[10px] leading-relaxed text-slate-500 border-t border-slate-100 pt-2">
+                        Selecione uma camada para visualizar a distribuição espacial.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Use STATIC_URL to resolve module imports.
+         Since these are ES modules, relative imports in JS files work relative to the JS file itself.
+         So we only need to load the entry point (app.js) correctly.
+    -->
+    <script type="module" src="{% static 'ferramenta_drenagem/idfgeo/app.js' %}"></script>
+    <script>
+        // Initial icon render
+        document.addEventListener('DOMContentLoaded', () => lucide.createIcons());
+    </script>
+</body>
+</html>
