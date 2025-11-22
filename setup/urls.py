@@ -16,6 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.views.generic.base import RedirectView
 from django.conf import settings
 from django.conf.urls.static import static
 
@@ -24,6 +25,8 @@ urlpatterns = [
     path('contas/', include('django.contrib.auth.urls')),
     # Usuarios app (home, register, login/logout)
     path('', include('usuarios.urls')),
+    # Convenience shortcut: /idfgeo -> /drenagem/idfgeo
+    path('idfgeo/', RedirectView.as_view(url='/drenagem/idfgeo/', permanent=False)),
     # New app skeletons with minimal endpoints
     path('drenagem/', include('ferramenta_drenagem.urls')),
     path('fotos/', include('mapa_fotos.urls')),
