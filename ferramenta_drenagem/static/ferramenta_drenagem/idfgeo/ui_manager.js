@@ -10,7 +10,8 @@ let currentPopup = null;
 export function openPopup(lat, lng, values, map, cityName = null) {
 
     if (currentPopup) {
-        map.closePopup();
+        map.removeLayer(currentPopup);
+        currentPopup = null;
     }
 
     const { a, b } = values;
@@ -31,7 +32,7 @@ export function openPopup(lat, lng, values, map, cityName = null) {
                 </h3>
                 <p class="text-[10px] text-slate-500 font-mono mt-0.5">${lat.toFixed(4)}, ${lng.toFixed(4)}</p>
             </div>
-            <button id="btn-export-pdf" class="text-[10px] bg-white hover:bg-slate-50 border border-slate-200 text-slate-600 px-2 py-1 rounded shadow-sm transition-colors flex items-center gap-1">
+            <button data-action="export-pdf" class="text-[10px] bg-white hover:bg-slate-50 border border-slate-200 text-slate-600 px-2 py-1 rounded shadow-sm transition-colors flex items-center gap-1">
                 <i data-lucide="file-down" class="w-3 h-3"></i> Relatório
             </button>
         </div>
@@ -63,16 +64,16 @@ export function openPopup(lat, lng, values, map, cityName = null) {
                     <div>
                         <div class="flex justify-between text-[10px] mb-1">
                             <span class="text-slate-500">Retorno (TR)</span>
-                            <span class="font-bold text-blue-600" id="val-tr">10 anos</span>
+                            <span class="font-bold text-blue-600" data-label-tr>10 anos</span>
                         </div>
-                        <input type="range" id="input-tr" min="2" max="100" step="1" value="10">
+                        <input type="range" data-input-tr min="2" max="100" step="1" value="10">
                     </div>
                     <div>
                         <div class="flex justify-between text-[10px] mb-1">
                             <span class="text-slate-500">Duração (t)</span>
-                            <span class="font-bold text-blue-600" id="val-t">60 min</span>
+                            <span class="font-bold text-blue-600" data-label-t>60 min</span>
                         </div>
-                        <input type="range" id="input-t" min="5" max="1440" step="5" value="60">
+                        <input type="range" data-input-t min="5" max="1440" step="5" value="60">
                     </div>
                 </div>
 
@@ -80,7 +81,7 @@ export function openPopup(lat, lng, values, map, cityName = null) {
                 <div class="mt-3 pt-3 border-t border-slate-200/60 flex justify-between items-center">
                     <span class="text-[10px] font-medium text-slate-500">Intensidade Resultante</span>
                     <div class="text-right">
-                        <span id="result-i" class="text-2xl font-bold text-slate-800">--</span>
+                        <span data-result class="text-2xl font-bold text-slate-800">--</span>
                         <span class="text-[10px] text-slate-400 ml-1 font-medium">mm/h</span>
                     </div>
                 </div>
@@ -89,7 +90,7 @@ export function openPopup(lat, lng, values, map, cityName = null) {
     `;
 
 
-    currentPopup = L.popup({
+    const popup = L.popup({
         offset: [0, -5],
         className: 'premium-popup',
         maxWidth: 320,
@@ -98,27 +99,29 @@ export function openPopup(lat, lng, values, map, cityName = null) {
         autoPan: true
     })
     .setLatLng([lat, lng])
-    .setContent(container)
-    .openOn(map);
+    .setContent(container);
 
+    popup.once('add', () => {
+        lucide.createIcons({ root: container });
+        attachCalculatorLogic(container, values);
+        const exportBtn = container.querySelector('[data-action="export-pdf"]');
+        if (exportBtn) {
+            exportBtn.addEventListener('click', () => exportPDF(lat, lng, values, cityName));
+        }
+    });
 
-    lucide.createIcons({ root: container });
-
-
-    setTimeout(() => {
-        attachCalculatorLogic(values);
-        document.getElementById('btn-export-pdf').onclick = () => exportPDF(lat, lng, values, cityName);
-    }, 50);
+    popup.openOn(map);
+    currentPopup = popup;
 }
 
-function attachCalculatorLogic(values) {
-    const inputTR = document.getElementById('input-tr');
-    const inputT = document.getElementById('input-t');
-    const labelTR = document.getElementById('val-tr');
-    const labelT = document.getElementById('val-t');
-    const resultEl = document.getElementById('result-i');
+function attachCalculatorLogic(container, values) {
+    const inputTR = container.querySelector('[data-input-tr]');
+    const inputT = container.querySelector('[data-input-t]');
+    const labelTR = container.querySelector('[data-label-tr]');
+    const labelT = container.querySelector('[data-label-t]');
+    const resultEl = container.querySelector('[data-result]');
 
-    if (!inputTR || !inputT) return;
+    if (!inputTR || !inputT || !resultEl) return;
 
     const calculate = () => {
         const tr = parseInt(inputTR.value);
