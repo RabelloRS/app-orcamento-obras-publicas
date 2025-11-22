@@ -1,25 +1,15 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <title>Login - Resolve Eng</title>
-    <style>
-        body { font-family: Arial, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #f0f2f5; margin: 0; }
-        .login-card { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 300px; }
-        h2 { text-align: center; color: #333; }
-        input { width: 100%; padding: 10px; margin: 8px 0; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
-        button { width: 100%; padding: 10px; background-color: #0056b3; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
-        button:hover { background-color: #004494; }
-    </style>
-</head>
-<body>
-    <div class="login-card">
-        <h2>Acesso Restrito</h2>
-        <form method="post">
+{% extends 'layouts/app.html' %}
+{% block title %}Login - Resolve{% endblock %}
+{% block body_classes %}auth-page{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-center align-items-center" style="min-height:calc(100vh - 70px);">
+    <div class="p-4 rounded-md shadow-2" style="width:360px;background:var(--color-surface);border:1px solid var(--color-border);">
+        <h2 class="h5 fw-semibold mb-3 text-center">Acesso Restrito</h2>
+        <form method="post" class="d-grid gap-3">
             {% csrf_token %}
             {{ form.as_p }}
-            <button type="submit">Entrar</button>
+            <button type="submit" class="btn btn-primary w-100"><i class="bi bi-box-arrow-in-right me-1"></i>Entrar</button>
         </form>
     </div>
-</body>
-</html>
+</div>
+{% endblock %}

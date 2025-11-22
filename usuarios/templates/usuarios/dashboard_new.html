@@ -1,0 +1,49 @@
+{% extends 'layouts/app.html' %}
+{% block title %}Início (Piloto){% endblock %}
+{% block page_title %}Início (Piloto){% endblock %}
+{% block content %}
+<div class="ds-container">
+  <div class="row g-3">
+    <div class="col-12">
+      <div class="p-4 rounded-md shadow-1" style="background:var(--color-surface); border:1px solid var(--color-border);">
+        <h2 class="h5 mb-2">Bem-vindo ao Layout Unificado</h2>
+        <p class="text-soft mb-0">Este é um piloto para validar responsividade (sidebar fixa 100vh, container adaptado, tema e tooltips). Redimensione a janela ou teste em ultrawide.</p>
+      </div>
+    </div>
+    <div class="col-md-6 col-xl-3">
+      <div class="p-3 rounded-md shadow-1" style="background:var(--color-surface); border:1px solid var(--color-border);">
+        <h3 class="fs-6 mb-1">Card 1</h3>
+        <p class="small text-soft mb-2">Exemplo de bloco.</p>
+        <button class="btn btn-sm btn-primary" data-bs-toggle="tooltip" title="Ação primária">Ação</button>
+      </div>
+    </div>
+    <div class="col-md-6 col-xl-3">
+      <div class="p-3 rounded-md shadow-1" style="background:var(--color-surface); border:1px solid var(--color-border);">
+        <h3 class="fs-6 mb-1">Card 2</h3>
+        <p class="small text-soft mb-2">Teste colapso sidebar.</p>
+        <button class="btn btn-sm btn-outline-primary" data-bs-toggle="tooltip" title="Outra ação">Ver</button>
+      </div>
+    </div>
+    <div class="col-md-6 col-xl-3">
+      <div class="p-3 rounded-md shadow-1" style="background:var(--color-surface); border:1px solid var(--color-border);">
+        <h3 class="fs-6 mb-1">Card 3</h3>
+        <p class="small text-soft mb-2">Avaliar padding em telas largas.</p>
+        <span class="badge bg-primary">Novo</span>
+      </div>
+    </div>
+    <div class="col-md-6 col-xl-3">
+      <div class="p-3 rounded-md shadow-1" style="background:var(--color-surface); border:1px solid var(--color-border);">
+        <h3 class="fs-6 mb-1">Card 4</h3>
+        <p class="small text-soft mb-2">Checar contraste tema escuro.</p>
+        <button id="forceDark" class="btn btn-sm btn-secondary">Forçar Escuro</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  document.getElementById('forceDark')?.addEventListener('click',()=>{
+    document.documentElement.setAttribute('data-theme','dark');
+    localStorage.setItem('theme','dark');
+  });
+</script>
+{% endblock %}

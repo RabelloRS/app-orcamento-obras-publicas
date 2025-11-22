@@ -1,9 +1,9 @@
-{% extends 'base.html' %}
+{% extends 'layouts/app.html' %}
 
-{% block title %}Dashboard - Resolve Eng{% endblock %}
+{% block title %}Início - Resolve Eng{% endblock %}
 
 {% block content %}
-<div class="container-fluid p-0">
+<div class="ds-container p-0">
 
     <!-- Cabeçalho de Boas-vindas -->
     <div class="d-flex justify-content-between align-items-center mb-5">
@@ -33,10 +33,35 @@
         <h5 class="text-uppercase text-muted fs-6 fw-bold mb-3 ls-1">Ferramentas Disponíveis</h5>
         
         <div class="row g-4">
+            <!-- IDFGeo RS -->
+            <div class="col-md-6 col-xl-4">
+                <div class="p-4 rounded-md shadow-1 h-100 position-relative" style="background:var(--color-surface);border:1px solid var(--color-border);">
+                    <div class="mb-2">
+                        <div class="d-flex align-items-start justify-content-between mb-2">
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="rounded-3 p-3 bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25">
+                                    <i class="bi bi-cloud-rain fs-3"></i>
+                                </div>
+                                <h4 class="card-title fw-bold text-dark mb-0">IDFGeo RS <span class="badge bg-primary" data-bs-toggle="tooltip" title="Nova ferramenta">Novo</span></h4>
+                            </div>
+                            <button type="button" class="btn btn-sm btn-outline-primary rounded-circle" data-bs-toggle="tooltip" title="Referência Rodrigues et al. (2023)">
+                                <i class="bi bi-info-circle"></i>
+                            </button>
+                        </div>
+                        <p class="card-text text-secondary mb-3 small">
+                            Visualização espacial dos parâmetros (K / expoente) de equações intensidade-duração-frequência para apoio em estudos de drenagem.
+                        </p>
+                        <div class="d-flex gap-2">
+                            <a href="{% url 'ferramenta_drenagem:idfgeo' %}" class="btn btn-sm btn-primary" data-bs-toggle="tooltip" title="Abrir mapa IDFGeo"><i class="bi bi-arrow-right me-1"></i>Acessar</a>
+                            <a href="https://wp.ufpel.edu.br/hidrologiaemodelagemhidrologica/idfgeo-2/" target="_blank" class="btn btn-sm btn-outline-primary" data-bs-toggle="tooltip" title="Sobre a metodologia"><i class="bi bi-journal-text me-1"></i>Sobre</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <!-- Placeholder para ferramentas futuras -->
             <div class="col-md-6 col-xl-4">
-                <div class="card h-100 border-0 shadow-sm opacity-75">
-                    <div class="card-body p-4">
+                <div class="p-4 rounded-md shadow-1 h-100 opacity-75" style="background:var(--color-surface);border:1px solid var(--color-border);">
+                    <div class="mb-3">
                         <div class="d-flex align-items-start justify-content-between mb-3">
                             <div class="rounded-3 p-3 bg-primary bg-opacity-10 text-primary">
                                 <i class="bi bi-droplet fs-3"></i>
@@ -47,16 +72,14 @@
                         <p class="card-text text-secondary mb-4">
                             Cálculo de volume de escavação e dimensionamento de galerias pluviais.
                         </p>
-                        <button class="btn btn-outline-secondary w-100 py-2 fw-medium rounded-3" disabled>
-                            Aguardando módulo
-                        </button>
+                        <button class="btn btn-sm btn-outline-secondary w-100" disabled>Aguardando módulo</button>
                     </div>
                 </div>
             </div>
 
             <div class="col-md-6 col-xl-4">
-                <div class="card h-100 border-0 shadow-sm opacity-75">
-                    <div class="card-body p-4">
+                <div class="p-4 rounded-md shadow-1 h-100 opacity-75" style="background:var(--color-surface);border:1px solid var(--color-border);">
+                    <div class="mb-3">
                         <div class="d-flex align-items-start justify-content-between mb-3">
                             <div class="rounded-3 p-3 bg-info bg-opacity-10 text-info">
                                 <i class="bi bi-images fs-3"></i>
@@ -67,16 +90,14 @@
                         <p class="card-text text-secondary mb-4">
                             Upload de fotos com coordenadas GPS (EXIF) e visualização em mapa.
                         </p>
-                        <button class="btn btn-outline-secondary w-100 py-2 fw-medium rounded-3" disabled>
-                            Aguardando módulo
-                        </button>
+                        <button class="btn btn-sm btn-outline-secondary w-100" disabled>Aguardando módulo</button>
                     </div>
                 </div>
             </div>
 
             <div class="col-md-6 col-xl-4">
-                <div class="card h-100 border-0 shadow-sm opacity-75">
-                    <div class="card-body p-4">
+                <div class="p-4 rounded-md shadow-1 h-100 opacity-75" style="background:var(--color-surface);border:1px solid var(--color-border);">
+                    <div class="mb-3">
                         <div class="d-flex align-items-start justify-content-between mb-3">
                             <div class="rounded-3 p-3 bg-success bg-opacity-10 text-success">
                                 <i class="bi bi-building fs-3"></i>
@@ -87,21 +108,18 @@
                         <p class="card-text text-secondary mb-4">
                             Dimensionamento de vigas, pilares e lajes de concreto armado.
                         </p>
-                        <button class="btn btn-outline-secondary w-100 py-2 fw-medium rounded-3" disabled>
-                            Aguardando módulo
-                        </button>
+                        <button class="btn btn-sm btn-outline-secondary w-100" disabled>Aguardando módulo</button>
                     </div>
                 </div>
             </div>
         </div>
     {% else %}
-        <div class="alert alert-info" role="alert">
-            <h4 class="alert-heading">Acesso Restrito</h4>
-            <p>Para acessar as ferramentas do Resolve, você deve estar autenticado.</p>
-            <hr>
+        <div class="alert alert-info shadow-sm rounded-3" style="border:1px solid var(--color-border);background:var(--color-surface);" role="alert">
+            <h4 class="alert-heading h6 fw-semibold">Acesso Restrito</h4>
+            <p class="small mb-2">Para acessar as ferramentas do Resolve, você deve estar autenticado.</p>
             <div class="d-flex gap-2">
-                <a href="{% url 'usuarios:login' %}" class="btn btn-primary">Fazer login</a>
-                <a href="{% url 'usuarios:register' %}" class="btn btn-outline-primary">Cadastrar</a>
+                <a href="{% url 'usuarios:login' %}" class="btn btn-sm btn-primary">Fazer login</a>
+                <a href="{% url 'usuarios:register' %}" class="btn btn-sm btn-outline-primary">Cadastrar</a>
             </div>
         </div>
     {% endif %}

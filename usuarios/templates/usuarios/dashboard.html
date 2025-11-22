@@ -1,215 +1,24 @@
-{% extends 'base_authenticated.html' %}
+{% extends 'layouts/app.html' %}
 
-{% block title %}Dashboard - Resolve{% endblock %}
+{% block title %}Área Restrita - Resolve{% endblock %}
+{% block page_title %}Início{% endblock %}
 
 {% block content %}
-<div class="container-lg py-4">
-    <!-- Welcome Section -->
-    <div class="row mb-5">
-        <div class="col-12">
-            <div class="alert alert-info alert-dismissible fade show" role="alert">
-                <i class="bi bi-info-circle me-2"></i>
-                <strong>Bem-vindo à Área Restrita!</strong> Aqui você tem acesso a ferramentas exclusivas para seus projetos de engenharia.
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        </div>
+<section class="ds-container py-5">
+  <div class="p-5 rounded-md shadow-1 text-center" style="background:var(--color-surface);border:1px solid var(--color-border);">
+    <div class="d-inline-flex align-items-center justify-content-center rounded-circle mb-3" style="width:64px;height:64px;background:rgba(var(--color-primary-rgb),0.1);">
+      <i class="bi bi-cone-striped text-primary" style="font-size:1.75rem;"></i>
     </div>
-
-    <!-- Dashboard Header -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <h1 class="display-5 fw-bold">Dashboard</h1>
-            <p class="text-muted">Seus projetos e ferramentas estão aqui.</p>
-        </div>
+    <h2 class="h4 fw-semibold mb-2">Área restrita em preparação</h2>
+    <p class="text-soft mb-4">Estamos finalizando os painéis internos. Enquanto isso, utilize o menu lateral para acessar as ferramentas liberadas.</p>
+    <div class="d-flex flex-wrap justify-content-center gap-3">
+      <a href="{% url 'ferramenta_drenagem:dimensionamento' %}" class="btn btn-outline-primary">
+        <i class="bi bi-droplet me-1"></i>Dimensionamento
+      </a>
+      <a href="{% url 'mapa_fotos:mapa' %}" class="btn btn-outline-secondary">
+        <i class="bi bi-images me-1"></i>Mapa de Fotos
+      </a>
     </div>
-
-    <!-- Stats Row -->
-    <div class="row mb-5">
-        <div class="col-md-3 mb-4">
-            <div class="card shadow-sm border-0">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <div>
-                            <h6 class="text-muted text-uppercase mb-2">Projetos</h6>
-                            <h2 class="fw-bold mb-0">0</h2>
-                        </div>
-                        <i class="bi bi-folder2 text-primary" style="font-size: 2rem;"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3 mb-4">
-            <div class="card shadow-sm border-0">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <div>
-                            <h6 class="text-muted text-uppercase mb-2">Cálculos</h6>
-                            <h2 class="fw-bold mb-0">0</h2>
-                        </div>
-                        <i class="bi bi-calculator text-success" style="font-size: 2rem;"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3 mb-4">
-            <div class="card shadow-sm border-0">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <div>
-                            <h6 class="text-muted text-uppercase mb-2">Fotos</h6>
-                            <h2 class="fw-bold mb-0">0</h2>
-                        </div>
-                        <i class="bi bi-images text-warning" style="font-size: 2rem;"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3 mb-4">
-            <div class="card shadow-sm border-0">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <div>
-                            <h6 class="text-muted text-uppercase mb-2">Mapas</h6>
-                            <h2 class="fw-bold mb-0">0</h2>
-                        </div>
-                        <i class="bi bi-map text-danger" style="font-size: 2rem;"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Tools Section -->
-    <div class="row mb-5">
-        <div class="col-12">
-            <h2 class="h3 fw-bold mb-4">Ferramentas Disponíveis</h2>
-        </div>
-
-        <!-- Cálculo de Drenagem -->
-        <div class="col-md-6 mb-4">
-            <div class="card shadow-sm h-100 border-0 border-start border-4 border-info">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start mb-3">
-                        <div>
-                            <h5 class="card-title fw-bold">
-                                <i class="bi bi-droplet-fill text-info me-2"></i>Cálculo de Drenagem
-                            </h5>
-                        </div>
-                        <span class="badge bg-info">Disponível</span>
-                    </div>
-                    <p class="card-text text-muted mb-3">
-                        Realize cálculos de volume para sistemas de drenagem com base em parâmetros técnicos.
-                    </p>
-                    <div class="d-flex gap-2">
-                        <a href="{% url 'ferramenta_drenagem:calculo_volume' %}" class="btn btn-sm btn-primary">
-                            <i class="bi bi-arrow-right me-1"></i>Acessar
-                        </a>
-                        <a href="#" class="btn btn-sm btn-outline-secondary">
-                            <i class="bi bi-question-circle me-1"></i>Ajuda
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Mapa de Fotos -->
-        <div class="col-md-6 mb-4">
-            <div class="card shadow-sm h-100 border-0 border-start border-4 border-warning">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start mb-3">
-                        <div>
-                            <h5 class="card-title fw-bold">
-                                <i class="bi bi-images text-warning me-2"></i>Mapa de Fotos
-                            </h5>
-                        </div>
-                        <span class="badge bg-warning">Disponível</span>
-                    </div>
-                    <p class="card-text text-muted mb-3">
-                        Envie suas fotos e visualize-as em um mapa interativo com georeferenciamento.
-                    </p>
-                    <div class="d-flex gap-2">
-                        <a href="{% url 'mapa_fotos:mapa_publico' %}" class="btn btn-sm btn-primary">
-                            <i class="bi bi-arrow-right me-1"></i>Acessar
-                        </a>
-                        <a href="#" class="btn btn-sm btn-outline-secondary">
-                            <i class="bi bi-question-circle me-1"></i>Ajuda
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Visualizador de Mapas -->
-        <div class="col-md-6 mb-4">
-            <div class="card shadow-sm h-100 border-0 border-start border-4 border-success">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start mb-3">
-                        <div>
-                            <h5 class="card-title fw-bold">
-                                <i class="bi bi-map-fill text-success me-2"></i>Visualizador de Mapas
-                            </h5>
-                        </div>
-                        <span class="badge bg-success">Disponível</span>
-                    </div>
-                    <p class="card-text text-muted mb-3">
-                        Visualize mapas interativos com fotos georeferenciadas e análise geoespacial.
-                    </p>
-                    <div class="d-flex gap-2">
-                        <a href="{% url 'ferramenta_mapa:mapa_fotos' %}" class="btn btn-sm btn-primary">
-                            <i class="bi bi-arrow-right me-1"></i>Acessar
-                        </a>
-                        <a href="#" class="btn btn-sm btn-outline-secondary">
-                            <i class="bi bi-question-circle me-1"></i>Ajuda
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Documentação -->
-        <div class="col-md-6 mb-4">
-            <div class="card shadow-sm h-100 border-0 border-start border-4 border-secondary">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start mb-3">
-                        <div>
-                            <h5 class="card-title fw-bold">
-                                <i class="bi bi-book-fill text-secondary me-2"></i>Documentação
-                            </h5>
-                        </div>
-                        <span class="badge bg-secondary">Recurso</span>
-                    </div>
-                    <p class="card-text text-muted mb-3">
-                        Acesse guias, tutoriais e documentação técnica das ferramentas disponíveis.
-                    </p>
-                    <div class="d-flex gap-2">
-                        <a href="#" class="btn btn-sm btn-primary disabled">
-                            <i class="bi bi-arrow-right me-1"></i>Acessar
-                        </a>
-                        <a href="#" class="btn btn-sm btn-outline-secondary">
-                            <i class="bi bi-question-circle me-1"></i>Ajuda
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Recent Activity -->
-    <div class="row">
-        <div class="col-12">
-            <div class="card shadow-sm border-0">
-                <div class="card-header bg-light border-bottom">
-                    <h5 class="card-title mb-0">
-                        <i class="bi bi-clock-history me-2"></i>Atividade Recente
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <p class="text-muted text-center py-4">
-                        Nenhuma atividade registrada ainda. Comece a usar as ferramentas!
-                    </p>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+  </div>
+</section>
 {% endblock %}

@@ -1,10 +1,8 @@
+{% extends 'layouts/app.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>IDFGeo RS | Ferramenta Interativa</title>
+{% block title %}IDFGeo RS | Ferramenta Interativa{% endblock %}
+{% block body_classes %}full-visual{% endblock %}
+{% block extra_css %}
     <meta name="description" content="Mapa interativo de equações de chuva (IDF) para o Rio Grande do Sul.">
 
     <!-- Fonts -->
@@ -12,13 +10,13 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 
-    <!-- Tailwind CSS -->
+    <!-- Tailwind (somente para este mapa por enquanto) -->
     <script src="https://cdn.tailwindcss.com"></script>
 
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
 
-    <!-- Styles -->
+    <!-- Styles específicos do mapa -->
     <style type="text/tailwindcss">
         @tailwind base;
         @tailwind components;
@@ -136,10 +134,10 @@
         window.STATIC_URL = "{% static 'ferramenta_drenagem/idfgeo/' %}";
         window.WORKER_URL = "{% static 'ferramenta_drenagem/idfgeo/idw_worker.js' %}";
     </script>
-</head>
-<body class="bg-slate-50 h-screen w-screen overflow-hidden flex flex-col text-slate-900 antialiased selection:bg-blue-100 selection:text-blue-900">
+{% endblock %}
+{% block content %}
+<div id="idfgeo-wrapper" class="bg-slate-50 h-screen w-100 overflow-hidden d-flex flex-column position-relative">
 
-    <!-- Loading Overlay -->
     <div id="loading-indicator" class="fixed inset-0 z-[9999] bg-white/80 backdrop-blur-md flex flex-col items-center justify-center transition-opacity duration-700">
         <div class="relative mb-4">
             <div class="w-16 h-16 border-[3px] border-slate-100 border-t-blue-600 rounded-full animate-spin"></div>
@@ -151,8 +149,7 @@
         <p class="text-xs text-slate-500 mt-2 font-mono bg-slate-100 px-2 py-1 rounded">Processando IDW (p=2.5)</p>
     </div>
 
-    <!-- Header -->
-    <header class="h-14 bg-white/90 backdrop-blur border-b border-slate-200/60 flex items-center justify-between px-4 md:px-6 z-30 absolute top-0 w-full shadow-sm">
+    <header class="h-14 bg-white/90 backdrop-blur border-bottom border-slate-200 flex items-center justify-between px-4 px-md-5 z-30 position-absolute top-0 start-0 w-100 shadow-sm">
         <div class="flex items-center gap-3">
             <div class="bg-blue-600 text-white p-1.5 rounded-lg shadow-blue-200 shadow-md">
                 <i data-lucide="cloud-rain" class="w-5 h-5"></i>
@@ -175,8 +172,7 @@
         </div>
     </header>
 
-    <!-- Main Content -->
-    <main class="flex-1 relative mt-14 h-[calc(100vh-3.5rem)]">
+    <main class="flex-1 position-relative mt-14" style="height:calc(100vh - 3.5rem);">
         <div id="map-container" class="w-full h-full bg-slate-100 z-0 outline-none"></div>
 
         <!-- Controls Layer (Floating) -->
@@ -249,15 +245,15 @@
             </div>
         </div>
     </main>
-
-    <!-- Use STATIC_URL to resolve module imports.
-         Since these are ES modules, relative imports in JS files work relative to the JS file itself.
-         So we only need to load the entry point (app.js) correctly.
-    -->
-    <script type="module" src="{% static 'ferramenta_drenagem/idfgeo/app.js' %}"></script>
+</div>
+{% endblock %}
+{% block extra_js %}
     <script>
-        // Initial icon render
-        document.addEventListener('DOMContentLoaded', () => lucide.createIcons());
+        window.STATIC_URL = "{% static 'ferramenta_drenagem/idfgeo/' %}";
+        window.WORKER_URL = "{% static 'ferramenta_drenagem/idfgeo/idw_worker.js' %}";
     </script>
-</body>
-</html>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script type="module" src="{% static 'ferramenta_drenagem/idfgeo/app.js' %}"></script>
+    <script>document.addEventListener('DOMContentLoaded', () => lucide.createIcons());</script>
+{% endblock %}

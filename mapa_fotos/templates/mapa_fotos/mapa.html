@@ -1,8 +1,8 @@
-{% extends 'base.html' %}
+{% extends 'layouts/app.html' %}
 
 {% block title %}{{ title }} - Resolve Eng{% endblock %}
 
-{% block head_extra %}
+{% block extra_css %}
 <!-- Leaflet CSS -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
@@ -72,8 +72,9 @@
 </style>
 {% endblock %}
 
+{% block body_classes %}full-visual{% endblock %}
 {% block content %}
-<div class="container-lg py-4">
+<div class="ds-container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h1 class="h2">{{ title }}</h1>
@@ -102,7 +103,7 @@
     </div>
 
     <!-- Map Container -->
-    <div class="card shadow-sm position-relative">
+    <div class="p-0 rounded-0 shadow-sm position-relative" style="background:var(--color-surface);border:1px solid var(--color-border);">
         <div id="measureInfo"></div>
         <div class="card-body p-0">
             <div id="map"></div>
@@ -123,10 +124,11 @@
             </div>
         </div>
     </div>
+<!-- Modal preserved -->
 </div>
 {% endblock %}
 
-{% block scripts %}
+{% block extra_js %}
 <!-- Leaflet JS -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="

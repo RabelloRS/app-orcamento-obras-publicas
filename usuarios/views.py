@@ -15,11 +15,20 @@ def public_home(request):
 
 @login_required(login_url='usuarios:login')
 def dashboard(request):
-    """Restricted dashboard - only for authenticated users."""
+    """Restricted landing page."""
     context = {
-        'title': 'Dashboard',
+        'title': 'Início',
     }
     return render(request, 'usuarios/dashboard.html', context)
+
+
+@login_required(login_url='usuarios:login')
+def dashboard_new(request):
+    """Pilot new unified layout dashboard."""
+    context = {
+        'title': 'Início (Piloto)',
+    }
+    return render(request, 'usuarios/dashboard_new.html', context)
 
 
 def home(request):

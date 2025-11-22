@@ -1,14 +1,16 @@
-{% extends 'base.html' %}
+{% extends 'layouts/app.html' %}
 
 {% block title %}Resolve — Home{% endblock %}
 
 {% block content %}
-<div class="container py-5">
-  <h1 class="mb-3">Resolve — Aplicações arquivadas</h1>
-  <p class="lead">As aplicações de exemplo foram arquivadas para reinicialização. Acesse o painel de administração ou faça login.</p>
-  <div class="mt-4">
-    <a class="btn btn-primary me-2" href="/admin/">Admin</a>
-    <a class="btn btn-outline-secondary" href="/contas/login/">Login</a>
+<div class="ds-container py-5">
+  <div class="p-4 rounded-md shadow-1" style="background:var(--color-surface);border:1px solid var(--color-border);">
+    <h1 class="h4 mb-3">Resolve — Aplicações Arquivadas</h1>
+    <p class="text-soft mb-3">As aplicações de exemplo foram arquivadas para reinicialização. Acesse o painel de administração ou faça login.</p>
+    <div class="d-flex gap-2">
+      <a class="btn btn-sm btn-primary" href="/admin/">Admin</a>
+      <a class="btn btn-sm btn-outline-secondary" href="/contas/login/">Login</a>
+    </div>
   </div>
 </div>
 {% endblock %}

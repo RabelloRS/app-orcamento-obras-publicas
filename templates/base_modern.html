@@ -1,0 +1,94 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>{% block title %}Resolve Eng{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" />
+  <link rel="stylesheet" href="{% static 'css/tokens.css' %}" />
+  <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+  {% block head_extra %}{% endblock %}
+</head>
+<body>
+  <div class="layout-wrapper">
+    {% if user.is_authenticated %}
+    <nav class="sidebar" id="sidebar" aria-label="Menu Lateral">
+      <div class="sidebar-header"><i class="bi bi-tools me-2"></i>Resolve</div>
+      <div class="sidebar-content">
+        <a href="{% url 'usuarios:dashboard' %}" class="nav-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"><i class="bi bi-grid"></i> Dashboard</a>
+        <div class="mt-4 mb-2 text-uppercase text-muted" style="font-size:0.75rem;font-weight:700;letter-spacing:1px;">Ferramentas</div>
+        <a href="{% url 'ferramenta_drenagem:calculo_volume' %}" class="nav-item {% if request.resolver_match.url_name == 'calculo_volume' %}active{% endif %}"><i class="bi bi-droplet"></i> Drenagem</a>
+        <a href="{% url 'mapa_fotos:mapa' %}" class="nav-item {% if request.resolver_match.url_name == 'mapa' %}active{% endif %}"><i class="bi bi-map"></i> Mapa de Fotos</a>
+        <a href="{% url 'ferramenta_drenagem:idfgeo' %}" class="nav-item {% if request.resolver_match.url_name == 'idfgeo' %}active{% endif %}"><i class="bi bi-cloud-rain"></i> IDFGeo RS</a>
+        <div class="mt-auto border-top pt-3">
+          <form action="{% url 'usuarios:logout' %}" method="post" class="nav-item text-danger p-0">
+            {% csrf_token %}
+            <button type="submit" class="btn w-100 text-start d-flex align-items-center" style="padding:12px 16px;">
+              <i class="bi bi-box-arrow-left me-2"></i> Sair
+            </button>
+          </form>
+        </div>
+      </div>
+    </nav>
+    {% endif %}
+    <main class="main-content">
+      <header class="top-header">
+        <div class="d-flex align-items-center">
+          {% if user.is_authenticated %}
+          <button class="menu-toggle btn btn-link p-0 me-3" id="sidebarToggle" aria-label="Abrir menu"><i class="bi bi-list"></i></button>
+          {% endif %}
+          <h5 class="mb-0 fw-bold">{% block page_title %}Dashboard{% endblock %}</h5>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <button id="themeToggleGlobal" class="btn btn-outline-primary btn-sm" type="button" data-bs-toggle="tooltip" title="Alternar tema">
+            <i class="bi bi-moon"></i>
+          </button>
+          {% if user.is_authenticated %}
+            <span class="d-none d-sm-block text-muted small">{{ user.username }}</span>
+            <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center" style="width:32px;height:32px;">{{ user.username|slice:":1"|upper }}</div>
+          {% else %}
+            <a href="{% url 'usuarios:login' %}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-box-arrow-in-right me-1"></i>Login</a>
+            <a href="{% url 'usuarios:register' %}" class="btn btn-primary btn-sm"><i class="bi bi-person-plus me-1"></i>Cadastro</a>
+          {% endif %}
+        </div>
+      </header>
+      <div class="content-body">
+        {% if messages %}
+          {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} mb-4 border-0 shadow-sm rounded-3">{{ message }}</div>
+          {% endfor %}
+        {% endif %}
+        {% block content_wrapper %}
+          <div class="container-readable">
+            {% block content %}{% endblock %}
+          </div>
+        {% endblock %}
+      </div>
+    </main>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="{% static 'js/layout-init.js' %}"></script>
+  <script>
+    (function(){
+      const sidebar = document.getElementById('sidebar');
+      const toggleBtn = document.getElementById('sidebarToggle');
+      if(toggleBtn && sidebar){
+        toggleBtn.addEventListener('click',()=>{ sidebar.classList.toggle('active'); });
+        document.addEventListener('click',(e)=>{
+          if(window.innerWidth <= 1024){
+            if(!sidebar.contains(e.target) && !toggleBtn.contains(e.target) && sidebar.classList.contains('active')){
+              sidebar.classList.remove('active');
+            }
+          }
+        });
+      }
+    })();
+  </script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,5 +1,8 @@
 from django.shortcuts import render
-
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from .models import RainEquation
+import json
 
 def calculo_volume(request):
     """Drainage volume calculation tool."""
@@ -8,11 +11,6 @@ def calculo_volume(request):
     }
     return render(request, 'drenagem/calculo_volume.html', context)
 
-
-from django.http import JsonResponse
-from django.views.decorators.http import require_POST
-from .models import RainEquation
-import json
 
 def dimensionamento(request):
     """Hydraulic sizing tool."""
@@ -23,9 +21,11 @@ def dimensionamento(request):
     }
     return render(request, 'drenagem/dimensionamento.html', context)
 
+
 def idfgeo(request):
     """Interactive Map for Rainfall Equations (IDF) in RS."""
     return render(request, 'drenagem/idfgeo.html')
+
 
 @require_POST
 def add_equation(request):
