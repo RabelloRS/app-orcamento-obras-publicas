@@ -1,4 +1,5 @@
 import { IDF_CONSTANTS, LIMITS } from './config.js';
+import { valueToColor } from './color_utils.js';
 
 /**
  * UI Manager for Popups, Calculator and Exports.
@@ -218,6 +219,13 @@ export function updateLegend(type) {
 
 
     const grad = document.getElementById('legend-gradient');
-
-    grad.style.background = `linear-gradient(to top, hsl(240,90%,60%), hsl(0,90%,60%))`;
+    const stops = [];
+    const steps = 6;
+    for (let i = 0; i < steps; i++) {
+        const t = i / (steps - 1);
+        const value = config.min + t * (config.max - config.min);
+        const color = valueToColor(value, config.min, config.max);
+        stops.push(`rgb(${color.join(',')}) ${t * 100}%`);
+    }
+    grad.style.background = `linear-gradient(to top, ${stops.join(', ')})`;
 }

@@ -96,6 +96,7 @@ Testes
 - `setup/urls.py`: inclusão das `urls.py` de cada app.
 - `mapa_fotos/models.py` e campos `ImageField`/`FileField` para referência de uploads.
 - `ferramenta_mapa/views.py`, `mapa_fotos/views.py`, `ferramenta_drenagem/views.py`: exemplos de padrões `render(...)` e tratamento de formulários.
+
 ### Módulo IDFGeo (Mapa de Equações de Chuva)
 
 Lista de referências principais:
@@ -104,8 +105,23 @@ Lista de referências principais:
 - View: `ferramenta_drenagem.views.idfgeo`
 - URL canônica: `/drenagem/idfgeo/` (atalho `/idfgeo/` faz redirect via `setup/urls.py`)
 - Frontend: Leaflet (CDN), Tailwind (CDN), ícones Lucide — todos via `<script>`/`<link>` sem build.
-- Assets JS: `static/ferramenta_drenagem/idfgeo/` (ex.: `app.js`, `idw_worker.js`).
-- Objetivo: visualização espacial de coeficientes (K / expoente) das equações IDF para o RS.
+- Assets JS: `static/ferramenta_drenagem/idfgeo/` (ex.: `app.js`, `map_renderer.js`, `ui_manager.js`, `dataset_loader.js`).
+- Dados: pirâmide de tiles em `static/ferramenta_drenagem/idfgeo/tiles/<a|b>/` e amostras exatas em `datasets/<a|b>.json` (mesmo gradiente usado na UI).
+- Objetivo: visualização espacial dos coeficientes oficiais UFPEL (K / expoente) das equações IDF para o RS.
+
+Conversão dos rasters oficiais para tiles/JSON:
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+python scripts/generate_idfgeo_tiles.py \
+  --input-dir "G:/Meu Drive/BIBLIOTECA/DRENAGEM URBANA/Coeficientes_IDF_RS-1/Rasteres" \
+  --output-dir "ferramenta_drenagem/static/ferramenta_drenagem/idfgeo" \
+  --min-zoom 6 --max-zoom 10
+```
+
+O script utiliza `rasterio`, `pyproj` e `mercantile` para reprojetar os GeoTIFFs ESRI:102033 para WGS84, gerar tiles PNG com o mesmo gradiente do front e exportar grids JSON para amostragem bilinear (popups, tooltips e relatórios). Ajuste `--min-zoom`, `--max-zoom` e o diretório de entrada conforme o drive local.
 
 ## Layout Unificado e Design System
 
