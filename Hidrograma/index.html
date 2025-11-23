@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HidroCalc Pro | Memorial SCS & HUFF</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- jsPDF & html2canvas for PDF Export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <!-- PapaParse for CSV Export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+
+    <!-- QRCode.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .chart-container { position: relative; height: 300px; width: 100%; }
+        
+        /* Print adjustments */
+        @media print {
+            body * { visibility: hidden; }
+            #print-area, #print-area * { visibility: visible; }
+            #print-area { position: absolute; left: 0; top: 0; width: 100%; }
+        }
+        
+        .memorial-table th, .memorial-table td { border: 1px solid #cbd5e1; padding: 4px 8px; text-align: center; font-size: 0.75rem; }
+        .memorial-table th { background-color: #f8fafc; font-weight: 600; }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-900 font-sans antialiased">
+
+    <nav class="bg-slate-900 text-white shadow-lg sticky top-0 z-50 border-b-4 border-emerald-500">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center gap-3">
+                    <i data-lucide="droplets" class="text-emerald-400 h-8 w-8"></i>
+                    <div>
+                        <h1 class="text-xl font-bold tracking-tight">HidroCalc Pro</h1>
+                        <p class="text-xs text-slate-400 font-medium">SCS Unit Hydrograph & HUFF</p>
+                    </div>
+                </div>
+                <div class="flex space-x-3 text-sm font-medium">
+                    <button id="btn-export-csv" class="flex items-center gap-2 bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded transition">
+                        <i data-lucide="file-spreadsheet" class="h-4 w-4"></i>
+                        <span class="hidden md:inline">CSV</span>
+                    </button>
+                    <button id="btn-export-pdf" class="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 px-3 py-1.5 rounded transition shadow-lg shadow-emerald-900/20">
+                        <i data-lucide="file-down" class="h-4 w-4"></i>
+                        <span class="hidden md:inline">Memorial PDF</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 gap-6 grid grid-cols-1 lg:grid-cols-12">
+        
+        <!-- LEFT COLUMN: INPUTS -->
+        <aside class="lg:col-span-4 space-y-6">
+            
+            <!-- Inputs Card -->
+            <div class="bg-white rounded-xl shadow-md border border-slate-200 overflow-hidden">
+                <div class="bg-slate-50 px-5 py-3 border-b border-slate-200 flex items-center justify-between">
+                    <h2 class="font-semibold text-slate-700 flex items-center gap-2">
+                        <i data-lucide="settings-2" class="h-4 w-4 text-blue-600"></i> Dados de Entrada
+                    </h2>
+                    <button id="btn-load-example" class="text-xs bg-amber-100 hover:bg-amber-200 text-amber-800 px-2 py-1 rounded border border-amber-300 transition flex items-center gap-1">
+                        <i data-lucide="book-open" class="h-3 w-3"></i> Bacia Exemplo
+                    </button>
+                </div>
+                
+                <div class="p-5 space-y-5">
+                    
+                    <!-- Bacia -->
+                    <div class="space-y-3">
+                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider border-b pb-1">Bacia Hidrográfica</h3>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="col-span-2">
+                                <label class="block text-xs font-medium text-slate-600 mb-1">Área (km²)</label>
+                                <input type="number" id="in-area" value="1.5" min="0.01" step="0.01" class="input-calc w-full text-sm border-slate-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-600 mb-1">Comp. L (km)</label>
+                                <input type="number" id="in-length" value="2.0" min="0.1" step="0.1" class="input-calc w-full text-sm border-slate-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-600 mb-1">Desnível H (m)</label>
+                                <input type="number" id="in-slope" value="20" min="1" step="0.5" class="input-calc w-full text-sm border-slate-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                            <div class="col-span-2">
+                                <label class="block text-xs font-medium text-slate-600 mb-1 flex justify-between">
+                                    <span>Curve Number (CN)</span>
+                                    <span id="val-cn" class="text-blue-600 font-bold">80</span>
+                                </label>
+                                <input type="range" id="in-cn" value="80" min="30" max="98" step="1" class="input-calc w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer">
+                                <div class="flex justify-between text-[10px] text-slate-400 mt-1">
+                                    <span>Permeável (30)</span>
+                                    <span>Impermeável (98)</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Chuva -->
+                    <div class="space-y-3">
+                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider border-b pb-1">Chuva de Projeto</h3>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-medium text-slate-600 mb-1">TR (Anos)</label>
+                                <select id="in-tr" class="input-calc w-full text-sm border-slate-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                                    <option value="2">2 anos</option>
+                                    <option value="5">5 anos</option>
+                                    <option value="10" selected>10 anos</option>
+                                    <option value="25">25 anos</option>
+                                    <option value="50">50 anos</option>
+                                    <option value="100">100 anos</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-600 mb-1">Duração (min)</label>
+                                <input type="number" id="in-duration" value="60" min="10" step="5" class="input-calc w-full text-sm border-slate-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                        </div>
+                        
+                        <div class="bg-blue-50 p-2 rounded border border-blue-100 text-xs space-y-1">
+                            <div class="font-medium text-blue-800">IDF Curitiba/PR</div>
+                            <div class="text-blue-600 font-mono">i = 5726.64 * TR^0.159 / (t + 41)^1.041</div>
+                            <div class="flex items-center gap-1 pt-1">
+                                <input type="checkbox" id="chk-custom-idf" class="rounded border-slate-300 text-blue-600 focus:ring-blue-500">
+                                <label for="chk-custom-idf" class="text-slate-600 cursor-pointer">Editar Parâmetros</label>
+                            </div>
+                            <div id="box-idf-params" class="hidden grid-cols-4 gap-1 mt-1">
+                                <input type="number" id="idf-k" placeholder="K" class="input-calc border rounded px-1 py-0.5 text-center">
+                                <input type="number" id="idf-a" placeholder="a" class="input-calc border rounded px-1 py-0.5 text-center">
+                                <input type="number" id="idf-b" placeholder="b" class="input-calc border rounded px-1 py-0.5 text-center">
+                                <input type="number" id="idf-c" placeholder="c" class="input-calc border rounded px-1 py-0.5 text-center">
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                
+                <!-- Validation Messages -->
+                <div id="validation-box" class="hidden bg-red-50 p-4 border-t border-red-100 text-xs text-red-700">
+                    <p class="font-bold flex items-center gap-1 mb-1"><i data-lucide="alert-circle" class="h-3 w-3"></i> Atenção:</p>
+                    <ul id="validation-list" class="list-disc list-inside space-y-0.5"></ul>
+                </div>
+            </div>
+        </aside>
+
+        <!-- RIGHT COLUMN: OUTPUTS -->
+        <div class="lg:col-span-8 space-y-6">
+            
+            <!-- Summary Cards -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-emerald-500">
+                    <p class="text-xs font-bold text-slate-400 uppercase">Vazão de Pico</p>
+                    <div class="mt-1 flex items-baseline gap-1">
+                        <span id="res-qp" class="text-2xl font-bold text-slate-800">--</span>
+                        <span class="text-sm text-slate-500">m³/s</span>
+                    </div>
+                </div>
+                <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-blue-500">
+                    <p class="text-xs font-bold text-slate-400 uppercase">Tempo de Pico</p>
+                    <div class="mt-1 flex items-baseline gap-1">
+                        <span id="res-tp" class="text-2xl font-bold text-slate-800">--</span>
+                        <span class="text-sm text-slate-500">min</span>
+                    </div>
+                </div>
+                <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-amber-500">
+                    <p class="text-xs font-bold text-slate-400 uppercase">Volume Total</p>
+                    <div class="mt-1 flex items-baseline gap-1">
+                        <span id="res-vol" class="text-2xl font-bold text-slate-800">--</span>
+                        <span class="text-sm text-slate-500">m³</span>
+                    </div>
+                </div>
+                <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-indigo-500">
+                    <p class="text-xs font-bold text-slate-400 uppercase">Chuva Efetiva</p>
+                    <div class="mt-1 flex items-baseline gap-1">
+                        <span id="res-pe" class="text-2xl font-bold text-slate-800">--</span>
+                        <span class="text-sm text-slate-500">mm</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabs Container -->
+            <div class="bg-white rounded-xl shadow-md border border-slate-200 min-h-[600px] flex flex-col">
+                <!-- Tab Headers -->
+                <div class="flex border-b border-slate-200 bg-slate-50 px-4 overflow-x-auto">
+                    <button class="tab-btn px-4 py-3 text-sm font-medium text-blue-600 border-b-2 border-blue-600 focus:outline-none" data-target="tab-dashboard">
+                        <i data-lucide="bar-chart-2" class="inline h-4 w-4 mr-1"></i> Gráficos Dinâmicos
+                    </button>
+                    <button class="tab-btn px-4 py-3 text-sm font-medium text-slate-500 hover:text-blue-600 focus:outline-none" data-target="tab-tables">
+                        <i data-lucide="table" class="inline h-4 w-4 mr-1"></i> Tabelas Detalhadas
+                    </button>
+                    <button class="tab-btn px-4 py-3 text-sm font-medium text-slate-500 hover:text-blue-600 focus:outline-none" data-target="tab-memorial">
+                        <i data-lucide="file-text" class="inline h-4 w-4 mr-1"></i> Memorial Descritivo
+                    </button>
+                </div>
+
+                <!-- Tab Content -->
+                <div class="p-6 flex-1 overflow-y-auto relative bg-slate-50/50">
+                    
+                    <!-- DASHBOARD -->
+                    <div id="tab-dashboard" class="tab-content space-y-8 animate-fade-in">
+                        <div>
+                            <h3 class="text-sm font-bold text-slate-700 mb-4 pl-2 border-l-4 border-blue-500">Hidrograma de Projeto (SCS)</h3>
+                            <div class="chart-container bg-white p-2 rounded shadow-sm border">
+                                <canvas id="chart-hydrograph"></canvas>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div>
+                                <h3 class="text-sm font-bold text-slate-700 mb-4 pl-2 border-l-4 border-indigo-500">Hietograma HUFF (Chuva Efetiva)</h3>
+                                <div class="chart-container bg-white p-2 rounded shadow-sm border">
+                                    <canvas id="chart-hyetograph"></canvas>
+                                </div>
+                            </div>
+                            <div>
+                                <h3 class="text-sm font-bold text-slate-700 mb-4 pl-2 border-l-4 border-amber-500">Comparativo Quartis HUFF</h3>
+                                <div class="chart-container bg-white p-2 rounded shadow-sm border">
+                                    <canvas id="chart-quartiles"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TABLES -->
+                    <div id="tab-tables" class="tab-content hidden space-y-8">
+                        <div>
+                            <h3 class="text-sm font-bold text-slate-700 mb-2">Tabela de Convolução (Hidrograma Final)</h3>
+                            <div class="overflow-x-auto border rounded-lg max-h-96 bg-white shadow-sm">
+                                <table class="min-w-full text-xs text-left divide-y divide-slate-200">
+                                    <thead class="bg-slate-50 sticky top-0 shadow-sm">
+                                        <tr>
+                                            <th class="px-4 py-2 font-semibold text-slate-600">Tempo (min)</th>
+                                            <th class="px-4 py-2 font-semibold text-slate-600">Precip. Inc (mm)</th>
+                                            <th class="px-4 py-2 font-semibold text-slate-600">Precip. Exc (mm)</th>
+                                            <th class="px-4 py-2 font-semibold text-slate-600">Ord. HU (m³/s)</th>
+                                            <th class="px-4 py-2 font-semibold text-slate-600 text-right">Vazão Final (m³/s)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="table-detailed-body" class="divide-y divide-slate-100 bg-white font-mono">
+                                        <!-- Rows via JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- MEMORIAL -->
+                    <div id="tab-memorial" class="tab-content hidden">
+                        <div id="print-area" class="bg-white p-10 max-w-4xl mx-auto border border-slate-200 shadow-lg text-slate-900 leading-relaxed">
+                            
+                            <!-- Header -->
+                            <div class="border-b-4 border-emerald-500 pb-4 mb-8 flex justify-between items-end">
+                                <div>
+                                    <h1 class="text-3xl font-bold text-slate-900 tracking-tight">Memorial de Cálculo</h1>
+                                    <p class="text-lg text-emerald-700 font-medium">Determinação de Vazão de Projeto (SCS)</p>
+                                </div>
+                                <div class="text-right text-sm text-slate-500">
+                                    <p>Data: <span id="mem-date" class="font-bold"></span></p>
+                                    <p>Ref: Localidade Curitiba/PR</p>
+                                </div>
+                            </div>
+
+                            <!-- 1. Basin -->
+                            <section class="mb-8">
+                                <h2 class="text-lg font-bold text-slate-800 border-b border-slate-300 mb-3 pb-1">1. Caracterização da Bacia Hidrográfica</h2>
+                                <p class="text-sm mb-3 text-justify">Parâmetros fisiográficos obtidos a partir do processamento cartográfico da área de estudo.</p>
+                                <table class="memorial-table w-full mb-4">
+                                    <thead>
+                                        <tr><th>Parâmetro</th><th>Símbolo</th><th>Valor</th><th>Unidade</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr><td class="text-left">Área de Drenagem</td><td>A</td><td id="mem-area" class="font-bold"></td><td>km²</td></tr>
+                                        <tr><td class="text-left">Comprimento Talvegue</td><td>L</td><td id="mem-length" class="font-bold"></td><td>km</td></tr>
+                                        <tr><td class="text-left">Desnível</td><td>H</td><td id="mem-slope" class="font-bold"></td><td>m</td></tr>
+                                        <tr><td class="text-left">Curve Number</td><td>CN</td><td id="mem-cn" class="font-bold"></td><td>-</td></tr>
+                                    </tbody>
+                                </table>
+                            </section>
+
+                            <!-- 2. Rain Parameters -->
+                            <section class="mb-8">
+                                <h2 class="text-lg font-bold text-slate-800 border-b border-slate-300 mb-3 pb-1">2. Parâmetros Pluviométricos</h2>
+                                
+                                <div class="grid grid-cols-2 gap-6 mb-4">
+                                    <div>
+                                        <h3 class="text-sm font-bold text-slate-700 mb-1">2.1 Tempo de Concentração (Kirpich)</h3>
+                                        <div class="bg-slate-50 p-2 border rounded text-sm">
+                                            <p class="mb-1">Formula: 57 * (L³/H)^0.385</p>
+                                            <p><strong>tc = <span id="mem-tc"></span> min</strong></p>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-sm font-bold text-slate-700 mb-1">2.2 Chuva de Projeto</h3>
+                                        <div class="bg-slate-50 p-2 border rounded text-sm">
+                                            <p>TR: <span id="mem-tr" class="font-bold"></span> anos | Duração: <span id="mem-td" class="font-bold"></span> min</p>
+                                            <p>Intensidade: <strong><span id="mem-i"></span> mm/h</strong></p>
+                                            <p>Precip. Total: <strong><span id="mem-p"></span> mm</strong></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <!-- 3. Temporal Distribution -->
+                            <section class="mb-8">
+                                <h2 class="text-lg font-bold text-slate-800 border-b border-slate-300 mb-3 pb-1">3. Distribuição Temporal (HUFF 1º Quartil)</h2>
+                                <p class="text-sm mb-3 text-justify">A chuva foi distribuída conforme o modelo de HUFF 1º Quartil, concentrando a precipitação no início do evento.</p>
+                                
+                                <div class="flex gap-4 mb-4">
+                                    <div class="w-1/2">
+                                        <img id="img-chart-quartiles" class="w-full h-auto border border-slate-100" alt="Gráfico Quartis">
+                                    </div>
+                                    <div class="w-1/2">
+                                        <table class="memorial-table w-full">
+                                            <thead><tr><th>Passo</th><th>Tempo (min)</th><th>% Acum.</th><th>Precip. (mm)</th></tr></thead>
+                                            <tbody id="mem-table-huff"></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <!-- 4. Abstractions -->
+                            <section class="mb-8">
+                                <h2 class="text-lg font-bold text-slate-800 border-b border-slate-300 mb-3 pb-1">4. Abstrações (SCS)</h2>
+                                <div class="grid grid-cols-3 gap-4 text-center text-sm mb-4">
+                                    <div class="bg-slate-50 p-2 border rounded">
+                                        <p class="text-slate-500">Retenção Potencial (S)</p>
+                                        <p class="font-bold text-lg"><span id="mem-s"></span> mm</p>
+                                    </div>
+                                    <div class="bg-slate-50 p-2 border rounded">
+                                        <p class="text-slate-500">Abstração Inicial (Ia)</p>
+                                        <p class="font-bold text-lg"><span id="mem-ia"></span> mm</p>
+                                    </div>
+                                    <div class="bg-emerald-50 p-2 border border-emerald-200 rounded">
+                                        <p class="text-emerald-600">Precip. Efetiva Total</p>
+                                        <p class="font-bold text-lg text-emerald-800"><span id="mem-pe-total"></span> mm</p>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <!-- 5. Unit Hydrograph -->
+                            <section class="mb-8">
+                                <h2 class="text-lg font-bold text-slate-800 border-b border-slate-300 mb-3 pb-1">5. Hidrograma Unitário Sintético</h2>
+                                <p class="text-sm mb-2">Parâmetros do Hidrograma Unitário Triangular:</p>
+                                <div class="grid grid-cols-3 gap-4 text-sm text-center bg-slate-50 p-3 rounded border">
+                                    <div>
+                                        <span class="block text-xs uppercase">Tempo de Pico (tp)</span>
+                                        <span class="font-bold text-lg"><span id="mem-hutp"></span> min</span>
+                                    </div>
+                                    <div>
+                                        <span class="block text-xs uppercase">Tempo de Base (tb)</span>
+                                        <span class="font-bold text-lg"><span id="mem-hutb"></span> min</span>
+                                    </div>
+                                    <div>
+                                        <span class="block text-xs uppercase">Vazão Unitária (qp)</span>
+                                        <span class="font-bold text-lg"><span id="mem-huqp"></span> m³/s/mm</span>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <!-- 6. Final Hydrograph -->
+                            <section class="mb-8 break-inside-avoid">
+                                <h2 class="text-lg font-bold text-slate-800 border-b border-slate-300 mb-3 pb-1">6. Hidrograma de Projeto (Convolução)</h2>
+                                <p class="text-sm mb-4">O hidrograma final resulta da convolução entre a chuva efetiva incremental e o hidrograma unitário.</p>
+                                
+                                <div class="mb-6">
+                                    <img id="img-chart-hydrograph" class="w-full h-64 object-contain border border-slate-100" alt="Hidrograma Final">
+                                </div>
+
+                                <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-6 text-center">
+                                    <h3 class="text-emerald-800 font-bold uppercase text-sm tracking-wide mb-4">Resultados Finais</h3>
+                                    <div class="grid grid-cols-3 gap-8">
+                                        <div>
+                                            <p class="text-xs text-emerald-600 uppercase font-bold">Vazão de Pico</p>
+                                            <p class="text-4xl font-bold text-emerald-900"><span id="mem-final-qp"></span> <span class="text-lg">m³/s</span></p>
+                                        </div>
+                                        <div>
+                                            <p class="text-xs text-emerald-600 uppercase font-bold">Tempo de Ocorrência</p>
+                                            <p class="text-4xl font-bold text-emerald-900"><span id="mem-final-tp"></span> <span class="text-lg">min</span></p>
+                                        </div>
+                                        <div>
+                                            <p class="text-xs text-emerald-600 uppercase font-bold">Volume Total</p>
+                                            <p class="text-4xl font-bold text-emerald-900"><span id="mem-final-vol"></span> <span class="text-lg">m³</span></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <!-- 7. Conclusion / Footer -->
+                            <footer class="mt-12 pt-6 border-t-2 border-slate-800 flex items-center justify-between">
+                                <div class="w-2/3 text-xs text-slate-500 text-justify pr-4">
+                                    <p class="font-bold text-slate-700 mb-1">Nota Legal:</p>
+                                    <p>Este memorial foi gerado automaticamente pelo software HidroCalc Pro. A verificação dos parâmetros de entrada e a adequação do método à bacia são de responsabilidade do engenheiro projetista.</p>
+                                    <p class="mt-2">Acesse a simulação original através do QR Code ao lado.</p>
+                                </div>
+                                <div class="w-1/3 flex flex-col items-end">
+                                    <div id="qrcode" class="mb-1"></div>
+                                    <p class="text-[10px] text-slate-400">HidroCalc Pro Web App</p>
+                                </div>
+                            </footer>
+
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script type="module" src="js/app.js"></script>
+</body>
+</html>
