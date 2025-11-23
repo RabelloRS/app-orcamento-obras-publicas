@@ -34,26 +34,6 @@ const defaultRainData = {
     }
 };
 
-<<<<<<< HEAD
-let rainDataCache = null;
-
-export async function loadRainDataFromAPI() {
-    if (rainDataCache) return rainDataCache;
-    
-    try {
-        const response = await fetch('/ferramenta-drenagem/api/rain-equations/');
-        if (response.ok) {
-            const apiData = await response.json();
-            rainDataCache = { ...defaultRainData, ...apiData };
-            localStorage.setItem('smdu_rain_db', JSON.stringify(rainDataCache));
-            return rainDataCache;
-        }
-    } catch (error) {
-        console.warn("Erro ao carregar equações do banco de dados, usando dados locais:", error);
-    }
-    return loadRainData();
-}
-=======
 let cachedRainData = null;
 
 export async function loadRainDataFromServer() {
@@ -81,7 +61,6 @@ export async function loadRainDataFromServer() {
     }
 }
 
->>>>>>> a6e58ff (fix(drenagem): preencher IDF no Dimensionamento a partir da cidade selecionada; normalizar vírgula→ponto nos inputs; selecionar default 'Nova Petrópolis - RS' via server e client; ordenar cidades e default na Microdrenagem; ajustar sincronização no modal; atualizar testes)
 
 export function loadRainData() {
     if (cachedRainData) {
