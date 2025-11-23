@@ -9,6 +9,8 @@ services:
     restart: unless-stopped
     expose:
       - 8000
+    ports:
+      - "8002:8000"
     volumes:
       - .:/app
       - /var/www/resolve_django/static:/app/static

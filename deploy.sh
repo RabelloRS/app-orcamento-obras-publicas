@@ -158,20 +158,24 @@ log_info "Validando configuração do Nginx..."
 
 sleep 2
 
-if docker exec default_npm_1 nginx -t >/dev/null 2>&1; then
-    log_success "Configuração do Nginx válida"
-else
-    log_error "Erro na configuração do Nginx!"
-    docker exec default_npm_1 nginx -t
-    exit 1
-fi
+if docker ps --format '{{.Names}}' | grep -q '^default_npm_1$'; then
+    if docker exec default_npm_1 nginx -t >/dev/null 2>&1; then
+        log_success "Configuração do Nginx válida"
+    else
+        log_error "Erro na configuração do Nginx!"
+        docker exec default_npm_1 nginx -t
+        exit 1
+    fi
 
-# Recarregar Nginx
-if docker exec default_npm_1 nginx -s reload >/dev/null 2>&1; then
-    log_success "Nginx recarregado"
+    # Recarregar Nginx
+    if docker exec default_npm_1 nginx -s reload >/dev/null 2>&1; then
+        log_success "Nginx recarregado"
+    else
+        log_error "Erro ao recarregar Nginx!"
+        exit 1
+    fi
 else
-    log_error "Erro ao recarregar Nginx!"
-    exit 1
+    log_warning "Container default_npm_1 não está em execução. Pulando validação do proxy."
 fi
 
 # ============================================================================

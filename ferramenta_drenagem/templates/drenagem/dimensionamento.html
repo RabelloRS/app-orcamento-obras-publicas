@@ -251,7 +251,7 @@
                                 <label class="form-label">Equação de Chuva</label>
                                 <button type="button" class="btn btn-outline-primary btn-sm w-100"
                                     data-bs-toggle="modal" data-bs-target="#rainModal">
-                                    Configurar (SP)
+                                    Configurar (Nova Petrópolis)
                                 </button>
                             </div>
                         </div>
@@ -593,10 +593,9 @@
                         <div class="mb-3">
                             <label class="form-label">Cidade / Localidade</label>
                             <select class="form-select" id="city-select">
-                                <option value="" selected disabled>Escolha uma cidade...</option>
                                 {% for eq in equations %}
                                 <option value="{{ eq.id }}" data-k="{{ eq.k }}" data-a="{{ eq.a }}" data-b="{{ eq.b }}"
-                                    data-c="{{ eq.c }}">{{ eq.name }}</option>
+                                    data-c="{{ eq.c }}" {% if eq.name == "Nova Petrópolis - RS" %}selected{% endif %}>{{ eq.name }}</option>
                                 {% endfor %}
                             </select>
                         </div>
@@ -1210,6 +1209,16 @@
 
         const citySelect = document.getElementById('city-select');
         if (citySelect) {
+            // Carrega os valores padrão da primeira opção (Nova Petrópolis)
+            const firstOption = citySelect.options[0];
+            if (firstOption && firstOption.value) {
+                document.getElementById('rain-k').value = firstOption.dataset.k;
+                document.getElementById('rain-a').value = firstOption.dataset.a;
+                document.getElementById('rain-b').value = firstOption.dataset.b;
+                document.getElementById('rain-c').value = firstOption.dataset.c;
+                calculateAll();
+            }
+            
             citySelect.addEventListener('change', function () {
                 const option = this.options[this.selectedIndex];
                 if (option && option.value) {
