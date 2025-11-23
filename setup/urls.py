@@ -31,6 +31,7 @@ urlpatterns = [
     path('drenagem/', include('ferramenta_drenagem.urls')),
     path('fotos/', include('mapa_fotos.urls')),
     path('ferramentas/', include('ferramenta_mapa.urls')),
+    path('hidrograma/', include('hidrograma.urls')),
 ]
 
 if settings.DEBUG:

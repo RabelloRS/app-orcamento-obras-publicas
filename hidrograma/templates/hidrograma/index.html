@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+{% load static %}
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -24,7 +25,7 @@
     <!-- QRCode.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
-    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="{% static 'hidrograma/css/styles.css' %}">
     <style>
         /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 8px; height: 8px; }
@@ -428,6 +429,6 @@
         </div>
     </main>
 
-    <script type="module" src="js/app.js"></script>
+    <script type="module" src="{% static 'hidrograma/js/app.js' %}"></script>
 </body>
 </html>

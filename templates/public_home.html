@@ -42,12 +42,22 @@
 <section class="ds-container pb-5">
     <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
         <div>
-            <p class="text-uppercase text-muted small fw-semibold mb-1">Disponíveis na Área Restrita</p>
             <h3 class="h4 mb-0">Aplicações atuais</h3>
         </div>
         <a href="{% url 'usuarios:dashboard' %}" class="btn btn-outline-primary btn-sm"><i class="bi bi-lock me-1"></i>Painel Restrito</a>
     </div>
     <div class="row g-4">
+        <!-- HidroCalc Pro (Hidrograma) -->
+        <div class="col-md-4">
+            <article class="h-100 p-4 rounded-md shadow-1 d-flex flex-column" style="background:var(--color-surface);border:1px solid var(--color-border);">
+                <i class="bi bi-water text-primary" style="font-size:2rem;"></i>
+                <h4 class="h5 fw-semibold mt-3 mb-2">HidroCalc Pro</h4>
+                <p class="text-soft small mb-4">Geração de hidrogramas e análise hidrológica com método SCS e HUFF.</p>
+                <div class="mt-auto">
+                    <a href="{% url 'hidrograma:index' %}" class="btn btn-sm btn-primary"><i class="bi bi-arrow-right me-1"></i>Usar agora</a>
+                </div>
+            </article>
+        </div>
         <div class="col-md-4">
             <article class="h-100 p-4 rounded-md shadow-1 d-flex flex-column" style="background:var(--color-surface);border:1px solid var(--color-border);">
                 <i class="bi bi-droplet-fill text-info" style="font-size:2rem;"></i>
