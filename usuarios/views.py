@@ -1,8 +1,10 @@
 from django.shortcuts import render, redirect
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth import authenticate, login
 from django.views.decorators.http import require_http_methods
+
+from .forms import RegistrationForm
+from .models import EmailDomainGroup, UserAccessProfile
 
 
 def public_home(request):
@@ -40,13 +42,34 @@ def home(request):
 
 @require_http_methods(["GET", "POST"])
 def register(request):
-    """User registration view."""
+    """User registration view with post-approval access control."""
+    domain_groups = list(
+        EmailDomainGroup.objects.order_by('domain').values_list('domain', flat=True)
+    )
+
     if request.method == 'POST':
-        form = UserCreationForm(request.POST)
+        form = RegistrationForm(request.POST)
         if form.is_valid():
-            user = form.save()
-            login(request, user)
-            return redirect('usuarios:dashboard')
+            user = form.save(commit=False)
+            user.is_active = False  # aguardará aprovação
+            user.save()
+
+            email_domain = form.cleaned_data['email'].split('@')[1].lower()
+            domain_group, _ = EmailDomainGroup.objects.get_or_create(domain=email_domain)
+            UserAccessProfile.objects.create(user=user, domain_group=domain_group)
+
+            messages.success(
+                request,
+                'Cadastro recebido! Aguarde a aprovação do administrador para acessar as áreas restritas.'
+            )
+            return redirect('usuarios:login')
     else:
-        form = UserCreationForm()
-    return render(request, 'usuarios/register.html', {'form': form})
+        form = RegistrationForm()
+    return render(
+        request,
+        'usuarios/register.html',
+        {
+            'form': form,
+            'domain_groups': domain_groups,
+        },
+    )
