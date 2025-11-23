@@ -20,6 +20,16 @@
         margin-bottom: 20px;
     }
 
+    .calc-card .card-body {
+        padding: var(--space-5);
+    }
+
+    @media (max-width: 575px) {
+        .calc-card .card-body {
+            padding: var(--space-4) var(--space-3);
+        }
+    }
+
     .calc-header {
         background: linear-gradient(135deg, var(--color-primary) 0%, #1d4ed8 100%);
         color: white;
@@ -409,16 +419,25 @@
                                     </div>
 
                                     <div class="mt-3">
-                                        <label class="form-label">Sugestão Comercial:</label>
-                                        <div class="d-flex align-items-center gap-2">
-                                            <select class="form-select" id="pipe-count">
-                                                <option value="1">Simples (1x)</option>
-                                                <option value="2">Dupla (2x)</option>
-                                                <option value="3">Tripla (3x)</option>
-                                            </select>
-                                            <span class="fw-bold fs-5">Ø</span>
-                                            <input type="text" class="form-control fw-bold text-primary" id="res-d-comm"
-                                                readonly>
+                                        <div class="row g-3">
+                                            <div class="col-sm-6">
+                                                <label class="form-label">Quantidade de Tubos</label>
+                                                <input type="number" class="form-control" id="pipe-count" value="1"
+                                                    min="1" max="99">
+                                            </div>
+                                            <div class="col-sm-6">
+                                                <label class="form-label">Diâmetro Comercial</label>
+                                                <select class="form-select" id="pipe-diameter"></select>
+                                            </div>
+                                        </div>
+                                        <small class="text-muted d-block mt-2">Sugestão automática:
+                                            <span class="fw-semibold" id="pipe-suggestion">--</span></small>
+                                        <div class="result-box mt-3" style="background:var(--color-surface-alt);">
+                                            <div class="result-label">Capacidade da Configuração Comercial</div>
+                                            <div class="result-value" id="res-pipe-capacity">--</div>
+                                            <small class="text-muted">m³/s disponíveis | Necessário:
+                                                <span id="pipe-q-needed">--</span> | Diâmetro selecionado:
+                                                <span id="res-d-comm">--</span></small>
                                         </div>
                                     </div>
                                 </div>
@@ -454,10 +473,30 @@
                                         <span class="input-group-text">m</span>
                                     </div>
 
+                                    <label class="form-label">Altura Útil (H)</label>
+                                    <div class="input-group mb-3">
+                                        <input type="number" class="form-control" id="box-height" value="1.5" step="0.5">
+                                        <span class="input-group-text">m</span>
+                                    </div>
+
+                                    <label class="form-label">Seção Comercial</label>
+                                    <select class="form-select mb-2" id="box-commercial">
+                                        <option value="custom">Personalizar dimensões</option>
+                                    </select>
+                                    <small class="text-muted">Sugestão automática:
+                                        <span class="fw-semibold" id="box-suggestion">--</span></small>
+
                                     <div class="result-box">
                                         <div class="result-label">Altura d'água (y)</div>
                                         <div class="result-value" id="res-box-h">--</div>
                                         <small class="text-muted">m (Regime Uniforme)</small>
+                                    </div>
+
+                                    <div class="result-box mt-3" style="background:var(--color-surface-alt);">
+                                        <div class="result-label">Capacidade da Seção Comercial</div>
+                                        <div class="result-value" id="res-box-capacity">--</div>
+                                        <small class="text-muted">m³/s disponíveis | Necessário:
+                                            <span id="box-q-needed">--</span></small>
                                     </div>
                                 </div>
                                 <div class="col-md-6 text-center">
@@ -629,6 +668,34 @@
 {% block extra_js %}
 <script>
     document.addEventListener('DOMContentLoaded', () => {
+        const PIPE_DIAMETERS = [0.40, 0.60, 0.80, 1.00, 1.20, 1.50, 1.80, 2.00];
+        const BOX_SECTIONS = [
+            { label: '1,50 x 1,50 m', width: 1.50, height: 1.50 },
+            { label: '1,60 x 1,60 m', width: 1.60, height: 1.60 },
+            { label: '1,70 x 1,70 m', width: 1.70, height: 1.70 },
+            { label: '1,50 x 2,00 m', width: 1.50, height: 2.00 },
+            { label: '2,00 x 2,00 m', width: 2.00, height: 2.00 },
+            { label: '2,00 x 2,50 m', width: 2.00, height: 2.50 },
+            { label: '2,50 x 2,50 m', width: 2.50, height: 2.50 },
+            { label: '2,50 x 3,00 m', width: 2.50, height: 3.00 },
+            { label: '3,00 x 3,00 m', width: 3.00, height: 3.00 },
+            { label: '3,00 x 3,50 m', width: 3.00, height: 3.50 },
+            { label: '3,50 x 3,50 m', width: 3.50, height: 3.50 },
+            { label: '3,50 x 4,00 m', width: 3.50, height: 4.00 },
+            { label: '4,00 x 4,00 m', width: 4.00, height: 4.00 }
+        ];
+
+        const pipeDiameterSelect = document.getElementById('pipe-diameter');
+        const pipeCountInput = document.getElementById('pipe-count');
+        const boxCommercialSelect = document.getElementById('box-commercial');
+        const boxBaseInput = document.getElementById('box-base');
+        const boxHeightInput = document.getElementById('box-height');
+
+        let pipeSelectManual = false;
+        let boxSelectManual = false;
+        // Evita reaplicar sugestão comercial em loop (guard)
+        let boxAutoApplied = false;
+
         const inputs = document.querySelectorAll('#calcForm input, #calcForm select, #pills-tabContent input, #pills-tabContent select');
         const modeRadios = document.querySelectorAll('input[name="dimensioning-mode"]');
         const methodSelect = document.getElementById('method-select');
@@ -638,10 +705,51 @@
         const methodRows = document.querySelectorAll('[data-method-row]');
         const modeManual = document.getElementById('mode-manual');
         const modeAuto = document.getElementById('mode-auto');
+        populateCommercialOptions();
 
         inputs.forEach(input => {
             input.addEventListener('input', calculateAll);
             input.addEventListener('change', calculateAll);
+        });
+
+        if (pipeCountInput) {
+            pipeCountInput.addEventListener('input', () => {
+                clampPipeCount();
+                calculateAll();
+            });
+        }
+        if (pipeDiameterSelect) {
+            pipeDiameterSelect.addEventListener('change', () => {
+                if (pipeDiameterSelect.dataset.internalUpdate) {
+                    delete pipeDiameterSelect.dataset.internalUpdate;
+                } else {
+                    pipeSelectManual = true;
+                }
+                calculateAll();
+            });
+        }
+        if (boxCommercialSelect) {
+            boxCommercialSelect.addEventListener('change', () => {
+                const option = boxCommercialSelect.selectedOptions[0];
+                if (option && boxCommercialSelect.value !== 'custom') {
+                    boxBaseInput.value = option.dataset.width;
+                    boxHeightInput.value = option.dataset.height;
+                }
+                if (boxCommercialSelect.dataset.internalUpdate) {
+                    delete boxCommercialSelect.dataset.internalUpdate;
+                } else {
+                    boxSelectManual = true;
+                }
+                calculateAll();
+            });
+        }
+        [boxBaseInput, boxHeightInput].forEach(el => {
+            if (el) {
+                el.addEventListener('input', () => {
+                    boxSelectManual = true;
+                    calculateAll();
+                });
+            }
         });
         modeRadios.forEach(radio => radio.addEventListener('change', () => {
             handleModeChange();
@@ -800,45 +908,111 @@
 
         function calcPipe(Q, S) {
             const n = parseFloat(document.getElementById('n-pipe').value) || 0.013;
-            const count = parseInt(document.getElementById('pipe-count').value) || 1;
-            if (Q <= 0 || S <= 0 || n <= 0 || count <= 0) {
+            if (Q <= 0 || S <= 0 || n <= 0) {
                 setText('res-d-theo', 0);
-                document.getElementById('res-d-comm').value = '';
-                const svgText = document.getElementById('svg-d');
-                if (svgText) {
-                    svgText.textContent = '--';
-                }
+                updatePipeDiameterSvg(0);
+                updatePipeSuggestionDisplay();
+                updatePipeCapacityDisplay({ diameterSelected: 0, n, S, count: 0, Q: 0 });
                 return;
             }
 
+            const count = clampPipeCount();
             const Q_target = Q / count;
             const D_theo = Math.pow((Q_target * n) / (0.3117 * Math.sqrt(S)), 0.375);
             setText('res-d-theo', D_theo, 3);
+            updatePipeDiameterSvg(D_theo);
 
-            const commercial = [0.4, 0.6, 0.8, 1.0, 1.2, 1.5];
-            let D_comm = 'Sob Medida';
-            for (const d of commercial) {
-                if (d >= D_theo) {
-                    D_comm = `${d.toFixed(1)} m`;
-                    break;
-                }
+            const suggestion = PIPE_DIAMETERS.find(d => d >= D_theo) || PIPE_DIAMETERS[PIPE_DIAMETERS.length - 1];
+            updatePipeSuggestionDisplay(suggestion);
+            ensurePipeSelectionValue(suggestion);
+
+            const selectedValue = pipeDiameterSelect ? parseFloat(pipeDiameterSelect.value) : suggestion;
+            updatePipeCapacityDisplay({
+                diameterSelected: selectedValue || 0,
+                n,
+                S,
+                count,
+                Q
+            });
+        }
+
+        function clampPipeCount() {
+            if (!pipeCountInput) {
+                return 1;
             }
-            if (D_theo > 1.5) {
-                D_comm = '> 1.5 m';
+            let count = parseInt(pipeCountInput.value, 10);
+            if (isNaN(count)) {
+                count = 1;
             }
-            document.getElementById('res-d-comm').value = D_comm;
-            document.getElementById('svg-d').textContent = `${D_theo.toFixed(2)}m`;
+            count = Math.min(99, Math.max(1, count));
+            pipeCountInput.value = count;
+            return count;
+        }
+
+        function updatePipeDiameterSvg(value) {
+            const svgText = document.getElementById('svg-d');
+            if (svgText) {
+                svgText.textContent = value && value > 0 ? `${value.toFixed(2)}m` : '--';
+            }
+        }
+
+        function updatePipeSuggestionDisplay(diameter) {
+            const el = document.getElementById('pipe-suggestion');
+            if (el) {
+                el.textContent = diameter ? `${diameter.toFixed(2)} m` : 'Sob medida';
+            }
+        }
+
+        function ensurePipeSelectionValue(diameter) {
+            if (!pipeDiameterSelect || pipeSelectManual || !diameter) {
+                return;
+            }
+            const formatted = diameter.toFixed(2);
+            if (pipeDiameterSelect.value === formatted) {
+                return;
+            }
+            pipeDiameterSelect.dataset.internalUpdate = '1';
+            pipeDiameterSelect.value = formatted;
+            pipeDiameterSelect.dispatchEvent(new Event('change'));
+        }
+
+        function updatePipeCapacityDisplay({ diameterSelected, n, S, count, Q }) {
+            const neededEl = document.getElementById('pipe-q-needed');
+            if (neededEl) {
+                neededEl.textContent = Q && Q > 0 ? Q.toFixed(3) : '--';
+            }
+            if (!document.getElementById('res-pipe-capacity')) {
+                return;
+            }
+            if (!diameterSelected || diameterSelected <= 0 || S <= 0 || n <= 0 || count <= 0) {
+                setText('res-pipe-capacity', 0);
+                setPipeSelectedLabel('--');
+                return;
+            }
+            const capacityPerPipe = manningCircular(diameterSelected, n, S);
+            const totalCapacity = capacityPerPipe * count;
+            setText('res-pipe-capacity', totalCapacity, 3);
+            setPipeSelectedLabel(`${diameterSelected.toFixed(2)} m`);
+        }
+
+        function setPipeSelectedLabel(text) {
+            const el = document.getElementById('res-d-comm');
+            if (el) {
+                el.textContent = text || '--';
+            }
         }
 
         function calcBox(Q, S) {
             const n = parseFloat(document.getElementById('n-box').value) || 0.015;
-            const B = parseFloat(document.getElementById('box-base').value) || 2.0;
-            if (Q <= 0 || S <= 0 || n <= 0 || B <= 0) {
+            const B = parseFloat(boxBaseInput.value) || 0;
+            const H = parseFloat(boxHeightInput.value) || 0;
+            if (Q <= 0 || S <= 0 || n <= 0 || B <= 0 || H <= 0) {
                 setText('res-box-h', 0);
+                updateBoxSuggestion(0, S, n);
                 return;
             }
 
-            let y = 0.5;
+            let y = Math.min(H, 0.5);
             for (let i = 0; i < 25; i++) {
                 const A = B * y;
                 const P = B + 2 * y;
@@ -852,10 +1026,53 @@
                     break;
                 }
                 y *= Math.pow(ratio, 0.6);
+                y = Math.min(y, H);
             }
 
             setText('res-box-h', y, 2);
             document.getElementById('svg-box-b').textContent = `${B.toFixed(1)}m`;
+            updateBoxSuggestion(Q, S, n);
+        }
+
+        function updateBoxSuggestion(Q, S, n) {
+            const suggestionEl = document.getElementById('box-suggestion');
+            const neededEl = document.getElementById('box-q-needed');
+            if (neededEl) {
+                neededEl.textContent = Q && Q > 0 ? Q.toFixed(3) : '--';
+            }
+            if (!Q || Q <= 0 || !S || S <= 0 || !n || n <= 0) {
+                if (suggestionEl) {
+                    suggestionEl.textContent = 'Sob medida';
+                }
+                setText('res-box-capacity', 0);
+                return;
+            }
+
+            const suggestion = BOX_SECTIONS.find(section => rectangularCapacity(section.width, section.height, n, S) >= Q);
+            if (suggestionEl) {
+                suggestionEl.textContent = suggestion ? suggestion.label : 'Sob medida';
+            }
+            // Só dispara uma vez automaticamente; evita loop recursivo calculo -> sugestão -> change -> calculo
+            if (suggestion && boxCommercialSelect && !boxSelectManual && !boxAutoApplied) {
+                const newVal = `${suggestion.width}x${suggestion.height}`;
+                if (boxCommercialSelect.value !== newVal) {
+                    boxCommercialSelect.dataset.internalUpdate = '1';
+                    boxCommercialSelect.value = newVal;
+                    boxCommercialSelect.dispatchEvent(new Event('change'));
+                }
+                boxAutoApplied = true; // marca que já aplicamos automaticamente
+            }
+
+            const dims = getActiveBoxDimensions();
+            const capacity = rectangularCapacity(dims.width, dims.height, n, S);
+            setText('res-box-capacity', capacity, 3);
+        }
+
+        function getActiveBoxDimensions() {
+            return {
+                width: parseFloat(boxBaseInput.value) || 0,
+                height: parseFloat(boxHeightInput.value) || 0
+            };
         }
 
         function calcChannel(Q, S) {
@@ -907,10 +1124,67 @@
             water.setAttribute('d', path);
         }
 
+        function manningCircular(diameter, n, S) {
+            if (!diameter || diameter <= 0 || !n || n <= 0 || !S || S <= 0) {
+                return 0;
+            }
+            const area = Math.PI * Math.pow(diameter, 2) / 4;
+            const perimeter = Math.PI * diameter;
+            const R = area / perimeter;
+            return (1 / n) * area * Math.pow(R, 2 / 3) * Math.sqrt(S);
+        }
+
+        function rectangularCapacity(width, height, n, S) {
+            if (!width || !height || width <= 0 || height <= 0 || !n || n <= 0 || !S || S <= 0) {
+                return 0;
+            }
+            const area = width * height;
+            const perimeter = 2 * (width + height);
+            const R = area / perimeter;
+            return (1 / n) * area * Math.pow(R, 2 / 3) * Math.sqrt(S);
+        }
+
+        function populateCommercialOptions() {
+            if (pipeDiameterSelect && pipeDiameterSelect.options.length === 0) {
+                PIPE_DIAMETERS.forEach(diameter => {
+                    const option = document.createElement('option');
+                    option.value = diameter.toFixed(2);
+                    option.textContent = `${diameter.toFixed(2)} m`;
+                    pipeDiameterSelect.appendChild(option);
+                });
+                pipeDiameterSelect.value = PIPE_DIAMETERS[0].toFixed(2);
+            }
+            if (boxCommercialSelect && boxCommercialSelect.options.length === 1) {
+                BOX_SECTIONS.forEach(section => {
+                    const option = document.createElement('option');
+                    option.value = `${section.width}x${section.height}`;
+                    option.dataset.width = section.width;
+                    option.dataset.height = section.height;
+                    option.textContent = section.label;
+                    boxCommercialSelect.appendChild(option);
+                });
+            }
+        }
+
         function resetHydraulicOutputs() {
             setText('res-d-theo', 0);
-            document.getElementById('res-d-comm').value = '';
+            setPipeSelectedLabel('--');
+            updatePipeSuggestionDisplay();
+            setText('res-pipe-capacity', 0);
+            const pipeNeed = document.getElementById('pipe-q-needed');
+            if (pipeNeed) {
+                pipeNeed.textContent = '--';
+            }
             setText('res-box-h', 0);
+            setText('res-box-capacity', 0);
+            const boxNeed = document.getElementById('box-q-needed');
+            if (boxNeed) {
+                boxNeed.textContent = '--';
+            }
+            const boxSuggestion = document.getElementById('box-suggestion');
+            if (boxSuggestion) {
+                boxSuggestion.textContent = 'Sob medida';
+            }
             setText('res-channel-y', 0);
             const svgText = document.getElementById('svg-d');
             if (svgText) {
