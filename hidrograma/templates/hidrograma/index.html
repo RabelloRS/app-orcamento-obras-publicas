@@ -1,79 +1,62 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
+{% extends 'layouts/app.html' %}
 {% load static %}
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HidroCalc Pro | Memorial SCS & HUFF</title>
-    
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-    
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
-    <!-- jsPDF & html2canvas for PDF Export -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    
-    <!-- PapaParse for CSV Export -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
 
-    <!-- QRCode.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+{% block title %}HidroCalc Pro | Memorial SCS & HUFF{% endblock %}
+{% block page_title %}HidroCalc Pro{% endblock %}
 
-    <link rel="stylesheet" href="{% static 'hidrograma/css/styles.css' %}">
-    <style>
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: #f1f5f9; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-        .chart-container { position: relative; height: 300px; width: 100%; }
+{% block extra_css %}
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="{% static 'hidrograma/css/styles.css' %}">
+  <style>
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: #f1f5f9; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    .chart-container { position: relative; height: 300px; width: 100%; }
+    @media (max-width: 575px) { .chart-container { height: 240px; } }
+    @media print {
+      body * { visibility: hidden; }
+      #print-area, #print-area * { visibility: visible; }
+      #print-area { position: absolute; left: 0; top: 0; width: 100%; }
+    }
+    .memorial-table th, .memorial-table td { border: 1px solid #cbd5e1; padding: 4px 8px; text-align: center; font-size: 0.75rem; }
+    .memorial-table th { background-color: #f8fafc; font-weight: 600; }
+
+    .hidrocalcpro .bg-white { background: var(--color-surface) !important; }
+    .hidrocalcpro .bg-slate-50, .hidrocalcpro .bg-slate-50\/50 { background: var(--color-surface-alt) !important; }
+    .hidrocalcpro .border, .hidrocalcpro .border-slate-200, .hidrocalcpro .border-slate-100 { border-color: var(--color-border) !important; }
+    .hidrocalcpro .text-slate-900 { color: var(--color-text) !important; }
+    .hidrocalcpro .text-slate-700 { color: var(--color-text) !important; }
+    .hidrocalcpro .text-slate-600, .hidrocalcpro .text-slate-500, .hidrocalcpro .text-slate-400 { color: var(--color-text-soft) !important; }
+    .hidrocalcpro .shadow-md, .hidrocalcpro .shadow-sm { box-shadow: var(--shadow-2) !important; }
+    .hidrocalcpro .border-l-4.border-emerald-500 { border-color: var(--color-primary) !important; }
+    .hidrocalcpro .text-emerald-800, .hidrocalcpro .text-emerald-900 { color: var(--color-text) !important; }
+    .hidrocalcpro .bg-emerald-50 { background: var(--color-surface-alt) !important; }
+  </style>
+{% endblock %}
+
+{% block content %}
+<div class="hidrocalcpro max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 gap-6 grid grid-cols-1 lg:grid-cols-12">
+  <div class="lg:col-span-12 mb-4 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <i data-lucide="droplets" class="text-emerald-600 h-6 w-6"></i>
+      <div>
+        <h1 class="text-xl font-bold tracking-tight">HidroCalc Pro</h1>
+        <p class="text-xs text-slate-500">SCS Unit Hydrograph & HUFF</p>
+      </div>
+    </div>
+    <div class="flex space-x-3 text-sm font-medium">
+      <button id="btn-export-csv" class="flex items-center gap-2 bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded text-white transition">
+        <i data-lucide="file-spreadsheet" class="h-4 w-4"></i>
+        <span class="hidden md:inline">CSV</span>
+      </button>
+      <button id="btn-export-pdf" class="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 px-3 py-1.5 rounded text-white transition shadow-lg shadow-emerald-900/20">
+        <i data-lucide="file-down" class="h-4 w-4"></i>
+        <span class="hidden md:inline">Memorial PDF</span>
+      </button>
+    </div>
+  </div>
         
-        /* Print adjustments */
-        @media print {
-            body * { visibility: hidden; }
-            #print-area, #print-area * { visibility: visible; }
-            #print-area { position: absolute; left: 0; top: 0; width: 100%; }
-        }
-        
-        .memorial-table th, .memorial-table td { border: 1px solid #cbd5e1; padding: 4px 8px; text-align: center; font-size: 0.75rem; }
-        .memorial-table th { background-color: #f8fafc; font-weight: 600; }
-    </style>
-</head>
-<body class="bg-slate-100 text-slate-900 font-sans antialiased">
-
-    <nav class="bg-slate-900 text-white shadow-lg sticky top-0 z-50 border-b-4 border-emerald-500">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-16">
-                <div class="flex items-center gap-3">
-                    <i data-lucide="droplets" class="text-emerald-400 h-8 w-8"></i>
-                    <div>
-                        <h1 class="text-xl font-bold tracking-tight">HidroCalc Pro</h1>
-                        <p class="text-xs text-slate-400 font-medium">SCS Unit Hydrograph & HUFF</p>
-                    </div>
-                </div>
-                <div class="flex space-x-3 text-sm font-medium">
-                    <button id="btn-export-csv" class="flex items-center gap-2 bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded transition">
-                        <i data-lucide="file-spreadsheet" class="h-4 w-4"></i>
-                        <span class="hidden md:inline">CSV</span>
-                    </button>
-                    <button id="btn-export-pdf" class="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 px-3 py-1.5 rounded transition shadow-lg shadow-emerald-900/20">
-                        <i data-lucide="file-down" class="h-4 w-4"></i>
-                        <span class="hidden md:inline">Memorial PDF</span>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </nav>
-
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 gap-6 grid grid-cols-1 lg:grid-cols-12">
-        
-        <!-- LEFT COLUMN: INPUTS -->
         <aside class="lg:col-span-4 space-y-6">
             
             <!-- Inputs Card -->
@@ -166,7 +149,6 @@
             </div>
         </aside>
 
-        <!-- RIGHT COLUMN: OUTPUTS -->
         <div class="lg:col-span-8 space-y-6">
             
             <!-- Summary Cards -->
@@ -201,7 +183,6 @@
                 </div>
             </div>
 
-            <!-- Tabs Container -->
             <div class="bg-white rounded-xl shadow-md border border-slate-200 min-h-[600px] flex flex-col">
                 <!-- Tab Headers -->
                 <div class="flex border-b border-slate-200 bg-slate-50 px-4 overflow-x-auto">
@@ -427,8 +408,18 @@
                 </div>
             </div>
         </div>
-    </main>
+    </div>
+  </div>
+</div>
+{% endblock %}
 
-    <script type="module" src="{% static 'hidrograma/js/app.js' %}"></script>
-</body>
-</html>
+{% block extra_js %}
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script type="module" src="{% static 'hidrograma/js/app.js' %}"></script>
+  <script>try{lucide.createIcons();}catch(e){}</script>
+{% endblock %}

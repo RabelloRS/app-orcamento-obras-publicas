@@ -73,8 +73,12 @@ body.sidebar-collapsed .app-sidebar__nav-label { display:none; }
   margin:0 auto;
   justify-self:center;
   box-sizing:border-box;
+  display:flex;
+  flex-direction:column;
 }
 body.sidebar-collapsed .app-content { padding-left: var(--space-6); }
+/* Anchor footer to bottom when content is short */
+.app-content > footer { margin-top:auto; }
 @media (min-width: 2688px) {
   .app-content { width:2688px; }
 }
