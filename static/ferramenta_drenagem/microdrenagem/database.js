@@ -34,6 +34,24 @@ const defaultRainData = {
     }
 };
 
+let rainDataCache = null;
+
+export async function loadRainDataFromAPI() {
+    if (rainDataCache) return rainDataCache;
+    
+    try {
+        const response = await fetch('/ferramenta-drenagem/api/rain-equations/');
+        if (response.ok) {
+            const apiData = await response.json();
+            rainDataCache = { ...defaultRainData, ...apiData };
+            localStorage.setItem('smdu_rain_db', JSON.stringify(rainDataCache));
+            return rainDataCache;
+        }
+    } catch (error) {
+        console.warn("Erro ao carregar equações do banco de dados, usando dados locais:", error);
+    }
+    return loadRainData();
+}
 
 export function loadRainData() {
     const stored = localStorage.getItem('smdu_rain_db');

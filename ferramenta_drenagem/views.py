@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.http import JsonResponse
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_POST, require_http_methods
 from .models import RainEquation
 import json
 
@@ -25,6 +25,28 @@ def dimensionamento(request):
 def idfgeo(request):
     """Interactive Map for Rainfall Equations (IDF) in RS."""
     return render(request, 'drenagem/idfgeo.html')
+
+
+@require_http_methods(["GET"])
+def rain_equations_api(request):
+    """API endpoint to fetch all rain equations from database."""
+    equations = RainEquation.objects.all().values('id', 'name', 'k', 'a', 'b', 'c')
+    result = {}
+    for eq in equations:
+        # Generate ID from name similar to database.js
+        eq_id = eq['name'].lower().replace(' ', '_').replace('-', '_').replace('(', '').replace(')', '')
+        result[eq_id] = {
+            'id': eq['id'],
+            'name': eq['name'],
+            'k': float(eq['k']),
+            'a': float(eq['a']),
+            'b': float(eq['b']),
+            'c': float(eq['c']),
+            'minDuration': 5,
+            'maxDuration': 1440,
+            'returnPeriod': 100
+        }
+    return JsonResponse(result)
 
 
 @require_POST

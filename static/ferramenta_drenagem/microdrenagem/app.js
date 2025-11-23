@@ -1,11 +1,18 @@
-import { loadRainData, materials } from './database.js';
+import { loadRainData, loadRainDataFromAPI, materials } from './database.js';
 import { calculateSlope, calculateIntensity, calculateRationalFlow, dimensionPipe, verifyHydraulics, calculateKirpichUrbanAccum } from './calculator.js';
 import { populateRegions, renderTable, renderQuantitiesDetailed, updateRainInfo, setupGlobalParams, initRainModal } from './ui_renderer.js';
 
 let sections = [];
 let rainData = loadRainData();
 
-document.addEventListener('DOMContentLoaded', () => {
+async function initializeApp() {
+    // Try to load data from database first
+    try {
+        rainData = await loadRainDataFromAPI();
+    } catch (error) {
+        console.warn("Erro ao carregar dados do banco, usando dados locais:", error);
+    }
+    
     setupGlobalParams();
     refreshRainData();
     initRainModal(refreshRainData);
@@ -52,7 +59,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const region = document.getElementById('region-select').value;
         updateRainInfo(rainData, region);
     });
-});
+}
+
+document.addEventListener('DOMContentLoaded', initializeApp);
 
 function refreshRainData() {
     rainData = loadRainData();
