@@ -38,17 +38,21 @@ let rainDataCache = null;
 
 export async function loadRainDataFromAPI() {
     if (rainDataCache) return rainDataCache;
-    
+
+    const endpoint = '/drenagem/api/rain-equations/'; // caminho correto conforme setup/urls.py
     try {
-        const response = await fetch('/ferramenta-drenagem/api/rain-equations/');
+        const response = await fetch(endpoint, { headers: { 'Accept': 'application/json' } });
         if (response.ok) {
             const apiData = await response.json();
+            // apiData já vem como objeto { slug: { ...params } }
             rainDataCache = { ...defaultRainData, ...apiData };
             localStorage.setItem('smdu_rain_db', JSON.stringify(rainDataCache));
             return rainDataCache;
+        } else {
+            console.warn('Falha na resposta da API de equações', response.status, response.statusText);
         }
     } catch (error) {
-        console.warn("Erro ao carregar equações do banco de dados, usando dados locais:", error);
+        console.warn('Erro ao carregar equações do banco de dados, usando dados locais:', error);
     }
     return loadRainData();
 }

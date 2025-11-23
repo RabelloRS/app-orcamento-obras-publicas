@@ -3,6 +3,7 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_POST, require_http_methods
 from .models import RainEquation
 import json
+import unicodedata
 
 def microdrenagem(request):
     """Interactive microdrainage designer and quantity takeoff."""
@@ -29,14 +30,20 @@ def idfgeo(request):
 
 @require_http_methods(["GET"])
 def rain_equations_api(request):
-    """API endpoint to fetch all rain equations from database."""
+    """API endpoint to fetch all rain equations from database.
+    Returns a JSON object keyed by a slug (normalized name) with parameters.
+    { "nova_petropolis_rs": { "pk": 1, "name": "Nova Petrópolis - RS", ... } }
+    """
     equations = RainEquation.objects.all().values('id', 'name', 'k', 'a', 'b', 'c')
     result = {}
     for eq in equations:
-        # Generate ID from name similar to database.js
-        eq_id = eq['name'].lower().replace(' ', '_').replace('-', '_').replace('(', '').replace(')', '')
-        result[eq_id] = {
-            'id': eq['id'],
+        # Normaliza removendo acentos e caracteres não alfanuméricos para slug consistente
+        normalized = unicodedata.normalize('NFD', eq['name'])
+        normalized = ''.join(ch for ch in normalized if unicodedata.category(ch) != 'Mn')
+        slug = normalized.lower().replace('-', ' ').replace('/', ' ').replace('(', '').replace(')', '')
+        slug = '_'.join(part for part in slug.split() if part)
+        result[slug] = {
+            'pk': eq['id'],
             'name': eq['name'],
             'k': float(eq['k']),
             'a': float(eq['a']),
