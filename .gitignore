@@ -37,6 +37,11 @@ Thumbs.db
 # Personal
 .env
 
+# Temporary files
+temp/
+temp_*.html
+edge_*.html
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
