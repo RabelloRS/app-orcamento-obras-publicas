@@ -20,10 +20,10 @@ class MapaFotosTestCase(TestCase):
         self.assertIn('title', response.context)
 
     def test_mapa_login_required(self):
-        """Test that mapa view requires authentication."""
+        """Updated: mapa view now public (backward compat route)."""
         response = self.client.get(reverse('mapa_fotos:mapa'))
-        self.assertEqual(response.status_code, 302)
-        self.assertIn('/contas/login/', response.url)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('title', response.context)
 
     def test_mapa_authenticated(self):
         """Test mapa view for authenticated user."""

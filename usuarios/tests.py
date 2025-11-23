@@ -80,18 +80,21 @@ class UsuariosAuthTestCase(TestCase):
         self.assertIn('form', response.context)
 
     def test_register_success(self):
-        """Test successful user registration."""
+        """Test registration with approval workflow (user inactive, not auto-login)."""
         response = self.client.post(
             reverse('usuarios:register'),
             {
                 'username': 'newuser',
+                'email': 'newuser@example.com',
                 'password1': 'complexpass123',
                 'password2': 'complexpass123'
             },
             follow=True
         )
         self.assertTrue(User.objects.filter(username='newuser').exists())
-        self.assertIn('_auth_user_id', self.client.session)
+        user = User.objects.get(username='newuser')
+        self.assertFalse(user.is_active)  # aguardará aprovação
+        self.assertNotIn('_auth_user_id', self.client.session)
 
     def test_register_fail_password_mismatch(self):
         """Test registration fails when passwords don't match."""
