@@ -4,12 +4,12 @@ from django.views.decorators.http import require_POST
 from .models import RainEquation
 import json
 
-def calculo_volume(request):
-    """Drainage volume calculation tool."""
+def microdrenagem(request):
+    """Interactive microdrainage designer and quantity takeoff."""
     context = {
-        'title': 'Cálculo de Volume - Drenagem Urbana',
+        'title': 'Microdrenagem Urbana',
     }
-    return render(request, 'drenagem/calculo_volume.html', context)
+    return render(request, 'drenagem/microdrenagem.html', context)
 
 
 def dimensionamento(request):

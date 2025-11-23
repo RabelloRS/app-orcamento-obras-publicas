@@ -1,0 +1,279 @@
+{% extends 'layouts/app.html' %}
+{% load static %}
+
+{% block title %}Microdrenagem Urbana - Resolve Eng{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'ferramenta_drenagem/microdrenagem/style.css' %}">
+<script src="https://cdn.tailwindcss.com"></script>
+{% endblock %}
+
+{% block content %}
+<div id="microdrenagem-app" class="microdrenagem-app py-4">
+  <div class="max-w-6xl mx-auto px-2 sm:px-3">
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 mb-8">
+      <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div class="flex items-center gap-4">
+          <div class="bg-blue-600 text-white rounded-2xl p-3 shadow-lg">
+            <i data-lucide="droplets"></i>
+          </div>
+          <div>
+            <p class="text-xs uppercase tracking-widest text-blue-600 font-semibold">Ferramenta Resolve</p>
+            <h1 class="text-2xl lg:text-3xl font-bold text-slate-900">Microdrenagem Urbana</h1>
+            <p class="text-slate-500 text-sm max-w-2xl">
+              Dimensione trechos de galerias pluviais, estime velocidades, recobrimentos e gere quantitativos completos para execução.
+            </p>
+          </div>
+        </div>
+        <div class="flex flex-wrap gap-2 text-xs text-slate-500">
+          <span class="badge badge-success">Beta</span>
+          <span class="badge badge-warning">Local Storage IDF</span>
+        </div>
+      </div>
+    </div>
+
+    <section class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 mb-8" id="config-panel">
+      <div class="flex items-center justify-between mb-6 border-b border-slate-100 pb-4">
+        <div class="flex items-center gap-2">
+          <i data-lucide="settings" class="text-slate-400 w-5 h-5"></i>
+          <h2 class="text-lg font-semibold">Parâmetros Globais de Projeto</h2>
+        </div>
+        <button id="btn-open-rain-modal" class="text-xs text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1">
+          <i data-lucide="cloud-rain" class="w-3 h-3"></i> Gerenciar Chuvas
+        </button>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="lg:col-span-2 space-y-3">
+          <label class="block text-xs font-bold text-slate-500 uppercase">Região &amp; Chuva (IDF)</label>
+          <div class="flex flex-wrap gap-2">
+            <select id="region-select" class="flex-1 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500/20 transition-all"></select>
+            <div class="w-24">
+              <input type="number" id="tr-input" value="10" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm text-center" title="Tempo de Recorrência (anos)">
+              <span class="text-[10px] text-slate-400 block text-center">TR (Anos)</span>
+            </div>
+            <div class="w-24">
+              <input type="number" id="tc-ini-input" value="10" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm text-center" title="Tempo de Concentração Inicial (min)">
+              <span class="text-[10px] text-slate-400 block text-center">tc ini (min)</span>
+            </div>
+          </div>
+          <div id="rain-info-display"></div>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Material da Tubulação</label>
+          <select id="global-material" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500/20 transition-all"></select>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Coeficiente Runoff (C)</label>
+          <div class="flex gap-2">
+            <select id="global-c-type" class="flex-1 bg-slate-50 border border-slate-200 rounded-lg px-2 py-2 text-xs"></select>
+            <input type="number" id="global-c-value" step="0.01" max="1" min="0" class="w-20 bg-slate-50 border border-slate-200 rounded-lg px-2 py-2 text-sm text-center font-mono text-blue-600 font-bold">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="input-section" class="grid lg:grid-cols-3 gap-8 mb-10">
+      <div class="lg:col-span-1 bg-white rounded-2xl shadow-lg border border-blue-100 p-6 h-fit">
+        <div class="flex items-center gap-2 mb-6">
+          <i data-lucide="plus-circle" class="text-blue-600 w-5 h-5"></i>
+          <h2 class="text-lg font-semibold">Adicionar Trecho</h2>
+        </div>
+        <form id="drainage-form" class="space-y-4">
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs text-slate-500 mb-1">PV Montante</label>
+              <input type="text" name="pv_start" placeholder="PV-01" class="form-input" required>
+            </div>
+            <div>
+              <label class="block text-xs text-slate-500 mb-1">PV Jusante</label>
+              <input type="text" name="pv_end" placeholder="PV-02" class="form-input" required>
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs text-slate-500 mb-1">Comprimento (m)</label>
+            <input type="number" name="length" step="0.01" class="form-input" required>
+          </div>
+          <div class="bg-slate-50 p-3 rounded-lg border border-slate-100">
+            <span class="block text-xs font-bold text-slate-400 mb-2 uppercase">Cotas (m)</span>
+            <div class="grid grid-cols-2 gap-x-4 gap-y-3">
+              <div>
+                <label class="block text-[10px] text-slate-500">Tampa Mont.</label>
+                <input type="number" name="ct_up" id="ct_up" step="0.01" class="form-input bg-white" required>
+              </div>
+              <div>
+                <label class="block text-[10px] text-slate-500">Fundo Mont.</label>
+                <input type="number" name="cf_up" id="cf_up" step="0.01" class="form-input bg-white border-blue-100">
+              </div>
+              <div>
+                <label class="block text-[10px] text-slate-500">Tampa Jus.</label>
+                <input type="number" name="ct_down" id="ct_down" step="0.01" class="form-input bg-white" required>
+              </div>
+              <div>
+                <label class="block text-[10px] text-slate-500">Fundo Jus.</label>
+                <input type="number" name="cf_down" id="cf_down" step="0.01" class="form-input bg-white border-blue-100">
+              </div>
+            </div>
+            <p class="text-[10px] text-blue-400 mt-2 text-center">*Auto: Recobrimento 1.0m + Diâmetro</p>
+          </div>
+          <div class="pt-2 border-t border-slate-100">
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs text-slate-500 mb-1">Área Própria (ha)</label>
+                <input type="number" name="area_own" step="0.0001" class="form-input" required>
+              </div>
+              <div>
+                <label class="block text-xs text-slate-500 mb-1">Área Acum. Ant.</label>
+                <input type="number" name="area_accum_prev" step="0.0001" value="0" class="form-input">
+              </div>
+            </div>
+          </div>
+          <button type="submit" class="w-full mt-4 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-3 px-4 rounded-xl shadow-emerald-200 shadow-lg transform transition-all active:scale-95 flex items-center justify-center gap-2">
+            <i data-lucide="calculator" class="w-4 h-4"></i>
+            Calcular
+          </button>
+        </form>
+      </div>
+      <div class="lg:col-span-2 space-y-8">
+        <div id="results-section" class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 overflow-hidden">
+          <div class="flex items-center justify-between mb-6">
+            <h2 class="text-lg font-semibold flex items-center gap-2">
+              <i data-lucide="table-2" class="text-blue-600 w-5 h-5"></i>
+              Dimensionamento
+            </h2>
+            <button id="clear-btn" class="text-xs text-red-500 hover:text-red-700 font-medium">Limpar Tudo</button>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm text-left">
+              <thead class="text-xs text-slate-500 uppercase bg-slate-50 border-b border-slate-100">
+                <tr>
+                  <th class="px-4 py-3">Trecho</th>
+                  <th class="px-4 py-3 text-right">Q (L/s)</th>
+                  <th class="px-4 py-3 text-right">Decliv. (%)</th>
+                  <th class="px-4 py-3 text-center">DN (mm)</th>
+                  <th class="px-4 py-3 text-right">Vel. (m/s)</th>
+                  <th class="px-4 py-3 text-right">τ (Pa)</th>
+                  <th class="px-4 py-3 text-center">Status</th>
+                  <th class="px-4 py-3 text-center"></th>
+                </tr>
+              </thead>
+              <tbody id="results-body" class="divide-y divide-slate-100"></tbody>
+            </table>
+          </div>
+          <div id="empty-state" class="text-center py-12 text-slate-400">
+            <i data-lucide="inbox" class="w-12 h-12 mx-auto mb-3 opacity-50"></i>
+            <p>Nenhum trecho calculado ainda.</p>
+          </div>
+          <div class="mt-8 pt-6 border-t border-slate-100">
+            <h3 class="text-sm font-semibold text-slate-600 mb-4 flex items-center gap-2">
+              <i data-lucide="activity" class="w-4 h-4"></i> Perfil Longitudinal
+            </h3>
+            <div class="relative h-64 w-full">
+              <canvas id="profileChart"></canvas>
+            </div>
+          </div>
+        </div>
+        <div id="quantities-section" class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
+            <h2 class="text-lg font-semibold flex items-center gap-2">
+              <i data-lucide="hard-hat" class="text-orange-500 w-5 h-5"></i>
+              Quantitativos e Orçamento
+            </h2>
+            <div class="flex gap-2">
+              <button id="btn-export-csv" class="px-3 py-1.5 text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-md transition-colors flex items-center gap-1 disabled:opacity-50" disabled>
+                <i data-lucide="file-spreadsheet" class="w-3 h-3"></i> CSV
+              </button>
+              <button id="btn-export-pdf" class="px-3 py-1.5 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors flex items-center gap-1 disabled:opacity-50" disabled>
+                <i data-lucide="file-text" class="w-3 h-3"></i> PDF
+              </button>
+            </div>
+          </div>
+          <div class="overflow-x-auto mb-6">
+            <table class="w-full text-xs text-left table-fixed min-w-[800px]">
+              <thead class="text-slate-500 uppercase bg-slate-50 border-b border-slate-100">
+                <tr>
+                  <th class="px-2 py-3 w-20">Trecho</th>
+                  <th class="px-2 py-3 text-center w-12">Ext</th>
+                  <th class="px-2 py-3 text-center w-12">DN</th>
+                  <th class="px-2 py-3 text-right bg-orange-50/50">Esc 1<br>(0-1.5)</th>
+                  <th class="px-2 py-3 text-right bg-orange-50/50">Esc 2<br>(1.5-3)</th>
+                  <th class="px-2 py-3 text-right bg-orange-50/50">Esc 3<br>(&gt;3.0)</th>
+                  <th class="px-2 py-3 text-right">Escora.</th>
+                  <th class="px-2 py-3 text-right">Berço</th>
+                  <th class="px-2 py-3 text-right">Juntas</th>
+                </tr>
+              </thead>
+              <tbody id="quantities-body" class="divide-y divide-slate-100"></tbody>
+              <tfoot id="quantities-foot" class="bg-slate-50 font-bold text-slate-700 hidden"></tfoot>
+            </table>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-4 border-t border-slate-100" id="quantities-summary"></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div id="rain-modal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-slate-900/50 backdrop-blur-sm">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 overflow-hidden">
+      <div class="bg-blue-600 p-4 flex items-center justify-between text-white">
+        <h3 class="font-semibold flex items-center gap-2">
+          <i data-lucide="cloud-plus" class="w-4 h-4"></i> Editar Parâmetros de Chuva (IDF)
+        </h3>
+        <button id="btn-close-rain-modal" class="hover:bg-blue-700 p-1 rounded"><i data-lucide="x" class="w-4 h-4"></i></button>
+      </div>
+      <form id="rain-form" class="p-6 space-y-4">
+        <div class="relative">
+          <label class="block text-xs font-bold text-slate-500 mb-1">Nome da Cidade/Região</label>
+          <input type="text" name="name" placeholder="Ex: Curitiba - PR" class="form-input" required>
+        </div>
+        <div class="bg-slate-50 p-3 rounded-lg border border-slate-100">
+          <p class="text-[10px] text-center text-slate-500 mb-3 font-mono">Fórmula: i = (K . Tr^a) / (t + b)^c</p>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-500 mb-1">K (Coeficiente)</label>
+              <input type="number" name="k" step="0.0001" class="form-input" required>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-500 mb-1">a (Exp. Tr)</label>
+              <input type="number" name="a" step="0.0001" class="form-input" required>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-500 mb-1">b (Offset t)</label>
+              <input type="number" name="b" step="0.0001" class="form-input" required>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-500 mb-1">c (Exp. Denom)</label>
+              <input type="number" name="c" step="0.0001" class="form-input" required>
+            </div>
+          </div>
+        </div>
+        <div class="grid grid-cols-3 gap-2">
+          <div>
+            <label class="block text-[10px] text-slate-500">Min (min)</label>
+            <input type="number" name="minDuration" value="5" class="form-input text-xs">
+          </div>
+          <div>
+            <label class="block text-[10px] text-slate-500">Max (min)</label>
+            <input type="number" name="maxDuration" value="1440" class="form-input text-xs">
+          </div>
+          <div>
+            <label class="block text-[10px] text-slate-500">TR Max</label>
+            <input type="number" name="returnPeriod" value="100" class="form-input text-xs">
+          </div>
+        </div>
+        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-lg shadow-md flex justify-center gap-2">
+          <i data-lucide="save" class="w-4 h-4"></i> Salvar Parâmetros
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/lucide@latest"></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script type="module" src="{% static 'ferramenta_drenagem/microdrenagem/app.js' %}"></script>
+{% endblock %}

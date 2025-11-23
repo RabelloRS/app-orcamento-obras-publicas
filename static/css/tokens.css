@@ -64,6 +64,10 @@
   margin: 0 auto;
   padding: 0 var(--space-4);
 }
+.ds-container-tight {
+  padding-left: var(--space-3);
+  padding-right: var(--space-3);
+}
 .ds-container-wide {
   max-width: var(--content-max-wide);
 }
@@ -83,4 +87,11 @@
 /* Responsive helpers */
 @media (min-width: 1600px) {
   body.wide-screen .ds-container { max-width: var(--content-max-wide); }
+}
+
+@media (max-width: 575px) {
+  .ds-container {
+    padding-left: var(--space-3);
+    padding-right: var(--space-3);
+  }
 }

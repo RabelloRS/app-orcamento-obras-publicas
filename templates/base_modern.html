@@ -22,7 +22,7 @@
       <div class="sidebar-content">
         <a href="{% url 'usuarios:dashboard' %}" class="nav-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"><i class="bi bi-grid"></i> Dashboard</a>
         <div class="mt-4 mb-2 text-uppercase text-muted" style="font-size:0.75rem;font-weight:700;letter-spacing:1px;">Ferramentas</div>
-        <a href="{% url 'ferramenta_drenagem:calculo_volume' %}" class="nav-item {% if request.resolver_match.url_name == 'calculo_volume' %}active{% endif %}"><i class="bi bi-droplet"></i> Drenagem</a>
+        <a href="{% url 'ferramenta_drenagem:microdrenagem' %}" class="nav-item {% if request.resolver_match.url_name == 'microdrenagem' or request.resolver_match.url_name == 'calculo_volume' %}active{% endif %}"><i class="bi bi-droplet"></i> Microdrenagem</a>
         <a href="{% url 'mapa_fotos:mapa' %}" class="nav-item {% if request.resolver_match.url_name == 'mapa' %}active{% endif %}"><i class="bi bi-map"></i> Mapa de Fotos</a>
         <a href="{% url 'ferramenta_drenagem:idfgeo' %}" class="nav-item {% if request.resolver_match.url_name == 'idfgeo' %}active{% endif %}"><i class="bi bi-cloud-rain"></i> IDFGeo RS</a>
         <div class="mt-auto border-top pt-3">

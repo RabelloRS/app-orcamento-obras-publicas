@@ -202,7 +202,7 @@ async function exportPDF(lat, lng, values, cityName) {
 
     doc.setFontSize(8);
     doc.setTextColor(150);
-    doc.text("Fonte dos dados: Rodrigues et al. (2023) - UFPEL", 20, 280);
+    doc.text("Fonte: Programa de Pós-Graduação em Recursos Hídricos (UFPEL) - Rodrigues, Siqueira, Beskow, Beskow & Timm (2023)", 20, 280);
     doc.text("Nota: Uso indicativo. Projetos de engenharia requerem validação local.", 20, 284);
 
 

@@ -1,6 +1,6 @@
 /**
  * Configuration Constants for IDFGeo RS
- * Source: Rodrigues et al. (2023) - UFPEL
+ * Baseado no trabalho do Programa de Pós-Graduação em Recursos Hídricos (UFPEL)
  */
 
 import { RS_BOUNDARY } from './rs_boundary.js';

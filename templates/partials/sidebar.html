@@ -18,8 +18,8 @@
       <a href="{% url 'ferramenta_drenagem:dimensionamento' %}" class="app-sidebar__link {% if request.resolver_match.url_name == 'dimensionamento' %}active{% endif %}" role="menuitem">
         <i class="bi bi-droplet"></i><span>Dimensionamento</span>
       </a>
-      <a href="{% url 'ferramenta_drenagem:calculo_volume' %}" class="app-sidebar__link {% if request.resolver_match.url_name == 'calculo_volume' %}active{% endif %}" role="menuitem">
-        <i class="bi bi-bezier"></i><span>Cálculo de Volume</span>
+      <a href="{% url 'ferramenta_drenagem:microdrenagem' %}" class="app-sidebar__link {% if request.resolver_match.url_name == 'microdrenagem' or request.resolver_match.url_name == 'calculo_volume' %}active{% endif %}" role="menuitem">
+        <i class="bi bi-bezier"></i><span>Microdrenagem Urbana</span>
       </a>
       <a href="{% url 'mapa_fotos:mapa' %}" class="app-sidebar__link {% if request.resolver_match.url_name == 'mapa' or request.resolver_match.url_name == 'mapa_publico' or request.resolver_match.url_name == 'mapa_fotos' %}active{% endif %}" role="menuitem">
         <i class="bi bi-images"></i><span>Mapa de Fotos</span>

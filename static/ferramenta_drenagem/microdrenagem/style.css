@@ -1,0 +1,106 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+.microdrenagem-app {
+    font-family: 'Inter', sans-serif;
+    color: #0f172a;
+}
+
+.microdrenagem-app .form-input {
+    width: 100%;
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    line-height: 1.4;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+    outline: none;
+}
+
+.microdrenagem-app .form-input:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+    background-color: #ffffff;
+}
+
+.microdrenagem-app .fade-in {
+    animation: microFadeIn 0.5s ease-in-out;
+}
+
+@keyframes microFadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.microdrenagem-app ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.microdrenagem-app ::-webkit-scrollbar-track {
+    background: #f1f5f9;
+}
+
+.microdrenagem-app ::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+}
+
+.microdrenagem-app ::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+.microdrenagem-app .badge {
+    display: inline-block;
+    padding: 0.125rem 0.5rem;
+    font-size: 0.625rem;
+    font-weight: 600;
+    border-radius: 999px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.microdrenagem-app .badge-success {
+    background-color: #d1fae5;
+    color: #047857;
+}
+
+.microdrenagem-app .badge-warning {
+    background-color: #fef3c7;
+    color: #b45309;
+}
+
+.microdrenagem-app .badge-danger {
+    background-color: #fee2e2;
+    color: #b91c1c;
+}
+
+.microdrenagem-app .qty-card {
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 1rem;
+    padding: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.microdrenagem-app .qty-label {
+    font-size: 0.6rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #475569;
+    letter-spacing: 0.1em;
+}
+
+.microdrenagem-app .qty-value {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.microdrenagem-app .qty-unit {
+    font-size: 0.65rem;
+    color: #94a3b8;
+    margin-left: 0.35rem;
+}
