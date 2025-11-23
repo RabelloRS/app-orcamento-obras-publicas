@@ -34,6 +34,7 @@ const defaultRainData = {
     }
 };
 
+<<<<<<< HEAD
 let rainDataCache = null;
 
 export async function loadRainDataFromAPI() {
@@ -52,18 +53,54 @@ export async function loadRainDataFromAPI() {
     }
     return loadRainData();
 }
+=======
+let cachedRainData = null;
+
+export async function loadRainDataFromServer() {
+    try {
+        if (window.SMDU_RAIN_DB && Object.keys(window.SMDU_RAIN_DB).length > 0) {
+            const merged = { ...defaultRainData, ...window.SMDU_RAIN_DB };
+            cachedRainData = merged;
+            localStorage.setItem('smdu_rain_db', JSON.stringify(merged));
+            return merged;
+        }
+
+        const response = await fetch('/drenagem/api/rain-equations/');
+        if (!response.ok) {
+            console.warn('Failed to load rain equations from server, using defaults');
+            return defaultRainData;
+        }
+        const serverData = await response.json();
+        const merged = { ...defaultRainData, ...serverData };
+        cachedRainData = merged;
+        localStorage.setItem('smdu_rain_db', JSON.stringify(merged));
+        return merged;
+    } catch (error) {
+        console.error('Error loading rain equations from server:', error);
+        return defaultRainData;
+    }
+}
+
+>>>>>>> a6e58ff (fix(drenagem): preencher IDF no Dimensionamento a partir da cidade selecionada; normalizar vírgula→ponto nos inputs; selecionar default 'Nova Petrópolis - RS' via server e client; ordenar cidades e default na Microdrenagem; ajustar sincronização no modal; atualizar testes)
 
 export function loadRainData() {
+    if (cachedRainData) {
+        return cachedRainData;
+    }
+    
     const stored = localStorage.getItem('smdu_rain_db');
     if (stored) {
         try {
             const parsed = JSON.parse(stored);
-            return { ...defaultRainData, ...parsed };
+            cachedRainData = { ...defaultRainData, ...parsed };
+            return cachedRainData;
         } catch (e) {
             console.error("Erro ao carregar DB local", e);
+            cachedRainData = defaultRainData;
             return defaultRainData;
         }
     }
+    cachedRainData = defaultRainData;
     return defaultRainData;
 }
 

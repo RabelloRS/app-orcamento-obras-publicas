@@ -9,5 +9,5 @@ urlpatterns = [
     path('dimensionamento/', views.dimensionamento, name='dimensionamento'),
     path('idfgeo/', views.idfgeo, name='idfgeo'),
     path('api/add-equation/', views.add_equation, name='add_equation'),
-    path('api/rain-equations/', views.rain_equations_api, name='rain_equations_api'),
+    path('api/rain-equations/', views.get_rain_equations, name='get_rain_equations'),
 ]

@@ -1,16 +1,30 @@
+<<<<<<< HEAD
 import { loadRainData, loadRainDataFromAPI, materials } from './database.js';
+=======
+import { loadRainData, loadRainDataFromServer, materials } from './database.js';
+>>>>>>> a6e58ff (fix(drenagem): preencher IDF no Dimensionamento a partir da cidade selecionada; normalizar vírgula→ponto nos inputs; selecionar default 'Nova Petrópolis - RS' via server e client; ordenar cidades e default na Microdrenagem; ajustar sincronização no modal; atualizar testes)
 import { calculateSlope, calculateIntensity, calculateRationalFlow, dimensionPipe, verifyHydraulics, calculateKirpichUrbanAccum } from './calculator.js';
 import { populateRegions, renderTable, renderQuantitiesDetailed, updateRainInfo, setupGlobalParams, initRainModal } from './ui_renderer.js';
 
 let sections = [];
 let rainData = loadRainData();
 
+<<<<<<< HEAD
 async function initializeApp() {
     // Try to load data from database first
     try {
         rainData = await loadRainDataFromAPI();
     } catch (error) {
         console.warn("Erro ao carregar dados do banco, usando dados locais:", error);
+=======
+document.addEventListener('DOMContentLoaded', async () => {
+    // Load rain equations from server on page load
+    try {
+        rainData = await loadRainDataFromServer();
+    } catch (error) {
+        console.warn('Could not load rain data from server, using cached data', error);
+        rainData = loadRainData();
+>>>>>>> a6e58ff (fix(drenagem): preencher IDF no Dimensionamento a partir da cidade selecionada; normalizar vírgula→ponto nos inputs; selecionar default 'Nova Petrópolis - RS' via server e client; ordenar cidades e default na Microdrenagem; ajustar sincronização no modal; atualizar testes)
     }
     
     setupGlobalParams();
@@ -63,8 +77,13 @@ async function initializeApp() {
 
 document.addEventListener('DOMContentLoaded', initializeApp);
 
-function refreshRainData() {
-    rainData = loadRainData();
+async function refreshRainData() {
+    try {
+        rainData = await loadRainDataFromServer();
+    } catch (error) {
+        console.warn('Could not refresh rain data from server', error);
+        rainData = loadRainData();
+    }
     populateRegions(rainData);
 }
 

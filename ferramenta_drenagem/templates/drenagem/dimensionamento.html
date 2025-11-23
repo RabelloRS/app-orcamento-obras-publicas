@@ -595,7 +595,7 @@
                             <select class="form-select" id="city-select">
                                 {% for eq in equations %}
                                 <option value="{{ eq.id }}" data-k="{{ eq.k }}" data-a="{{ eq.a }}" data-b="{{ eq.b }}"
-                                    data-c="{{ eq.c }}" {% if eq.name == "Nova Petrópolis - RS" %}selected{% endif %}>{{ eq.name }}</option>
+                                    data-c="{{ eq.c }}" {% if default_eq and default_eq.id == eq.id %}selected{% endif %}>{{ eq.name }}</option>
                                 {% endfor %}
                             </select>
                         </div>
@@ -604,19 +604,19 @@
                         <div class="row g-3">
                             <div class="col-6 col-md-3">
                                 <label class="form-label">K</label>
-                                <input type="number" class="form-control" id="rain-k" value="3358.33">
+                                <input type="number" class="form-control" id="rain-k">
                             </div>
                             <div class="col-6 col-md-3">
                                 <label class="form-label">a</label>
-                                <input type="number" class="form-control" id="rain-a" value="0.172">
+                                <input type="number" class="form-control" id="rain-a">
                             </div>
                             <div class="col-6 col-md-3">
                                 <label class="form-label">b</label>
-                                <input type="number" class="form-control" id="rain-b" value="23">
+                                <input type="number" class="form-control" id="rain-b">
                             </div>
                             <div class="col-6 col-md-3">
                                 <label class="form-label">c</label>
-                                <input type="number" class="form-control" id="rain-c" value="0.983">
+                                <input type="number" class="form-control" id="rain-c">
                             </div>
                         </div>
                     </div>
@@ -1208,28 +1208,57 @@
         }
 
         const citySelect = document.getElementById('city-select');
-        if (citySelect) {
-            // Carrega os valores padrão da primeira opção (Nova Petrópolis)
-            const firstOption = citySelect.options[0];
-            if (firstOption && firstOption.value) {
-                document.getElementById('rain-k').value = firstOption.dataset.k;
-                document.getElementById('rain-a').value = firstOption.dataset.a;
-                document.getElementById('rain-b').value = firstOption.dataset.b;
-                document.getElementById('rain-c').value = firstOption.dataset.c;
-                calculateAll();
-            }
-            
-            citySelect.addEventListener('change', function () {
-                const option = this.options[this.selectedIndex];
-                if (option && option.value) {
-                    document.getElementById('rain-k').value = option.dataset.k;
-                    document.getElementById('rain-a').value = option.dataset.a;
-                    document.getElementById('rain-b').value = option.dataset.b;
-                    document.getElementById('rain-c').value = option.dataset.c;
-                    calculateAll();
-                }
-            });
+        const selectTabBtn = document.getElementById('select-tab');
+        const rainModal = document.getElementById('rainModal');
+        function toNumberString(val) {
+            const s = (val ?? '').toString().trim();
+            // normaliza vírgula decimal para ponto
+            return s.replace(/,/g, '.');
         }
+        function applySelectedCity() {
+            if (!citySelect) return;
+            const normalize = (s) => (s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+            let option = citySelect.selectedOptions && citySelect.selectedOptions[0]
+                ? citySelect.selectedOptions[0]
+                : citySelect.options[citySelect.selectedIndex || 0];
+            if (!option) {
+                for (let i = 0; i < citySelect.options.length; i++) {
+                    const opt = citySelect.options[i];
+                    if (normalize(opt.textContent) === normalize('Nova Petrópolis - RS')) {
+                        citySelect.selectedIndex = i;
+                        option = opt;
+                        break;
+                    }
+                }
+            }
+            if (!option) return;
+            const kEl = document.getElementById('rain-k');
+            const aEl = document.getElementById('rain-a');
+            const bEl = document.getElementById('rain-b');
+            const cEl = document.getElementById('rain-c');
+            if (!kEl || !aEl || !bEl || !cEl) return;
+            const k = option.dataset.k ?? option.getAttribute('data-k');
+            const a = option.dataset.a ?? option.getAttribute('data-a');
+            const b = option.dataset.b ?? option.getAttribute('data-b');
+            const c = option.dataset.c ?? option.getAttribute('data-c');
+            kEl.value = toNumberString(k);
+            aEl.value = toNumberString(a);
+            bEl.value = toNumberString(b);
+            cEl.value = toNumberString(c);
+            calculateAll();
+        }
+        applySelectedCity();
+        if (citySelect) {
+            citySelect.addEventListener('change', applySelectedCity);
+        }
+        if (rainModal) {
+            rainModal.addEventListener('shown.bs.modal', applySelectedCity);
+        }
+        if (selectTabBtn) {
+            selectTabBtn.addEventListener('shown.bs.tab', applySelectedCity);
+        }
+
+        
 
         const newEqForm = document.getElementById('new-eq-form');
         if (newEqForm) {

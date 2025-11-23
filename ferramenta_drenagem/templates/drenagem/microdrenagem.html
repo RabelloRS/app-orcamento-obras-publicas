@@ -27,7 +27,7 @@
         </div>
         <div class="flex flex-wrap gap-2 text-xs text-slate-500">
           <span class="badge badge-success">Beta</span>
-          <span class="badge badge-warning">Local Storage IDF</span>
+          <span class="badge badge-success">Banco de Dados IDF</span>
         </div>
       </div>
     </div>
@@ -46,7 +46,13 @@
         <div class="lg:col-span-2 space-y-3">
           <label class="block text-xs font-bold text-slate-500 uppercase">Região &amp; Chuva (IDF)</label>
           <div class="flex flex-wrap gap-2">
-            <select id="region-select" class="flex-1 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500/20 transition-all"></select>
+            <select id="region-select" class="flex-1 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500/20 transition-all">
+              {% if equations %}
+                {% for eq in equations %}
+                  <option value="{{ eq.key }}">{{ eq.name }}</option>
+                {% endfor %}
+              {% endif %}
+            </select>
             <div class="w-24">
               <input type="number" id="tr-input" value="10" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm text-center" title="Tempo de Recorrência (anos)">
               <span class="text-[10px] text-slate-400 block text-center">TR (Anos)</span>
@@ -275,5 +281,16 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  window.SMDU_RAIN_DB = {{ equations_json|safe }};
+  window.SMDU_RAIN_DB_HAS_SERVER = true;
+  window.addEventListener('DOMContentLoaded', function(){
+    try {
+      if (window.SMDU_RAIN_DB && Object.keys(window.SMDU_RAIN_DB).length > 0) {
+        localStorage.setItem('smdu_rain_db', JSON.stringify(window.SMDU_RAIN_DB));
+      }
+    } catch (e) {}
+  });
+</script>
 <script type="module" src="{% static 'ferramenta_drenagem/microdrenagem/app.js' %}"></script>
 {% endblock %}
