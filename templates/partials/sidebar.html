@@ -27,9 +27,6 @@
       <a href="{% url 'ferramenta_drenagem:idfgeo' %}" class="app-sidebar__link {% if request.resolver_match.url_name == 'idfgeo' %}active{% endif %}" role="menuitem">
         <i class="bi bi-cloud-rain"></i><span>IDFGeo RS</span>
       </a>
-      <a href="{% url 'hidrograma:index' %}" class="app-sidebar__link {% if request.resolver_match.url_name == 'index' %}active{% endif %}" role="menuitem">
-        <i class="bi bi-graph-up"></i><span>HidroCalc Pro</span>
-      </a>
       <div class="app-sidebar__link disabled" role="menuitem" aria-disabled="true">
         <i class="bi bi-tools"></i><span>Novas ferramentas em breve</span>
       </div>

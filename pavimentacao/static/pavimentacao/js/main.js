@@ -58,7 +58,7 @@ function navigateTo(routeKey) {
     });
 
     document.getElementById('page-title').innerText = routes[routeKey].title;
-    
+
     const container = document.getElementById('app-container');
     container.innerHTML = ''; // Clear
     routes[routeKey].render(container);

@@ -4,12 +4,12 @@ import { MATERIALS } from './data.js';
 
 export const render = (container) => {
     const state = store.getState();
-    
+
     container.innerHTML = `
         <div class="animate-fade-in max-w-4xl mx-auto bg-white p-8 shadow-xl rounded-lg relative" id="print-area">
             <!-- PDF Decoration -->
             <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-dnit-600 to-dnit-800 rounded-t-lg"></div>
-            
+
             <div class="flex justify-between items-start border-b border-slate-100 pb-6 mb-8">
                 <div>
                     <h1 class="text-3xl font-bold text-slate-900 tracking-tight">Relatório de Dimensionamento</h1>
@@ -52,7 +52,7 @@ export const render = (container) => {
                     <div class="mb-4 text-sm">
                         <span class="font-semibold text-slate-700">Subleito:</span> CBR ${state.soil.subgradeCBR}% | Expansão ${state.soil.expansion}%
                     </div>
-                    
+
                     <div class="border rounded-lg overflow-hidden">
                         <table class="w-full text-sm text-left">
                             <thead class="bg-slate-100 text-slate-600 font-semibold">
@@ -87,14 +87,14 @@ export const render = (container) => {
                         ${renderVerification(state)}
                      </div>
                 </section>
-                
+
                 <!-- Footer -->
                 <div class="mt-8 pt-8 border-t border-slate-200 text-center text-xs text-slate-400">
                     Gerado por Pavimentação.br - Ferramenta Auxiliar de Dimensionamento
                 </div>
             </div>
         </div>
-        
+
         <div class="max-w-4xl mx-auto mt-6 flex justify-end">
             <button id="btn-pdf" class="bg-slate-800 hover:bg-slate-900 text-white px-6 py-3 rounded shadow-lg flex items-center gap-2 transition-colors">
                 <i data-lucide="printer" class="w-5 h-5"></i> Imprimir / Salvar PDF
@@ -134,12 +134,12 @@ const renderVerification = (state) => {
     const N = state.traffic.calculatedN;
     const s = state.structure;
     const CBR_sub = state.soil.subgradeCBR;
-    
+
     const reqSubgrade = calculateReqThickness(N, CBR_sub);
     const total = calculateTotalEquivalent(s);
-    
+
     const isOk = total >= reqSubgrade - 0.5;
-    
+
     return `
         <div class="flex justify-between items-center p-3 rounded ${isOk ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'}">
             <span>Proteção do Subleito (CBR ${CBR_sub}%)</span>
@@ -158,9 +158,9 @@ function getTrafficClass(N) {
 const generatePDF = () => {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
-    
+
     const element = document.getElementById('print-area');
-    
+
     doc.html(element, {
         callback: function (doc) {
             doc.save('relatorio-dnit.pdf');

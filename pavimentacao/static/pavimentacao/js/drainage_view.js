@@ -3,7 +3,7 @@ import { SURFACE_TYPES_DRAINAGE } from './data.js';
 
 export const render = (container) => {
     const state = store.getState().drainage;
-    const surfaceOptions = SURFACE_TYPES_DRAINAGE.map(s => 
+    const surfaceOptions = SURFACE_TYPES_DRAINAGE.map(s =>
         `<option value="${s.c}" ${s.c === state.c ? 'selected' : ''}>${s.name} (C=${s.c})</option>`
     ).join('');
 
@@ -13,7 +13,7 @@ export const render = (container) => {
                 <h2 class="text-2xl font-bold text-slate-800">Drenagem e Infiltração</h2>
                 <span class="text-xs text-slate-500">Cálculo de Trincheiras/Pav. Permeável</span>
             </div>
-            
+
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
                 <!-- Inputs -->
                 <div class="lg:col-span-5 space-y-6">
@@ -29,7 +29,7 @@ export const render = (container) => {
                                     <input type="number" id="input-rain" value="${state.rainfall_i}" class="input-field w-20 text-center font-bold">
                                 </div>
                             </div>
-                            
+
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
                                     <label class="label-text">Área ($A$)</label>
@@ -107,14 +107,14 @@ export const render = (container) => {
 
 function attachListeners() {
     const ids = ['drain-area', 'drain-c', 'input-rain', 'drain-k', 'drain-p'];
-    
+
 
     document.getElementById('slider-rain').addEventListener('input', (e) => {
         document.getElementById('input-rain').value = e.target.value;
         store.updateNested('drainage.rainfall_i', Number(e.target.value));
         calcDrainage();
     });
-    
+
     document.getElementById('input-rain').addEventListener('input', (e) => {
         document.getElementById('slider-rain').value = e.target.value;
         store.updateNested('drainage.rainfall_i', Number(e.target.value));
@@ -141,19 +141,19 @@ let drainChart = null;
 
 function calcDrainage() {
     const s = store.getState().drainage;
-    
 
-    const Q_ls = (s.c * s.rainfall_i * s.area) / 3.6; 
-    
+
+    const Q_ls = (s.c * s.rainfall_i * s.area) / 3.6;
+
 
 
 
     const RainVol = (s.rainfall_i / 1000) * s.area;
     const InfiltratedVol = (s.permeability_k / 1000) * s.area;
-    
+
 
     const StorageVol = Math.max(0, RainVol - InfiltratedVol);
-    
+
 
 
     const H_m = StorageVol / (s.area * s.porosity);

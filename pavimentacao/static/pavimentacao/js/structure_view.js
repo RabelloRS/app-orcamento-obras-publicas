@@ -26,7 +26,7 @@ export const render = (container) => {
                     <h2 class="text-2xl font-bold text-slate-800">Estrutura</h2>
                     <span class="text-xs text-slate-500">N = ${trafficN.toExponential(2)}</span>
                 </div>
-                
+
                 <!-- Layer Inputs -->
                 <div class="space-y-3">
                     ${renderLayerInput('Revestimento', 'surface', structure.surface, getOptions(structure.surface.materialId, 'surface'), minSurfRule.val)}
@@ -49,11 +49,11 @@ export const render = (container) => {
                             <span class="flex items-center gap-1"><span class="w-2 h-2 border border-red-400 rounded-full"></span> Necessário</span>
                         </div>
                     </div>
-                    
+
                     <div class="flex-1 bg-sky-50/30 rounded-lg border border-slate-100 relative overflow-hidden w-full" id="canvas-container">
                         <canvas id="pavementCanvas" class="w-full h-full"></canvas>
                     </div>
-                    
+
                     <div class="mt-3 grid grid-cols-3 gap-2 text-center text-xs text-slate-500">
                          <div class="bg-slate-50 p-1 rounded">Subleito CBR ${subgradeCBR}%</div>
                          <div class="bg-slate-50 p-1 rounded">Expansão ${state.soil.expansion}%</div>
@@ -67,7 +67,7 @@ export const render = (container) => {
     lucide.createIcons();
     attachListeners();
     recalculate();
-    
+
 
     new ResizeObserver(() => {
         drawPavement(store.getState().structure);
@@ -94,7 +94,7 @@ const renderLayerInput = (label, key, data, options, minVal) => `
                 <span class="text-xs text-slate-400">cm</span>
             </div>
         </div>
-        
+
         ${key !== 'surface' ? `
         <div class="mt-2 flex items-center gap-2 bg-slate-50 p-1.5 rounded">
              <label class="text-[10px] text-slate-500 whitespace-nowrap">CBR Real:</label>
@@ -105,7 +105,7 @@ const renderLayerInput = (label, key, data, options, minVal) => `
 
 function attachListeners() {
     const layers = ['surface', 'base', 'subbase', 'reinforcement'];
-    
+
     layers.forEach(layer => {
         document.getElementById(`mat-${layer}`).addEventListener('change', (e) => {
             store.updateNested(`structure.${layer}.materialId`, e.target.value);
@@ -115,7 +115,7 @@ function attachListeners() {
             store.updateNested(`structure.${layer}.thickness`, Number(e.target.value));
             recalculate();
         });
-        
+
         if (layer !== 'surface') {
             const range = document.getElementById(`range-cbr-${layer}`);
             range.addEventListener('input', (e) => {
@@ -131,7 +131,7 @@ function attachListeners() {
 function recalculate() {
     const state = store.getState();
     const s = state.structure;
-    
+
     const getK = (id) => MATERIALS.find(m => m.id === id)?.k || 1.0;
     const kR = getK(s.surface.materialId);
     const kB = getK(s.base.materialId);
@@ -146,10 +146,10 @@ function recalculate() {
 
     const N = state.traffic.calculatedN;
     const msgs = [];
-    
 
 
-    
+
+
 
 
     if (s.base.cbr < 80) msgs.push({ type: 'warn', text: `Atenção: Base com CBR ${s.base.cbr}% < 80% (Mínimo DNIT).` });
@@ -158,18 +158,18 @@ function recalculate() {
 
     const H_req_subbase = calculateReqThickness(N, s.subbase.cbr);
     const H_above_subbase = (s.surface.thickness * kR) + (s.base.thickness * kB);
-    
+
     if (H_above_subbase < H_req_subbase - 0.5) { // -0.5 tolerance
-        msgs.push({ 
-            type: 'error', 
-            text: `Espessura sobre Sub-base insuficiente. <br><b>Real: ${H_above_subbase.toFixed(1)} cm</b> vs <b>Nec: ${H_req_subbase.toFixed(1)} cm</b>.` 
+        msgs.push({
+            type: 'error',
+            text: `Espessura sobre Sub-base insuficiente. <br><b>Real: ${H_above_subbase.toFixed(1)} cm</b> vs <b>Nec: ${H_req_subbase.toFixed(1)} cm</b>.`
         });
     }
 
 
     let H_above_reinf = H_above_subbase + (s.subbase.thickness * kS);
     let targetCBR_for_reinf = s.reinforcement.thickness > 0 ? s.reinforcement.cbr : state.soil.subgradeCBR;
-    
+
     if (s.reinforcement.thickness > 0) {
         const H_req_reinf = calculateReqThickness(N, s.reinforcement.cbr);
         if (H_above_reinf < H_req_reinf - 0.5) {
@@ -181,7 +181,7 @@ function recalculate() {
 
         const H_req_subgrade = calculateReqThickness(N, state.soil.subgradeCBR);
         const H_total = H_above_reinf + (s.reinforcement.thickness * kRef);
-        
+
         if (H_total < H_req_subgrade - 0.5) {
             msgs.push({
                 type: 'error',
@@ -229,15 +229,15 @@ function drawPavement(layers, hReqSubbase, hReqSubgrade) {
     const canvas = document.getElementById('pavementCanvas');
     const ctx = canvas.getContext('2d');
     const container = canvas.parentElement;
-    
+
     canvas.width = container.offsetWidth;
     canvas.height = container.offsetHeight;
-    
+
     const w = canvas.width;
     const h = canvas.height;
-    
+
     ctx.clearRect(0, 0, w, h);
-    
+
 
     const colors = {
         surface: '#334155',
@@ -248,9 +248,9 @@ function drawPavement(layers, hReqSubbase, hReqSubgrade) {
     };
 
 
-    const totalThick = layers.surface.thickness + layers.base.thickness + layers.subbase.thickness + layers.reinforcement.thickness + 30; 
+    const totalThick = layers.surface.thickness + layers.base.thickness + layers.subbase.thickness + layers.reinforcement.thickness + 30;
     const scale = (h - 20) / totalThick;
-    
+
     let y = 10;
     const xStart = 60;
     const layerWidth = w - 80;
@@ -258,7 +258,7 @@ function drawPavement(layers, hReqSubbase, hReqSubgrade) {
     const draw = (thickness, color, label) => {
         if (thickness <= 0) return;
         const hPx = thickness * scale;
-        
+
 
         ctx.fillStyle = 'rgba(0,0,0,0.05)';
         ctx.fillRect(xStart + 5, y + 5, layerWidth, hPx);
@@ -266,7 +266,7 @@ function drawPavement(layers, hReqSubbase, hReqSubgrade) {
 
         ctx.fillStyle = color;
         ctx.fillRect(xStart, y, layerWidth, hPx);
-        
+
 
         ctx.strokeStyle = 'rgba(255,255,255,0.2)';
         ctx.lineWidth = 1;
@@ -276,7 +276,7 @@ function drawPavement(layers, hReqSubbase, hReqSubgrade) {
         ctx.fillStyle = color === '#334155' ? '#fff' : '#475569';
         ctx.font = '12px Inter';
         ctx.fillText(label, xStart + 10, y + hPx/2 + 4);
-        
+
 
         ctx.fillStyle = '#64748b';
         ctx.textAlign = 'right';

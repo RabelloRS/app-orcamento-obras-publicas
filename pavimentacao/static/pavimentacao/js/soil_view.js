@@ -6,12 +6,12 @@ export const render = (container) => {
     container.innerHTML = `
         <div class="animate-fade-in max-w-4xl mx-auto">
             <h2 class="text-2xl font-bold text-slate-800 mb-6">Caracterização do Subleito</h2>
-            
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <!-- CBR Section -->
                 <div class="card p-6">
                     <h3 class="text-lg font-semibold text-slate-700 mb-4">Índice de Suporte (CBR)</h3>
-                    
+
                     <div class="flex flex-col gap-6">
                         <div class="relative pt-6 pb-2">
                             <input type="range" id="slider-cbr" min="1" max="40" step="1" value="${state.subgradeCBR}" class="w-full accent-emerald-500">
@@ -42,7 +42,7 @@ export const render = (container) => {
                 <!-- Physical Parameters -->
                 <div class="card p-6">
                     <h3 class="text-lg font-semibold text-slate-700 mb-4">Parâmetros Físicos</h3>
-                    
+
                     <div class="space-y-5">
                         <div>
                             <label class="label-text">Expansão (%)</label>
@@ -117,7 +117,7 @@ function attachListeners() {
 function updateVisuals(cbr, exp, wt) {
     const badge = document.getElementById('cbr-quality');
     const cbrAlert = document.getElementById('cbr-alert');
-    
+
     if (cbr < 2) {
         badge.innerText = 'INADEQUADO';
         badge.className = 'badge px-3 py-1 rounded-full text-xs font-bold uppercase inline-block bg-red-100 text-red-700';

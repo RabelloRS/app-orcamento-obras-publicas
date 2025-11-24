@@ -3,7 +3,7 @@ import { calculateN, formatScientific } from './utils.js';
 
 export const render = (container) => {
     const state = store.getState().traffic;
-    
+
 
     const N = calculateN(state.Vm, state.P, state.growthRate, state.growthType, state.FV) * (state.isDirectional ? 1 : 1);
     if (N !== state.calculatedN) {
@@ -17,7 +17,7 @@ export const render = (container) => {
                 <h2 class="text-2xl font-bold text-slate-800">Análise de Tráfego</h2>
                 <span class="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded border border-blue-200">Método USACE/DNIT</span>
             </div>
-            
+
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
                 <!-- Inputs -->
                 <div class="lg:col-span-5 space-y-6">
@@ -25,7 +25,7 @@ export const render = (container) => {
                         <h3 class="text-lg font-semibold text-slate-700 mb-4 flex items-center gap-2">
                             <i data-lucide="settings-2" class="w-4 h-4 text-slate-400"></i> Parâmetros
                         </h3>
-                        
+
                         <div class="space-y-4">
                             <div>
                                 <label class="label-text flex justify-between">Volume Médio Diário (Vm) <span class="text-slate-400 font-normal">Veíc/dia</span></label>
@@ -88,7 +88,7 @@ export const render = (container) => {
                                 <div class="text-xs text-emerald-400 mt-2 font-medium" id="res-class">Tráfego ${getTrafficClass(N)}</div>
                             </div>
                         </div>
-                        
+
                         <div class="card p-5 flex flex-col justify-center">
                             <div class="text-sm text-slate-500 uppercase tracking-wider mb-1">Tráfego Acumulado</div>
                             <div class="text-2xl font-semibold text-slate-700" id="res-total">${formatScientific(N / state.FV)}</div>
@@ -125,16 +125,16 @@ function attachListeners() {
         const type = document.querySelector('input[name="growth"]:checked').value;
 
         store.updateNested('traffic', { Vm: vm, P: p, growthRate: rate, growthType: type, FV: fv });
-        
+
 
         document.getElementById('slider-vm').value = vm;
-        
+
 
         const N = calculateN(vm, p, rate, type, fv);
         document.getElementById('res-n').innerText = formatScientific(N);
         document.getElementById('res-total').innerText = formatScientific(N/fv);
         document.getElementById('res-class').innerText = `Tráfego ${getTrafficClass(N)}`;
-        
+
         renderChart(vm, p, rate, type);
     };
 
@@ -157,7 +157,7 @@ let chartInstance = null;
 function renderChart(vm, p, rate, type) {
     const ctx = document.getElementById('trafficChart');
     if (!ctx) return;
-    
+
     const labels = Array.from({length: p + 1}, (_, i) => `Ano ${i}`);
     const data = labels.map((_, i) => {
         const rateDec = rate / 100;
@@ -191,8 +191,8 @@ function renderChart(vm, p, rate, type) {
             maintainAspectRatio: false,
             plugins: {
                 legend: { display: false },
-                tooltip: { 
-                    mode: 'index', 
+                tooltip: {
+                    mode: 'index',
                     intersect: false,
                     callbacks: {
                         label: (ctx) => `${Math.round(ctx.raw)} veíc/dia`

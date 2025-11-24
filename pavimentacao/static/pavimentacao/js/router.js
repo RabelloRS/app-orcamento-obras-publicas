@@ -32,7 +32,7 @@ export const navigate = async (routeKey) => {
 
     const container = document.getElementById('app-container');
     container.innerHTML = '<div class="flex items-center justify-center h-full text-slate-400">Carregando...</div>';
-    
+
     const module = await routes[routeKey].view();
     document.getElementById('page-title').innerText = routes[routeKey].title;
     module.render(container);
@@ -46,7 +46,7 @@ const renderSidebar = () => {
             ${route.title}
         </button>
     `).join('');
-    
+
     lucide.createIcons();
 
     nav.querySelectorAll('.nav-item').forEach(btn => {

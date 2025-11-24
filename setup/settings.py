@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'mapa_fotos',
     'ferramenta_mapa',
     'hidrograma',
+    'pavimentacao',
 ]
 
 
