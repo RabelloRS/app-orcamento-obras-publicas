@@ -21,14 +21,23 @@ function collectLocalStorageData() {
         'resolve_user_prefs'
     ];
     
+    /**
+     * Safely parses a localStorage value, returning parsed JSON or raw value
+     * @param {string} value - The localStorage value to parse
+     * @returns {*} Parsed JSON object or raw string value
+     */
+    const parseStorageValue = (value) => {
+        try {
+            return JSON.parse(value);
+        } catch (e) {
+            return value;
+        }
+    };
+    
     for (const key of resolveKeys) {
         const value = localStorage.getItem(key);
         if (value) {
-            try {
-                data[key] = JSON.parse(value);
-            } catch (e) {
-                data[key] = value;
-            }
+            data[key] = parseStorageValue(value);
         }
     }
     
@@ -37,11 +46,7 @@ function collectLocalStorageData() {
         const key = localStorage.key(i);
         if (key && key.startsWith('resolve_') && !data[key]) {
             const value = localStorage.getItem(key);
-            try {
-                data[key] = JSON.parse(value);
-            } catch (e) {
-                data[key] = value;
-            }
+            data[key] = parseStorageValue(value);
         }
     }
     
@@ -423,9 +428,9 @@ function downloadCalculationMemory(calculationData, appName, format = 'json') {
  */
 function formatReportAsText(report) {
     let text = '';
-    text += '=' .repeat(60) + '\n';
+    text += '='.repeat(60) + '\n';
     text += `${report.header.title}\n`;
-    text += '=' .repeat(60) + '\n';
+    text += '='.repeat(60) + '\n';
     text += `Gerado em: ${new Date(report.header.generatedAt).toLocaleString('pt-BR')}\n`;
     text += `Plataforma: ${report.header.platform}\n`;
     text += `Versão: ${report.header.version}\n`;
@@ -452,10 +457,24 @@ function formatObjectAsText(obj, indent = 0) {
     let text = '';
     const spaces = '  '.repeat(indent);
     
+    /**
+     * Formats a key into a human-readable label
+     * Converts snake_case and camelCase to title case with spaces
+     * @param {string} key - The key to format
+     * @returns {string} Formatted label
+     */
+    const formatLabel = (key) => {
+        return key
+            .replace(/_/g, ' ')           // snake_case to spaces
+            .replace(/([a-z])([A-Z])/g, '$1 $2')  // camelCase to spaces
+            .replace(/\b\w/g, c => c.toUpperCase())  // Capitalize first letter of each word
+            .trim();
+    };
+    
     for (const [key, value] of Object.entries(obj)) {
         if (value === null || value === undefined) continue;
         
-        const label = key.replace(/_/g, ' ').replace(/([A-Z])/g, ' $1').trim();
+        const label = formatLabel(key);
         
         if (typeof value === 'object' && !Array.isArray(value)) {
             text += `${spaces}${label}:\n`;
@@ -495,11 +514,22 @@ window.ResolveDataManager = {
     RESOLVE_FILE_VERSION
 };
 
-// Auto-initialize toolbar when DOM is ready
+// Auto-initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
-    // Look for a designated toolbar container or create one
+    // Look for a designated toolbar container
     const toolbarContainer = document.getElementById('resolve-toolbar-container');
     if (toolbarContainer) {
         createToolbar(toolbarContainer);
+    }
+    
+    // Attach event listeners to global navbar buttons if they exist
+    const globalSaveBtn = document.getElementById('resolve-btn-save');
+    const globalLoadBtn = document.getElementById('resolve-btn-load');
+    
+    if (globalSaveBtn) {
+        globalSaveBtn.addEventListener('click', () => downloadProjectFile());
+    }
+    if (globalLoadBtn) {
+        globalLoadBtn.addEventListener('click', openLoadDialog);
     }
 });
