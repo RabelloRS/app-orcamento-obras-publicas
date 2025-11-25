@@ -161,9 +161,14 @@
             <h1 class="h3 mb-1">Dimensionamento Hidráulico</h1>
             <p class="text-muted mb-0">Configure parâmetros e acompanhe resultados em tempo real.</p>
         </div>
-        <button onclick="window.print()" class="btn btn-outline-secondary btn-no-print align-self-lg-center">
-            <i class="bi bi-printer me-2"></i>Imprimir Memória
-        </button>
+        <div class="d-flex gap-2 flex-wrap align-self-lg-center">
+            <button onclick="downloadDimensionamentoMemoria()" class="btn btn-outline-primary btn-no-print">
+                <i class="bi bi-file-earmark-text me-2"></i>Baixar Memória
+            </button>
+            <button onclick="window.print()" class="btn btn-outline-secondary btn-no-print">
+                <i class="bi bi-printer me-2"></i>Imprimir
+            </button>
+        </div>
     </div>
 
     <div class="row g-4">
@@ -1310,5 +1315,82 @@
             });
         }
     });
+
+    // Download calculation memory function
+    function downloadDimensionamentoMemoria() {
+        const getValue = (id) => {
+            const el = document.getElementById(id);
+            return el ? (el.textContent || el.value || '--') : '--';
+        };
+        
+        const calculationData = {
+            titulo: 'Dimensionamento Hidráulico - Resolve Eng',
+            dadosEntrada: {
+                area_ha: getValue('area'),
+                coeficiente_runoff: getValue('runoff'),
+                tempo_retorno_anos: getValue('tr'),
+                comprimento_m: getValue('length'),
+                desnivel_m: getValue('deltaH'),
+                declividade_m_m: getValue('slope'),
+                equacao_chuva: {
+                    K: getValue('rain-k'),
+                    a: getValue('rain-a'),
+                    b: getValue('rain-b'),
+                    c: getValue('rain-c')
+                }
+            },
+            resultadosHidrologicos: {
+                tempo_concentracao_min: getValue('res-tc'),
+                intensidade_mm_h: getValue('res-i'),
+                vazao_racional_m3_s: getValue('res-q-rational'),
+                vazao_ipaiqu_m3_s: getValue('res-q-ipaiwu'),
+                vazao_scs_m3_s: getValue('res-q-scs'),
+                metodo_ativo: getValue('method-active-label'),
+                vazao_projeto_m3_s: getValue('method-active-flow')
+            },
+            dimensionamentoTubulacao: {
+                coef_rugosidade_n: getValue('n-pipe'),
+                diametro_teorico_m: getValue('res-d-theo'),
+                diametro_comercial_m: getValue('res-d-comm'),
+                capacidade_m3_s: getValue('res-pipe-capacity')
+            },
+            dimensionamentoGaleria: {
+                coef_rugosidade_n: getValue('n-box'),
+                base_m: getValue('box-base'),
+                altura_m: getValue('box-height'),
+                altura_dagua_m: getValue('res-box-h'),
+                capacidade_m3_s: getValue('res-box-capacity')
+            },
+            dimensionamentoCanal: {
+                coef_rugosidade_n: getValue('n-channel'),
+                base_m: getValue('channel-b'),
+                talude_z: getValue('channel-z'),
+                altura_normal_m: getValue('res-channel-y')
+            }
+        };
+        
+        if (window.ResolveDataManager) {
+            window.ResolveDataManager.downloadCalculationMemory(
+                calculationData, 
+                'Dimensionamento Hidráulico',
+                'json'
+            );
+        } else {
+            // Fallback if manager not loaded
+            const content = JSON.stringify(calculationData, null, 2);
+            const blob = new Blob([content], { type: 'application/json;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `memoria_dimensionamento_${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+    }
+    
+    // Make function available globally
+    window.downloadDimensionamentoMemoria = downloadDimensionamentoMemoria;
 </script>
 {% endblock %}

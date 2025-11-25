@@ -75,9 +75,78 @@ function setupUI() {
     document.getElementById('btn-export-csv').addEventListener('click', exportCSV);
     document.getElementById('btn-export-pdf').addEventListener('click', exportPDF);
     
+    // Save/Load project buttons
+    document.getElementById('btn-save-project').addEventListener('click', saveProject);
+    document.getElementById('btn-load-project').addEventListener('click', loadProject);
 
     document.getElementById('btn-load-example').addEventListener('click', loadExampleData);
 }
+
+function saveProject() {
+    const inputs = getInputs();
+    const projectData = {
+        appName: 'HidroCalc Pro',
+        inputs: inputs,
+        results: currentData.results ? {
+            maxFlow: currentData.results.maxFlow,
+            peakTime: currentData.results.peakTime,
+            totalVol: currentData.results.totalVol,
+            totalPe: currentData.results.totalPe,
+            tc: currentData.results.tc,
+            intensity: currentData.results.intensity
+        } : null
+    };
+    
+    if (window.ResolveDataManager) {
+        window.ResolveDataManager.downloadProjectFile('hidrograma_projeto', projectData);
+    } else {
+        const content = JSON.stringify(projectData, null, 2);
+        const blob = new Blob([content], { type: 'application/json;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `hidrograma_projeto_${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+}
+
+function loadProject() {
+    if (window.ResolveDataManager) {
+        window.ResolveDataManager.openLoadDialog();
+    } else {
+        alert('Sistema de carregamento não disponível.');
+    }
+}
+
+// Listen for project load event
+window.addEventListener('resolveProjectLoaded', (event) => {
+    const data = event.detail;
+    if (data.custom && data.custom.inputs) {
+        const inputs = data.custom.inputs;
+        if (inputs.area) document.getElementById('in-area').value = inputs.area;
+        if (inputs.length) document.getElementById('in-length').value = inputs.length;
+        if (inputs.slope) document.getElementById('in-slope').value = inputs.slope;
+        if (inputs.cn) {
+            document.getElementById('in-cn').value = inputs.cn;
+            document.getElementById('val-cn').textContent = inputs.cn;
+        }
+        if (inputs.tr) document.getElementById('in-tr').value = inputs.tr;
+        if (inputs.duration) document.getElementById('in-duration').value = inputs.duration;
+        if (inputs.idf && inputs.idf.K !== DEFAULT_IDF.K) {
+            document.getElementById('chk-custom-idf').checked = true;
+            document.getElementById('box-idf-params').classList.remove('hidden');
+            document.getElementById('box-idf-params').classList.add('grid');
+            document.getElementById('idf-k').value = inputs.idf.K;
+            document.getElementById('idf-a').value = inputs.idf.a;
+            document.getElementById('idf-b').value = inputs.idf.b;
+            document.getElementById('idf-c').value = inputs.idf.c;
+        }
+        performCalculation();
+    }
+});
 
 function loadExampleData() {
 
