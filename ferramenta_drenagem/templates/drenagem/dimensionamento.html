@@ -207,31 +207,59 @@
                                 <div id="collapseAdvanced" class="accordion-collapse collapse"
                                     data-bs-parent="#advancedHydro">
                                     <div class="accordion-body bg-light rounded-bottom">
-                                        <h6 class="text-primary small fw-bold">Método I-Pai-Wu</h6>
+                                        <h6 class="text-primary small fw-bold">
+                                            Método I-Pai-Wu
+                                            <i class="bi bi-info-circle ms-1" tabindex="0" role="button" aria-label="Informação sobre o método I-Pai-Wu" data-bs-toggle="tooltip" data-bs-placement="top" 
+                                               title="Método desenvolvido por I-Pai-Wu para estimar vazões de projeto em bacias urbanas e rurais."></i>
+                                        </h6>
                                         <div class="row g-2 mb-3">
                                             <div class="col-6">
-                                                <label class="form-label small">Coef. Forma (C2)</label>
+                                                <label class="form-label small">
+                                                    Coef. Forma (C2)
+                                                    <i class="bi bi-question-circle text-muted" tabindex="0" role="button" aria-label="Ajuda sobre Coeficiente de Forma" data-bs-toggle="tooltip" data-bs-placement="top" 
+                                                       title="Coeficiente de forma da bacia (0.1 a 1.0). Representa a relação entre a forma real e uma forma padrão. Obtido através de análise geométrica da bacia."></i>
+                                                </label>
                                                 <input type="number" class="form-control form-control-sm" id="ipaiwu-c2"
                                                     value="0.5">
+                                                <div class="form-text" style="font-size: 0.65rem;">Ex: 0.3 (alongada), 0.5 (média), 0.8 (circular)</div>
                                             </div>
                                             <div class="col-6">
-                                                <label class="form-label small">Fator Distribuição (K)</label>
+                                                <label class="form-label small">
+                                                    Fator Distribuição (K)
+                                                    <i class="bi bi-question-circle text-muted" tabindex="0" role="button" aria-label="Ajuda sobre Fator de Distribuição" data-bs-toggle="tooltip" data-bs-placement="top" 
+                                                       title="Fator de distribuição espacial da chuva (0.5 a 1.0). Considera a não-uniformidade da precipitação sobre a bacia. Obtido em literatura técnica ou calibração."></i>
+                                                </label>
                                                 <input type="number" class="form-control form-control-sm" id="ipaiwu-k"
                                                     value="0.9">
+                                                <div class="form-text" style="font-size: 0.65rem;">Ex: 0.7 (bacia grande), 0.9 (bacia pequena), 1.0 (pontual)</div>
                                             </div>
                                         </div>
 
-                                        <h6 class="text-primary small fw-bold">Método SCS (CN)</h6>
+                                        <h6 class="text-primary small fw-bold">
+                                            Método SCS (CN)
+                                            <i class="bi bi-info-circle ms-1" tabindex="0" role="button" aria-label="Informação sobre o método SCS" data-bs-toggle="tooltip" data-bs-placement="top" 
+                                               title="Método do Soil Conservation Service (SCS) para estimativa de escoamento superficial baseado no Curve Number."></i>
+                                        </h6>
                                         <div class="row g-2">
                                             <div class="col-6">
-                                                <label class="form-label small">Curve Number (CN)</label>
+                                                <label class="form-label small">
+                                                    Curve Number (CN)
+                                                    <i class="bi bi-question-circle text-muted" tabindex="0" role="button" aria-label="Ajuda sobre Curve Number" data-bs-toggle="tooltip" data-bs-placement="top" 
+                                                       title="Número de curva SCS (30 a 98). Representa o potencial de escoamento do solo. Obtido através de tabelas do SCS considerando tipo de solo, uso e cobertura."></i>
+                                                </label>
                                                 <input type="number" class="form-control form-control-sm" id="scs-cn"
                                                     value="75" max="100">
+                                                <div class="form-text" style="font-size: 0.65rem;">Ex: 98 (impermeável), 75 (residencial), 55 (pasto)</div>
                                             </div>
                                             <div class="col-6">
-                                                <label class="form-label small">Abstração (Ia/S)</label>
+                                                <label class="form-label small">
+                                                    Abstração (Ia/S)
+                                                    <i class="bi bi-question-circle text-muted" tabindex="0" role="button" aria-label="Ajuda sobre Abstração Ia/S" data-bs-toggle="tooltip" data-bs-placement="top" 
+                                                       title="Relação entre abstração inicial e retenção potencial (λ). Tradicionalmente 0.2 pelo SCS, estudos recentes sugerem 0.05 a 0.20."></i>
+                                                </label>
                                                 <input type="number" class="form-control form-control-sm"
                                                     id="scs-lambda" value="0.2" step="0.05">
+                                                <div class="form-text" style="font-size: 0.65rem;">Ex: 0.05 (revisado), 0.15 (médio), 0.20 (tradicional)</div>
                                             </div>
                                         </div>
                                     </div>
