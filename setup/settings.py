@@ -44,6 +44,8 @@ INSTALLED_APPS = [
     'ferramenta_drenagem',
     'mapa_fotos',
     'ferramenta_mapa',
+    'hidrograma',
+    'pavimentacao',
 ]
 
 
@@ -127,13 +129,18 @@ STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [
     BASE_DIR / 'static',
+    BASE_DIR / 'pavimentacao',
 ]
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # Security settings for production
 if not DEBUG:
-    # Force HTTPS
-    SECURE_SSL_REDIRECT = config('SECURE_SSL_REDIRECT', default=True, cast=bool)
+    import sys
+    # Force HTTPS (disable during tests)
+    if 'test' in sys.argv:
+        SECURE_SSL_REDIRECT = False
+    else:
+        SECURE_SSL_REDIRECT = config('SECURE_SSL_REDIRECT', default=True, cast=bool)
     # HSTS settings
     SECURE_HSTS_SECONDS = config('SECURE_HSTS_SECONDS', default=31536000, cast=int)  # 1 year
     SECURE_HSTS_INCLUDE_SUBDOMAINS = config('SECURE_HSTS_INCLUDE_SUBDOMAINS', default=True, cast=bool)

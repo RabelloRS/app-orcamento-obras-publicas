@@ -2,30 +2,49 @@
 <nav class="app-sidebar" aria-label="Navegação Principal">
   <div class="app-sidebar__header">
     <a href="{% url 'usuarios:public_home' %}" class="text-decoration-none app-sidebar__logo">Resolve</a>
-    <button id="layoutCollapseBtn" class="btn btn-sm btn-outline-primary" type="button" aria-label="Colapsar menu" aria-expanded="true">
+    <button id="layoutCollapseBtn" class="btn btn-sm btn-outline-primary" type="button" aria-label="Colapsar menu"
+      aria-expanded="true">
       <i class="bi bi-chevron-double-left"></i>
     </button>
   </div>
   <div class="app-sidebar__nav" role="menu">
     <div class="app-sidebar__nav-group">
       <div class="app-sidebar__nav-label">Principal</div>
-      <a href="{% url 'usuarios:public_home' %}" class="app-sidebar__link {% if request.resolver_match.url_name == 'public_home' %}active{% endif %}" role="menuitem">
+      <a href="{% url 'usuarios:public_home' %}"
+        class="app-sidebar__link {% if request.resolver_match.url_name == 'public_home' %}active{% endif %}"
+        role="menuitem">
         <i class="bi bi-house"></i><span>Início</span>
       </a>
     </div>
     <div class="app-sidebar__nav-group">
       <div class="app-sidebar__nav-label">Ferramentas</div>
-      <a href="{% url 'ferramenta_drenagem:dimensionamento' %}" class="app-sidebar__link {% if request.resolver_match.url_name == 'dimensionamento' %}active{% endif %}" role="menuitem">
+      <a href="{% url 'ferramenta_drenagem:dimensionamento' %}"
+        class="app-sidebar__link {% if request.resolver_match.url_name == 'dimensionamento' %}active{% endif %}"
+        role="menuitem">
         <i class="bi bi-droplet"></i><span>Dimensionamento</span>
       </a>
-      <a href="{% url 'ferramenta_drenagem:microdrenagem' %}" class="app-sidebar__link {% if request.resolver_match.url_name == 'microdrenagem' or request.resolver_match.url_name == 'calculo_volume' %}active{% endif %}" role="menuitem">
+      <a href="{% url 'ferramenta_drenagem:microdrenagem' %}"
+        class="app-sidebar__link {% if request.resolver_match.url_name == 'microdrenagem' or request.resolver_match.url_name == 'calculo_volume' %}active{% endif %}"
+        role="menuitem">
         <i class="bi bi-bezier"></i><span>Microdrenagem Urbana</span>
       </a>
-      <a href="{% url 'mapa_fotos:mapa' %}" class="app-sidebar__link {% if request.resolver_match.url_name == 'mapa' or request.resolver_match.url_name == 'mapa_publico' or request.resolver_match.url_name == 'mapa_fotos' %}active{% endif %}" role="menuitem">
+      <a href="{% url 'mapa_fotos:mapa' %}"
+        class="app-sidebar__link {% if request.resolver_match.url_name == 'mapa' or request.resolver_match.url_name == 'mapa_publico' or request.resolver_match.url_name == 'mapa_fotos' %}active{% endif %}"
+        role="menuitem">
         <i class="bi bi-images"></i><span>Mapa de Fotos</span>
       </a>
-      <a href="{% url 'ferramenta_drenagem:idfgeo' %}" class="app-sidebar__link {% if request.resolver_match.url_name == 'idfgeo' %}active{% endif %}" role="menuitem">
+      <a href="{% url 'ferramenta_drenagem:idfgeo' %}"
+        class="app-sidebar__link {% if request.resolver_match.url_name == 'idfgeo' %}active{% endif %}" role="menuitem">
         <i class="bi bi-cloud-rain"></i><span>IDFGeo RS</span>
+      </a>
+      <a href="{% url 'hidrograma:index' %}"
+        class="app-sidebar__link {% if request.resolver_match.url_name == 'index' %}active{% endif %}" role="menuitem">
+        <i class="bi bi-graph-up"></i><span>HidroCalc Pro</span>
+      </a>
+      <a href="{% url 'pavimentacao:index' %}"
+        class="app-sidebar__link {% if request.resolver_match.url_name == 'index' and request.resolver_match.app_name == 'pavimentacao' %}active{% endif %}"
+        role="menuitem">
+        <i class="bi bi-cone-striped"></i><span>Pavimentação</span>
       </a>
       <div class="app-sidebar__link disabled" role="menuitem" aria-disabled="true">
         <i class="bi bi-tools"></i><span>Novas ferramentas em breve</span>
@@ -40,21 +59,21 @@
         <small>{% if user.is_authenticated %}Engenharia{% else %}Convidado{% endif %}</small>
       </div>
       {% if user.is_authenticated %}
-        <form action="{% url 'usuarios:logout' %}" method="post" class="ms-auto">
-          {% csrf_token %}
-          <button class="btn btn-sm btn-outline-danger" type="submit" aria-label="Sair">
-            <i class="bi bi-box-arrow-right"></i>
-          </button>
-        </form>
+      <form action="{% url 'usuarios:logout' %}" method="post" class="ms-auto">
+        {% csrf_token %}
+        <button class="btn btn-sm btn-outline-danger" type="submit" aria-label="Sair">
+          <i class="bi bi-box-arrow-right"></i>
+        </button>
+      </form>
       {% else %}
-        <div class="ms-auto d-flex gap-1">
-          <a href="{% url 'usuarios:login' %}" class="btn btn-sm btn-outline-primary" aria-label="Entrar">
-            <i class="bi bi-box-arrow-in-right"></i>
-          </a>
-          <a href="{% url 'usuarios:register' %}" class="btn btn-sm btn-primary" aria-label="Criar conta">
-            <i class="bi bi-person-plus"></i>
-          </a>
-        </div>
+      <div class="ms-auto d-flex gap-1">
+        <a href="{% url 'usuarios:login' %}" class="btn btn-sm btn-outline-primary" aria-label="Entrar">
+          <i class="bi bi-box-arrow-in-right"></i>
+        </a>
+        <a href="{% url 'usuarios:register' %}" class="btn btn-sm btn-primary" aria-label="Criar conta">
+          <i class="bi bi-person-plus"></i>
+        </a>
+      </div>
       {% endif %}
     </div>
   </div>

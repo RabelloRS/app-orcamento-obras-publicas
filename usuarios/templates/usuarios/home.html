@@ -16,11 +16,7 @@
                 {% endif %}
             </h2>
             <p class="text-secondary mb-0">
-                {% if user.is_authenticated %}
-                    Painel de controle de engenharia
-                {% else %}
-                    Faça login para acessar as ferramentas
-                {% endif %}
+                Painel de controle de engenharia
             </p>
         </div>
         <div class="d-none d-md-block text-end text-secondary">
@@ -29,10 +25,48 @@
         </div>
     </div>
 
-    {% if user.is_authenticated %}
-        <h5 class="text-uppercase text-muted fs-6 fw-bold mb-3 ls-1">Ferramentas Disponíveis</h5>
-        
-        <div class="row g-4">
+
+    <h5 class="text-uppercase text-muted fs-6 fw-bold mb-3 ls-1">Ferramentas Disponíveis</h5>
+
+    <div class="row g-4">
+        <!-- HidroCalc Pro (Hidrograma) -->
+        <div class="col-md-6 col-xl-4">
+            <div class="p-4 rounded-md shadow-1 h-100" style="background:var(--color-surface);border:1px solid var(--color-border);">
+                <div class="mb-2">
+                    <div class="d-flex align-items-start justify-content-between mb-2">
+                        <div class="rounded-3 p-3 bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25">
+                            <i class="bi bi-water fs-3"></i>
+                        </div>
+                        <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 py-2">Novo</span>
+                    </div>
+                    <h4 class="card-title fw-bold text-dark">HidroCalc Pro</h4>
+                    <p class="card-text text-secondary mb-3">
+                        Geração de hidrogramas e análise hidrológica com método SCS e HUFF.
+                    </p>
+                    <a href="{% url 'hidrograma:index' %}" class="btn btn-sm btn-primary w-100"><i class="bi bi-arrow-right me-1"></i>Acessar</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pavimentação.br -->
+        <div class="col-md-6 col-xl-4">
+            <div class="p-4 rounded-md shadow-1 h-100" style="background:var(--color-surface);border:1px solid var(--color-border);">
+                <div class="mb-2">
+                    <div class="d-flex align-items-start justify-content-between mb-2">
+                        <div class="rounded-3 p-3 bg-dark bg-opacity-10 text-dark border border-dark border-opacity-25">
+                            <i class="bi bi-layers fs-3"></i>
+                        </div>
+                        <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 py-2">Novo</span>
+                    </div>
+                    <h4 class="card-title fw-bold text-dark">Pavimentação.br</h4>
+                    <p class="card-text text-secondary mb-3">
+                        Dimensionamento de pavimentos flexíveis (Método DNIT).
+                    </p>
+                    <a href="{% url 'pavimentacao:index' %}" class="btn btn-sm btn-primary w-100"><i class="bi bi-arrow-right me-1"></i>Acessar</a>
+                </div>
+            </div>
+        </div>
+
             <!-- IDFGeo RS -->
             <div class="col-md-6 col-xl-4">
                 <div class="p-4 rounded-md shadow-1 h-100 position-relative" style="background:var(--color-surface);border:1px solid var(--color-border);">
@@ -116,16 +150,6 @@
                 </div>
             </div>
         </div>
-    {% else %}
-        <div class="alert alert-info shadow-sm rounded-3" style="border:1px solid var(--color-border);background:var(--color-surface);" role="alert">
-            <h4 class="alert-heading h6 fw-semibold">Acesso Restrito</h4>
-            <p class="small mb-2">Para acessar as ferramentas do Resolve, você deve estar autenticado.</p>
-            <div class="d-flex gap-2">
-                <a href="{% url 'usuarios:login' %}" class="btn btn-sm btn-primary">Fazer login</a>
-                <a href="{% url 'usuarios:register' %}" class="btn btn-sm btn-outline-primary">Cadastrar</a>
-            </div>
-        </div>
-    {% endif %}
 
 </div>
 {% endblock %}
