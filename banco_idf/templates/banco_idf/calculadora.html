@@ -1,0 +1,796 @@
+{% extends 'layouts/app.html' %}
+{% load static %}
+
+{% block title %}{{ title }} - Resolve Eng{% endblock %}
+
+{% block extra_css %}
+<style>
+    .calc-header {
+        background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: var(--radius-lg);
+        margin-bottom: 1.5rem;
+    }
+    
+    .calc-card {
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-2);
+        background: var(--color-surface);
+        margin-bottom: 1.5rem;
+    }
+    
+    .calc-card .card-header {
+        background: var(--color-surface-alt);
+        border-bottom: 1px solid var(--color-border);
+        padding: 1rem 1.5rem;
+        font-weight: 600;
+    }
+    
+    .calc-card .card-body {
+        padding: 1.5rem;
+    }
+    
+    .param-input-group {
+        margin-bottom: 1rem;
+    }
+    
+    .param-input-group label {
+        font-weight: 500;
+        color: var(--color-text);
+        margin-bottom: 0.25rem;
+        display: block;
+    }
+    
+    .param-input-group .help-text {
+        font-size: 0.75rem;
+        color: var(--color-text-soft);
+        margin-top: 0.25rem;
+    }
+    
+    .result-display {
+        background: linear-gradient(135deg, var(--color-primary) 0%, #1d4ed8 100%);
+        color: white;
+        border-radius: var(--radius-lg);
+        padding: 2rem;
+        text-align: center;
+    }
+    
+    .result-value {
+        font-size: 3rem;
+        font-weight: 700;
+        line-height: 1.2;
+    }
+    
+    .result-label {
+        font-size: 0.9rem;
+        opacity: 0.9;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .result-unit {
+        font-size: 1.2rem;
+        opacity: 0.9;
+    }
+    
+    .formula-display {
+        font-family: 'Times New Roman', serif;
+        font-size: 1.2rem;
+        color: var(--color-text);
+        padding: 1rem;
+        background: var(--color-surface-alt);
+        border-radius: var(--radius-md);
+        text-align: center;
+        border: 1px solid var(--color-border);
+    }
+    
+    .privacy-notice {
+        background: #fff3cd;
+        border: 1px solid #ffc107;
+        border-radius: var(--radius-md);
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    [data-theme="dark"] .privacy-notice {
+        background: #332d00;
+        border-color: #665a00;
+    }
+    
+    .source-select-card {
+        border: 2px solid var(--color-border);
+        border-radius: var(--radius-md);
+        padding: 1rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .source-select-card:hover {
+        border-color: var(--color-primary);
+        background: rgba(var(--color-primary-rgb), 0.05);
+    }
+    
+    .source-select-card.active {
+        border-color: var(--color-primary);
+        background: rgba(var(--color-primary-rgb), 0.1);
+    }
+    
+    .saved-values-list {
+        max-height: 200px;
+        overflow-y: auto;
+    }
+    
+    .saved-value-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5rem;
+        border-bottom: 1px solid var(--color-border);
+    }
+    
+    .saved-value-item:last-child {
+        border-bottom: none;
+    }
+    
+    .table-results {
+        font-size: 0.9rem;
+    }
+    
+    .table-results th {
+        background: var(--color-surface-alt);
+        font-weight: 600;
+    }
+    
+    @media print {
+        .no-print {
+            display: none !important;
+        }
+        
+        .calc-card {
+            box-shadow: none;
+            border: 1px solid #dee2e6;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="calc-header">
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+            <div>
+                <h1 class="h3 mb-2"><i class="bi bi-calculator me-2"></i>Calculadora IDF</h1>
+                <p class="mb-0 opacity-75">Calcule a intensidade de chuva usando fórmulas IDF do banco de dados ou valores personalizados</p>
+            </div>
+            <div class="d-flex gap-2 no-print">
+                <a href="{% url 'banco_idf:consulta' %}" class="btn btn-light">
+                    <i class="bi bi-database me-2"></i>Banco de Dados
+                </a>
+                <button type="button" class="btn btn-outline-light" onclick="window.print()">
+                    <i class="bi bi-printer me-2"></i>Imprimir
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Privacy Notice -->
+    <div class="privacy-notice no-print">
+        <div class="d-flex align-items-start gap-2">
+            <i class="bi bi-shield-check fs-5 text-warning"></i>
+            <div>
+                <strong>Aviso de Privacidade:</strong> O site Resolve <strong>não salva e nem armazena</strong> nenhuma informação do usuário. 
+                Os valores que você digitar são armazenados <strong>apenas temporariamente no seu navegador</strong>. 
+                Para guardar seus resultados, utilize o botão <strong>Download</strong> para salvar os arquivos na sua máquina local.
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- Input Section -->
+        <div class="col-lg-5">
+            <!-- Source Selection -->
+            <div class="calc-card no-print">
+                <div class="card-header">
+                    <i class="bi bi-sliders me-2"></i>Fonte dos Parâmetros
+                </div>
+                <div class="card-body">
+                    <div class="row g-3 mb-3">
+                        <div class="col-6">
+                            <div class="source-select-card active" id="sourceDatabase" onclick="setSource('database')">
+                                <div class="text-center">
+                                    <i class="bi bi-database fs-3 text-primary"></i>
+                                    <div class="mt-2 fw-semibold">Banco de Dados</div>
+                                    <small class="text-muted">Selecionar da lista</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="source-select-card" id="sourceManual" onclick="setSource('manual')">
+                                <div class="text-center">
+                                    <i class="bi bi-pencil-square fs-3 text-success"></i>
+                                    <div class="mt-2 fw-semibold">Manual</div>
+                                    <small class="text-muted">Digitar valores</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Database Selection -->
+                    <div id="databaseSelection">
+                        <div class="mb-3">
+                            <label class="form-label">Estado</label>
+                            <select class="form-select" id="stateSelect">
+                                <option value="">Todos os estados</option>
+                                {% for code, name in states %}
+                                <option value="{{ code }}">{{ name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Fórmula IDF</label>
+                            <select class="form-select" id="formulaSelect">
+                                <option value="">Selecione uma fórmula...</option>
+                                {% for formula in formulas %}
+                                <option value="{{ formula.id }}" 
+                                        data-state="{{ formula.state }}"
+                                        data-name="{{ formula.name }}"
+                                        data-city="{{ formula.city }}"
+                                        data-k="{{ formula.k|stringformat:"f" }}"
+                                        data-a="{{ formula.a|stringformat:"f" }}"
+                                        data-b="{{ formula.b|stringformat:"f" }}"
+                                        data-c="{{ formula.c|stringformat:"f" }}"
+                                        data-duration-min="{{ formula.duration_min }}"
+                                        data-duration-max="{{ formula.duration_max }}"
+                                        data-tr-min="{{ formula.return_period_min }}"
+                                        data-tr-max="{{ formula.return_period_max }}">
+                                    {{ formula.name }} - {{ formula.city }}/{{ formula.state }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Parameters Input -->
+            <div class="calc-card">
+                <div class="card-header">
+                    <i class="bi bi-123 me-2"></i>Parâmetros IDF
+                    <span class="badge bg-secondary ms-2" id="paramSourceBadge">Banco de Dados</span>
+                </div>
+                <div class="card-body">
+                    <p class="small text-muted mb-3">Equação: i = K × TR<sup>a</sup> / (t + b)<sup>c</sup></p>
+                    
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <div class="param-input-group">
+                                <label for="paramK">K</label>
+                                <input type="number" class="form-control" id="paramK" step="any" placeholder="Ex: 3358.33">
+                                <span class="help-text">Coeficiente K</span>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="param-input-group">
+                                <label for="paramA">a</label>
+                                <input type="number" class="form-control" id="paramA" step="any" placeholder="Ex: 0.211">
+                                <span class="help-text">Expoente de TR</span>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="param-input-group">
+                                <label for="paramB">b</label>
+                                <input type="number" class="form-control" id="paramB" step="any" placeholder="Ex: 11.33">
+                                <span class="help-text">Parâmetro b</span>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="param-input-group">
+                                <label for="paramC">c</label>
+                                <input type="number" class="form-control" id="paramC" step="any" placeholder="Ex: 0.812">
+                                <span class="help-text">Expoente de (t+b)</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <div class="param-input-group">
+                                <label for="paramTR">Tempo de Retorno (TR)</label>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" id="paramTR" value="10" min="1" step="1">
+                                    <span class="input-group-text">anos</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="param-input-group">
+                                <label for="paramT">Duração (t)</label>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" id="paramT" value="30" min="1" step="1">
+                                    <span class="input-group-text">min</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 mt-3">
+                        <button type="button" class="btn btn-primary btn-lg" id="calculateBtn">
+                            <i class="bi bi-lightning-charge me-2"></i>Calcular
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Saved Values (localStorage) -->
+            <div class="calc-card no-print">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span><i class="bi bi-clock-history me-2"></i>Valores Salvos (Navegador)</span>
+                    <button type="button" class="btn btn-sm btn-outline-danger" id="clearSavedBtn">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="saved-values-list" id="savedValuesList">
+                        <p class="text-muted text-center small">Nenhum valor salvo</p>
+                    </div>
+                    <button type="button" class="btn btn-outline-primary btn-sm w-100 mt-2" id="saveCurrentBtn">
+                        <i class="bi bi-save me-2"></i>Salvar Configuração Atual
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Results Section -->
+        <div class="col-lg-7">
+            <!-- Main Result -->
+            <div class="result-display mb-4">
+                <div class="result-label">Intensidade de Chuva</div>
+                <div class="result-value" id="resultIntensity">--</div>
+                <div class="result-unit">mm/h</div>
+            </div>
+            
+            <!-- Secondary Results -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <div class="calc-card">
+                        <div class="card-body text-center">
+                            <div class="text-muted small text-uppercase">Precipitação Total</div>
+                            <div class="fs-2 fw-bold text-primary" id="resultPrecipitation">--</div>
+                            <div class="text-muted">mm</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="calc-card">
+                        <div class="card-body text-center">
+                            <div class="text-muted small text-uppercase">Fórmula Utilizada</div>
+                            <div class="fs-6 fw-semibold" id="resultFormula">--</div>
+                            <div class="text-muted small" id="resultLocation">--</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Formula Display -->
+            <div class="calc-card mb-4">
+                <div class="card-header">
+                    <i class="bi bi-function me-2"></i>Equação Utilizada
+                </div>
+                <div class="card-body">
+                    <div class="formula-display" id="formulaDisplay">
+                        i = K × TR<sup>a</sup> / (t + b)<sup>c</sup>
+                    </div>
+                    <div class="mt-3 text-center small text-muted" id="formulaSubstituted">
+                        Preencha os parâmetros e clique em Calcular
+                    </div>
+                </div>
+            </div>
+            
+            <!-- IDF Table Generator -->
+            <div class="calc-card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span><i class="bi bi-table me-2"></i>Tabela IDF</span>
+                    <button type="button" class="btn btn-sm btn-outline-success no-print" id="downloadTableBtn">
+                        <i class="bi bi-download me-2"></i>Download CSV
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3 mb-3 no-print">
+                        <div class="col-md-4">
+                            <label class="form-label small">Durações (min)</label>
+                            <input type="text" class="form-control form-control-sm" id="tableDurations" value="5,10,15,30,60,120,360,720,1440">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small">Tempos de Retorno (anos)</label>
+                            <input type="text" class="form-control form-control-sm" id="tableTRs" value="2,5,10,25,50,100">
+                        </div>
+                        <div class="col-md-4 d-flex align-items-end">
+                            <button type="button" class="btn btn-primary btn-sm w-100" id="generateTableBtn">
+                                <i class="bi bi-table me-1"></i>Gerar Tabela
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped table-results" id="idfTable">
+                            <thead>
+                                <tr>
+                                    <th>t (min)</th>
+                                    <!-- TR columns will be added dynamically -->
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Table rows will be generated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // DOM Elements
+    const stateSelect = document.getElementById('stateSelect');
+    const formulaSelect = document.getElementById('formulaSelect');
+    const databaseSelection = document.getElementById('databaseSelection');
+    const paramSourceBadge = document.getElementById('paramSourceBadge');
+    
+    const paramK = document.getElementById('paramK');
+    const paramA = document.getElementById('paramA');
+    const paramB = document.getElementById('paramB');
+    const paramC = document.getElementById('paramC');
+    const paramTR = document.getElementById('paramTR');
+    const paramT = document.getElementById('paramT');
+    
+    const calculateBtn = document.getElementById('calculateBtn');
+    const resultIntensity = document.getElementById('resultIntensity');
+    const resultPrecipitation = document.getElementById('resultPrecipitation');
+    const resultFormula = document.getElementById('resultFormula');
+    const resultLocation = document.getElementById('resultLocation');
+    const formulaDisplay = document.getElementById('formulaDisplay');
+    const formulaSubstituted = document.getElementById('formulaSubstituted');
+    
+    const generateTableBtn = document.getElementById('generateTableBtn');
+    const downloadTableBtn = document.getElementById('downloadTableBtn');
+    const savedValuesList = document.getElementById('savedValuesList');
+    const saveCurrentBtn = document.getElementById('saveCurrentBtn');
+    const clearSavedBtn = document.getElementById('clearSavedBtn');
+    
+    let currentSource = 'database';
+    let currentFormulaName = '';
+    let currentFormulaLocation = '';
+    
+    // Initialize - check for formula from localStorage (from consultation page)
+    const savedFormula = localStorage.getItem('resolve_idf_formula');
+    if (savedFormula) {
+        try {
+            const data = JSON.parse(savedFormula);
+            // Only use if less than 1 hour old
+            if (Date.now() - data.timestamp < 3600000) {
+                paramK.value = data.k;
+                paramA.value = data.a;
+                paramB.value = data.b;
+                paramC.value = data.c;
+                currentFormulaName = data.name;
+                currentFormulaLocation = `${data.city}/${data.state}`;
+                
+                // Try to select in dropdown
+                for (let option of formulaSelect.options) {
+                    if (option.value === data.id) {
+                        formulaSelect.value = data.id;
+                        break;
+                    }
+                }
+            }
+            localStorage.removeItem('resolve_idf_formula');
+        } catch (e) {
+            console.error('Error loading saved formula:', e);
+        }
+    }
+    
+    // Source selection
+    window.setSource = function(source) {
+        currentSource = source;
+        
+        document.getElementById('sourceDatabase').classList.toggle('active', source === 'database');
+        document.getElementById('sourceManual').classList.toggle('active', source === 'manual');
+        
+        databaseSelection.style.display = source === 'database' ? 'block' : 'none';
+        paramSourceBadge.textContent = source === 'database' ? 'Banco de Dados' : 'Manual';
+        paramSourceBadge.className = 'badge ms-2 ' + (source === 'database' ? 'bg-secondary' : 'bg-success');
+        
+        // Enable/disable parameter inputs
+        const readonly = source === 'database' && formulaSelect.value;
+        [paramK, paramA, paramB, paramC].forEach(input => {
+            input.readOnly = readonly;
+            input.classList.toggle('bg-light', readonly);
+        });
+    };
+    
+    // State filter
+    stateSelect.addEventListener('change', () => {
+        const selectedState = stateSelect.value;
+        
+        for (let option of formulaSelect.options) {
+            if (!option.value) continue;
+            const optionState = option.dataset.state;
+            option.style.display = !selectedState || optionState === selectedState ? '' : 'none';
+        }
+        
+        // Reset formula selection if current selection is hidden
+        if (formulaSelect.selectedOptions[0]?.style.display === 'none') {
+            formulaSelect.value = '';
+            clearParameters();
+        }
+    });
+    
+    // Formula selection
+    formulaSelect.addEventListener('change', () => {
+        const option = formulaSelect.selectedOptions[0];
+        
+        if (option && option.value) {
+            paramK.value = option.dataset.k;
+            paramA.value = option.dataset.a;
+            paramB.value = option.dataset.b;
+            paramC.value = option.dataset.c;
+            currentFormulaName = option.dataset.name;
+            currentFormulaLocation = `${option.dataset.city}/${option.dataset.state}`;
+            
+            // Make params read-only when using database
+            [paramK, paramA, paramB, paramC].forEach(input => {
+                input.readOnly = true;
+                input.classList.add('bg-light');
+            });
+        } else {
+            clearParameters();
+        }
+    });
+    
+    function clearParameters() {
+        [paramK, paramA, paramB, paramC].forEach(input => {
+            input.value = '';
+            input.readOnly = false;
+            input.classList.remove('bg-light');
+        });
+        currentFormulaName = '';
+        currentFormulaLocation = '';
+    }
+    
+    // Calculate intensity
+    calculateBtn.addEventListener('click', calculate);
+    [paramK, paramA, paramB, paramC, paramTR, paramT].forEach(input => {
+        input.addEventListener('input', calculate);
+    });
+    
+    function calculate() {
+        const k = parseFloat(paramK.value) || 0;
+        const a = parseFloat(paramA.value) || 0;
+        const b = parseFloat(paramB.value) || 0;
+        const c = parseFloat(paramC.value) || 0;
+        const tr = parseFloat(paramTR.value) || 0;
+        const t = parseFloat(paramT.value) || 0;
+        
+        if (k <= 0 || t <= 0 || tr <= 0) {
+            resultIntensity.textContent = '--';
+            resultPrecipitation.textContent = '--';
+            return;
+        }
+        
+        try {
+            const intensity = (k * Math.pow(tr, a)) / Math.pow(t + b, c);
+            const precipitation = intensity * (t / 60);
+            
+            resultIntensity.textContent = intensity.toFixed(2);
+            resultPrecipitation.textContent = precipitation.toFixed(2);
+            
+            // Update formula display
+            formulaDisplay.innerHTML = `i = ${k.toFixed(2)} × ${tr}<sup>${a.toFixed(3)}</sup> / (${t} + ${b.toFixed(2)})<sup>${c.toFixed(3)}</sup>`;
+            formulaSubstituted.innerHTML = `i = ${k.toFixed(2)} × ${Math.pow(tr, a).toFixed(4)} / ${Math.pow(t + b, c).toFixed(4)} = <strong>${intensity.toFixed(2)} mm/h</strong>`;
+            
+            // Update formula info
+            if (currentFormulaName) {
+                resultFormula.textContent = currentFormulaName;
+                resultLocation.textContent = currentFormulaLocation;
+            } else {
+                resultFormula.textContent = 'Personalizada';
+                resultLocation.textContent = 'Valores manuais';
+            }
+        } catch (e) {
+            resultIntensity.textContent = 'Erro';
+            resultPrecipitation.textContent = '--';
+        }
+    }
+    
+    // Generate IDF Table
+    generateTableBtn.addEventListener('click', generateTable);
+    
+    function generateTable() {
+        const k = parseFloat(paramK.value) || 0;
+        const a = parseFloat(paramA.value) || 0;
+        const b = parseFloat(paramB.value) || 0;
+        const c = parseFloat(paramC.value) || 0;
+        
+        if (k <= 0) {
+            alert('Preencha os parâmetros da fórmula IDF primeiro.');
+            return;
+        }
+        
+        const durations = document.getElementById('tableDurations').value.split(',').map(d => parseFloat(d.trim())).filter(d => d > 0);
+        const trs = document.getElementById('tableTRs').value.split(',').map(tr => parseFloat(tr.trim())).filter(tr => tr > 0);
+        
+        const table = document.getElementById('idfTable');
+        const thead = table.querySelector('thead tr');
+        const tbody = table.querySelector('tbody');
+        
+        // Clear existing
+        while (thead.children.length > 1) thead.removeChild(thead.lastChild);
+        tbody.innerHTML = '';
+        
+        // Add TR headers
+        trs.forEach(tr => {
+            const th = document.createElement('th');
+            th.textContent = `TR=${tr}`;
+            thead.appendChild(th);
+        });
+        
+        // Generate rows
+        durations.forEach(t => {
+            const row = document.createElement('tr');
+            const tdDuration = document.createElement('td');
+            tdDuration.textContent = t;
+            tdDuration.classList.add('fw-semibold');
+            row.appendChild(tdDuration);
+            
+            trs.forEach(tr => {
+                const intensity = (k * Math.pow(tr, a)) / Math.pow(t + b, c);
+                const td = document.createElement('td');
+                td.textContent = intensity.toFixed(2);
+                row.appendChild(td);
+            });
+            
+            tbody.appendChild(row);
+        });
+    }
+    
+    // Download CSV
+    downloadTableBtn.addEventListener('click', () => {
+        const k = parseFloat(paramK.value) || 0;
+        if (k <= 0) {
+            alert('Gere a tabela primeiro.');
+            return;
+        }
+        
+        const table = document.getElementById('idfTable');
+        let csv = [];
+        
+        // Header
+        const headers = [];
+        table.querySelectorAll('thead th').forEach(th => headers.push(th.textContent));
+        csv.push(headers.join(';'));
+        
+        // Rows
+        table.querySelectorAll('tbody tr').forEach(row => {
+            const cols = [];
+            row.querySelectorAll('td').forEach(td => cols.push(td.textContent));
+            csv.push(cols.join(';'));
+        });
+        
+        // Add metadata
+        csv.unshift(`# Tabela IDF - ${currentFormulaName || 'Personalizada'}`);
+        csv.unshift(`# K=${paramK.value}, a=${paramA.value}, b=${paramB.value}, c=${paramC.value}`);
+        csv.unshift(`# Gerado em: ${new Date().toLocaleString('pt-BR')}`);
+        csv.unshift('# Intensidade em mm/h');
+        
+        const blob = new Blob([csv.join('\n')], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `tabela_idf_${(currentFormulaName || 'personalizada').replace(/\s+/g, '_')}.csv`;
+        link.click();
+    });
+    
+    // Saved values (localStorage)
+    const STORAGE_KEY = 'resolve_idf_saved_configs';
+    
+    function loadSavedValues() {
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+        savedValuesList.innerHTML = '';
+        
+        if (saved.length === 0) {
+            savedValuesList.innerHTML = '<p class="text-muted text-center small">Nenhum valor salvo</p>';
+            return;
+        }
+        
+        saved.forEach((item, index) => {
+            const div = document.createElement('div');
+            div.className = 'saved-value-item';
+            div.innerHTML = `
+                <div>
+                    <strong class="small">${item.name || 'Sem nome'}</strong>
+                    <div class="text-muted" style="font-size: 0.7rem;">K=${item.k}, a=${item.a}, b=${item.b}, c=${item.c}</div>
+                </div>
+                <div class="btn-group btn-group-sm">
+                    <button class="btn btn-outline-primary load-saved-btn" data-index="${index}"><i class="bi bi-arrow-up-circle"></i></button>
+                    <button class="btn btn-outline-danger delete-saved-btn" data-index="${index}"><i class="bi bi-trash"></i></button>
+                </div>
+            `;
+            savedValuesList.appendChild(div);
+        });
+        
+        // Event listeners
+        document.querySelectorAll('.load-saved-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const index = parseInt(btn.dataset.index);
+                const item = saved[index];
+                paramK.value = item.k;
+                paramA.value = item.a;
+                paramB.value = item.b;
+                paramC.value = item.c;
+                currentFormulaName = item.name;
+                currentFormulaLocation = item.location || '';
+                setSource('manual');
+                calculate();
+            });
+        });
+        
+        document.querySelectorAll('.delete-saved-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const index = parseInt(btn.dataset.index);
+                saved.splice(index, 1);
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
+                loadSavedValues();
+            });
+        });
+    }
+    
+    saveCurrentBtn.addEventListener('click', () => {
+        const k = paramK.value;
+        const a = paramA.value;
+        const b = paramB.value;
+        const c = paramC.value;
+        
+        if (!k || !a || !b || !c) {
+            alert('Preencha todos os parâmetros antes de salvar.');
+            return;
+        }
+        
+        const name = prompt('Nome para esta configuração:', currentFormulaName || 'Minha fórmula');
+        if (!name) return;
+        
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+        saved.push({
+            name,
+            k, a, b, c,
+            location: currentFormulaLocation,
+            timestamp: Date.now()
+        });
+        
+        // Keep only last 10
+        if (saved.length > 10) saved.shift();
+        
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
+        loadSavedValues();
+    });
+    
+    clearSavedBtn.addEventListener('click', () => {
+        if (confirm('Deseja remover todos os valores salvos?')) {
+            localStorage.removeItem(STORAGE_KEY);
+            loadSavedValues();
+        }
+    });
+    
+    // Initial load
+    loadSavedValues();
+    calculate();
+});
+</script>
+{% endblock %}
