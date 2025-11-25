@@ -30,6 +30,9 @@
       <a href="{% url 'hidrograma:index' %}" class="app-sidebar__link {% if request.resolver_match.url_name == 'index' %}active{% endif %}" role="menuitem">
         <i class="bi bi-graph-up"></i><span>HidroCalc Pro</span>
       </a>
+      <a href="{% url 'pavimentacao:index' %}" class="app-sidebar__link {% if request.resolver_match.url_name == 'index' and request.resolver_match.app_name == 'pavimentacao' %}active{% endif %}" role="menuitem">
+        <i class="bi bi-cone-striped"></i><span>Pavimentação</span>
+      </a>
       <div class="app-sidebar__link disabled" role="menuitem" aria-disabled="true">
         <i class="bi bi-tools"></i><span>Novas ferramentas em breve</span>
       </div>
