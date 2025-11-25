@@ -635,12 +635,13 @@
 
         // Function to get SIRGAS 2000 UTM projection string
         function getSirgas2000UTMProj(zone, isSouth) {
-            // SIRGAS 2000 is compatible with WGS84 for UTM purposes
-            // EPSG codes for SIRGAS 2000 UTM zones in Brazil:
-            // South: 31976-31984 (zones 18S-26S)
-            // The proj4 string for SIRGAS 2000 UTM
-            const hemisphere = isSouth ? '+south' : '';
-            return `+proj=utm +zone=${zone} ${hemisphere} +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs`;
+            // SIRGAS 2000 uses GRS80 ellipsoid, compatible with WGS84 for most purposes
+            // EPSG codes for SIRGAS 2000 UTM zones in Brazil: 31976-31984 (zones 18S-26S)
+            // For southern hemisphere, add +south parameter
+            if (isSouth) {
+                return `+proj=utm +zone=${zone} +south +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs`;
+            }
+            return `+proj=utm +zone=${zone} +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs`;
         }
 
         // Function to convert WGS84 to SIRGAS 2000 UTM
@@ -698,10 +699,14 @@
                             // Get altitude value (default to 0 if not available)
                             let altitudeValue = 0;
                             if (altitude !== undefined && altitude !== null) {
-                                altitudeValue = typeof altitude === 'number' ? altitude : parseFloat(altitude);
-                                // Check altitude reference (0 = above sea level, 1 = below sea level)
-                                if (altitudeRef === 1) {
-                                    altitudeValue = -altitudeValue;
+                                const parsedAlt = typeof altitude === 'number' ? altitude : parseFloat(altitude);
+                                // Only use parsed value if it's a valid number
+                                if (!isNaN(parsedAlt)) {
+                                    altitudeValue = parsedAlt;
+                                    // Check altitude reference (0 = above sea level, 1 = below sea level)
+                                    if (altitudeRef === 1) {
+                                        altitudeValue = -altitudeValue;
+                                    }
                                 }
                             }
 
@@ -773,8 +778,8 @@
                 const pointNumber = startingNumber + index;
                 const utmCoords = convertToSirgas2000UTM(photo.latitude, photo.longitude);
                 
-                // Format: point_number,description,easting,northing,elevation
-                // No thousand separators, decimal point as separator
+                // Format for Civil 3D: point_number,description,easting,northing,elevation
+                // Comma-separated values in TXT file, no thousand separators, decimal point as separator
                 const line = [
                     pointNumber,
                     photo.filename,
