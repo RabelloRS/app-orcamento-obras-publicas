@@ -38,7 +38,7 @@
         <i class="bi bi-cloud-rain"></i><span>IDFGeo RS</span>
       </a>
       <a href="{% url 'hidrograma:index' %}"
-        class="app-sidebar__link {% if request.resolver_match.app_name == 'hidrograma' %}active{% endif %}" role="menuitem">
+        class="app-sidebar__link {% if request.resolver_match.app_name == 'hidrograma' and request.resolver_match.url_name == 'index' %}active{% endif %}" role="menuitem">
         <i class="bi bi-graph-up"></i><span>HUT - Hidrograma</span>
       </a>
       <a href="{% url 'pavimentacao:index' %}"
