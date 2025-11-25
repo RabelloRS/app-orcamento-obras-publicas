@@ -86,7 +86,8 @@ def api_formulas(request):
     if search_query:
         formulas = formulas.filter(
             Q(name__icontains=search_query) |
-            Q(city__icontains=search_query)
+            Q(city__icontains=search_query) |
+            Q(source__icontains=search_query)
         )
     
     data = []

@@ -230,10 +230,10 @@
                                 data-name="{{ formula.name }}"
                                 data-city="{{ formula.city }}"
                                 data-state="{{ formula.state }}"
-                                data-k="{{ formula.k|stringformat:"f" }}"
-                                data-a="{{ formula.a|stringformat:"f" }}"
-                                data-b="{{ formula.b|stringformat:"f" }}"
-                                data-c="{{ formula.c|stringformat:"f" }}"
+                                data-k="{{ formula.k|floatformat:"-6" }}"
+                                data-a="{{ formula.a|floatformat:"-6" }}"
+                                data-b="{{ formula.b|floatformat:"-6" }}"
+                                data-c="{{ formula.c|floatformat:"-6" }}"
                                 data-duration-min="{{ formula.duration_min }}"
                                 data-duration-max="{{ formula.duration_max }}"
                                 data-tr-min="{{ formula.return_period_min }}"
@@ -241,10 +241,10 @@
                             <i class="bi bi-calculator me-1"></i>Usar
                         </button>
                         <button type="button" class="btn btn-outline-secondary action-btn copy-formula-btn"
-                                data-k="{{ formula.k|stringformat:"f" }}"
-                                data-a="{{ formula.a|stringformat:"f" }}"
-                                data-b="{{ formula.b|stringformat:"f" }}"
-                                data-c="{{ formula.c|stringformat:"f" }}">
+                                data-k="{{ formula.k|floatformat:"-6" }}"
+                                data-a="{{ formula.a|floatformat:"-6" }}"
+                                data-b="{{ formula.b|floatformat:"-6" }}"
+                                data-c="{{ formula.c|floatformat:"-6" }}">
                             <i class="bi bi-clipboard me-1"></i>Copiar
                         </button>
                     </div>
