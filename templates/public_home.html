@@ -4,42 +4,6 @@
 
 {% block content %}
 <section class="ds-container py-5">
-    <div class="row align-items-center g-4">
-        <div class="col-lg-6">
-            <p class="text-uppercase text-muted small fw-semibold mb-2">Resolve Sistemas de Engenharia</p>
-            <h1 class="display-6 fw-bold mb-3">Ferramentas digitais para acelerar projetos e inspeções</h1>
-            <p class="text-soft mb-4">Modelos hidrológicos, mapas interativos e calculadoras especializadas reunidos em um único ambiente seguro. As aplicações desta página são públicas — use imediatamente — e, se quiser salvar configurações, crie seu acesso restrito.</p>
-            <div class="d-flex flex-wrap gap-3">
-                <a href="{% url 'usuarios:dashboard' %}" class="btn btn-primary btn-lg">
-                    <i class="bi bi-shield-lock me-2"></i>Entrar na Área Restrita
-                </a>
-                <a href="{% url 'usuarios:register' %}" class="btn btn-outline-secondary btn-lg">
-                    <i class="bi bi-person-plus me-2"></i>Criar conta
-                </a>
-            </div>
-        </div>
-        <div class="col-lg-6">
-            <div class="p-4 p-lg-5 rounded-lg shadow-2" style="background:var(--color-surface);border:1px solid var(--color-border);">
-                <div class="d-flex align-items-center gap-3 mb-4">
-                    <div class="rounded-circle bg-primary bg-opacity-10 text-primary d-inline-flex align-items-center justify-content-center" style="width:64px;height:64px;">
-                        <i class="bi bi-speedometer" style="font-size:1.5rem;"></i>
-                    </div>
-                    <div>
-                        <h2 class="h4 fw-semibold mb-1">Acesso centralizado</h2>
-                        <p class="mb-0 text-soft">Autenticação, tema claro/escuro e navegação responsiva prontos para desktop, tablet ou mobile.</p>
-                    </div>
-                </div>
-                <ul class="list-unstyled mb-0 text-soft small">
-                    <li class="d-flex align-items-center mb-2"><i class="bi bi-check-circle text-success me-2"></i>Ferramentas exclusivas apenas para usuários autenticados</li>
-                    <li class="d-flex align-items-center mb-2"><i class="bi bi-check-circle text-success me-2"></i>Experiência consistente de 360px a telas ultrawide</li>
-                    <li class="d-flex align-items-center"><i class="bi bi-check-circle text-success me-2"></i>Infra pronta para receber novos módulos</li>
-                </ul>
-            </div>
-        </div>
-    </div>
-</section>
-
-<section class="ds-container pb-5">
     <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
         <div>
             <h3 class="h4 mb-0">Aplicações atuais</h3>
@@ -98,22 +62,6 @@
                     <a href="{% url 'ferramenta_drenagem:idfgeo' %}" class="btn btn-sm btn-primary"><i class="bi bi-arrow-right me-1"></i>Usar agora</a>
                 </div>
             </article>
-        </div>
-    </div>
-</section>
-
-<section class="py-5" style="background:var(--color-surface-alt);border-top:1px solid var(--color-border);">
-    <div class="ds-container">
-        <div class="row g-4 align-items-center">
-            <div class="col-md-7">
-                <h3 class="h4 fw-semibold mb-2">Próximas entregas</h3>
-                <p class="text-soft mb-0">A área restrita está recebendo novos módulos de drenagem, estrutura e automação. Assim que cada ferramenta estiver validada, ela aparecerá automaticamente no menu lateral.</p>
-            </div>
-            <div class="col-md-5 text-md-end">
-                <a href="{% url 'usuarios:dashboard' %}" class="btn btn-primary">
-                    <i class="bi bi-arrow-right-circle me-1"></i>Fique por dentro
-                </a>
-            </div>
         </div>
     </div>
 </section>
