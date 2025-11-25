@@ -32,6 +32,14 @@ class FerramentaDrenagemTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.context['title'], 'Microdrenagem Urbana')
 
+    def test_microdrenagem_equations_in_select(self):
+        from .models import RainEquation
+        RainEquation.objects.create(name='Nova Petrópolis - RS', k=3358.33, a=0.211, b=11.33, c=0.812)
+        response = self.client.get(reverse('ferramenta_drenagem:microdrenagem'))
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('equations', response.context)
+        self.assertContains(response, 'Nova Petrópolis - RS')
+
     def test_dimensionamento_authenticated_access(self):
         """Dimensionamento view should be accessible to authenticated users."""
         self.client.force_login(self.user)

@@ -8,7 +8,11 @@ export function populateRegions(rainData) {
     const currentVal = select.value;
     select.innerHTML = '';
     
-    Object.entries(rainData).forEach(([key, data]) => {
+    const entries = Object.entries(rainData)
+        .map(([key, data]) => ({ key, data }))
+        .sort((a, b) => a.data.name.localeCompare(b.data.name, 'pt-BR'));
+
+    entries.forEach(({ key, data }) => {
         const option = document.createElement('option');
         option.value = key;
         option.textContent = data.name;
@@ -17,9 +21,16 @@ export function populateRegions(rainData) {
 
     if (currentVal && rainData[currentVal]) {
         select.value = currentVal;
-    } else if (!currentVal) {
-        const keys = Object.keys(rainData);
-        if(keys.length > 0) select.value = keys[0];
+    } else {
+        const normalize = (s) => (s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9\s\-]/g, '').toLowerCase();
+        const target = normalize('Nova Petropolis - RS');
+        const defaultEntry = entries.find(e => normalize(e.data.name) === target);
+        if (defaultEntry) {
+            select.value = defaultEntry.key;
+        } else {
+            const keys = entries.map(e => e.key);
+            if (keys.length > 0) select.value = keys[0];
+        }
     }
     
     updateRainInfo(rainData, select.value);

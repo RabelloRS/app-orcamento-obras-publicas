@@ -34,40 +34,52 @@ const defaultRainData = {
     }
 };
 
-let rainDataCache = null;
+let cachedRainData = null;
 
-export async function loadRainDataFromAPI() {
-    if (rainDataCache) return rainDataCache;
-
-    const endpoint = '/drenagem/api/rain-equations/'; // caminho correto conforme setup/urls.py
+export async function loadRainDataFromServer() {
     try {
-        const response = await fetch(endpoint, { headers: { 'Accept': 'application/json' } });
-        if (response.ok) {
-            const apiData = await response.json();
-            // apiData já vem como objeto { slug: { ...params } }
-            rainDataCache = { ...defaultRainData, ...apiData };
-            localStorage.setItem('smdu_rain_db', JSON.stringify(rainDataCache));
-            return rainDataCache;
-        } else {
-            console.warn('Falha na resposta da API de equações', response.status, response.statusText);
+        if (window.SMDU_RAIN_DB && Object.keys(window.SMDU_RAIN_DB).length > 0) {
+            const merged = { ...defaultRainData, ...window.SMDU_RAIN_DB };
+            cachedRainData = merged;
+            localStorage.setItem('smdu_rain_db', JSON.stringify(merged));
+            return merged;
         }
+
+        const response = await fetch('/drenagem/api/rain-equations/');
+        if (!response.ok) {
+            console.warn('Failed to load rain equations from server, using defaults');
+            return defaultRainData;
+        }
+        const serverData = await response.json();
+        const merged = { ...defaultRainData, ...serverData };
+        cachedRainData = merged;
+        localStorage.setItem('smdu_rain_db', JSON.stringify(merged));
+        return merged;
     } catch (error) {
-        console.warn('Erro ao carregar equações do banco de dados, usando dados locais:', error);
+        console.error('Error loading rain equations from server:', error);
+        return defaultRainData;
     }
-    return loadRainData();
 }
 
+
 export function loadRainData() {
+    if (cachedRainData) {
+        return cachedRainData;
+    }
+
     const stored = localStorage.getItem('smdu_rain_db');
     if (stored) {
         try {
             const parsed = JSON.parse(stored);
-            return { ...defaultRainData, ...parsed };
+            cachedRainData = { ...defaultRainData, ...parsed };
+            return cachedRainData;
         } catch (e) {
             console.error("Erro ao carregar DB local", e);
+            cachedRainData = defaultRainData;
             return defaultRainData;
         }
     }
+    cachedRainData = defaultRainData;
     return defaultRainData;
 }
 

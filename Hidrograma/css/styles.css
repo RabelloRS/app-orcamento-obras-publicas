@@ -1,0 +1,68 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+body {
+    font-family: 'Inter', sans-serif;
+}
+
+/* Custom print styles for PDF report generation */
+@media print {
+    body {
+        background: white;
+        color: black;
+    }
+    nav, footer, #btn-calculate, #btn-toggle-idf {
+        display: none !important;
+    }
+    #results-container {
+        opacity: 1 !important;
+        pointer-events: auto !important;
+        display: block !important;
+    }
+    .grid {
+        display: block !important;
+    }
+    .col-span-1, .col-span-2 {
+        width: 100% !important;
+        margin-bottom: 20px;
+    }
+    input, select {
+        border: none;
+        background: transparent;
+        padding: 0;
+        font-weight: bold;
+        -webkit-appearance: none;
+    }
+    .tab-content {
+        display: block !important;
+        margin-bottom: 30px;
+        page-break-inside: avoid;
+    }
+    .tab-btn {
+        display: none;
+    }
+    canvas {
+        max-height: 300px !important;
+        width: 100% !important;
+    }
+}
+
+/* Smooth transitions for interactive elements */
+.transition-height {
+    transition: max-height 0.3s ease-in-out;
+}
+
+/* Custom scrollbar for table */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+::-webkit-scrollbar-track {
+    background: #f1f5f9;
+}
+::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
