@@ -733,6 +733,12 @@
             input.addEventListener('change', calculateAll);
         });
 
+        // Explicit listener for area unit change (also covered by inputs.forEach above)
+        const areaUnitSelect = document.getElementById('area-unit');
+        if (areaUnitSelect) {
+            areaUnitSelect.addEventListener('change', calculateAll);
+        }
+
         if (pipeCountInput) {
             pipeCountInput.addEventListener('input', () => {
                 clampPipeCount();
