@@ -109,6 +109,25 @@
             <div id="map"></div>
         </div>
     </div>
+
+    <!-- Export Coordinates Section -->
+    <div id="exportSection" class="mt-3 p-3 rounded shadow-sm d-none" style="background:var(--color-surface);border:1px solid var(--color-border);">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h6 class="mb-2"><i class="bi bi-download me-2"></i>Exportar Coordenadas para Civil 3D</h6>
+                <p class="text-muted mb-0 small">Baixe um arquivo TXT com as coordenadas das fotos no sistema SIRGAS 2000 UTM.</p>
+            </div>
+            <div class="col-md-2">
+                <label for="startingPointNumber" class="form-label small mb-1">Número inicial:</label>
+                <input type="number" class="form-control form-control-sm" id="startingPointNumber" value="1" min="1">
+            </div>
+            <div class="col-md-2 text-end">
+                <button id="downloadCoordinatesBtn" class="btn btn-success mt-3">
+                    <i class="bi bi-file-earmark-text me-1"></i>Baixar TXT
+                </button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <!-- Modal for Full Image -->
@@ -137,6 +156,8 @@
 <script src="https://unpkg.com/leaflet-measure@3.1.0/dist/leaflet-measure.umd.js"></script>
 <!-- ExifReader (better than exif-js for modern usage) or exif-js -->
 <script src="https://cdn.jsdelivr.net/npm/exif-js"></script>
+<!-- Proj4js for coordinate transformations -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.9.0/proj4.min.js"></script>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -596,6 +617,48 @@
         const fullImage = document.getElementById('fullImage');
         const imageModalTitle = document.getElementById('imageModalTitle');
 
+        // Array to store photo data for export
+        let photoDataForExport = [];
+
+        // Define WGS84 projection
+        proj4.defs('WGS84', '+proj=longlat +datum=WGS84 +no_defs');
+
+        // Function to get UTM zone from longitude
+        function getUTMZone(longitude) {
+            return Math.floor((longitude + 180) / 6) + 1;
+        }
+
+        // Function to determine if location is in southern hemisphere
+        function isSouthernHemisphere(latitude) {
+            return latitude < 0;
+        }
+
+        // Function to get SIRGAS 2000 UTM projection string
+        function getSirgas2000UTMProj(zone, isSouth) {
+            // SIRGAS 2000 uses GRS80 ellipsoid, compatible with WGS84 for most purposes
+            // EPSG codes for SIRGAS 2000 UTM zones in Brazil: 31976-31984 (zones 18S-26S)
+            // For southern hemisphere, add +south parameter
+            if (isSouth) {
+                return `+proj=utm +zone=${zone} +south +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs`;
+            }
+            return `+proj=utm +zone=${zone} +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs`;
+        }
+
+        // Function to convert WGS84 to SIRGAS 2000 UTM
+        function convertToSirgas2000UTM(lat, lon) {
+            const zone = getUTMZone(lon);
+            const isSouth = isSouthernHemisphere(lat);
+            const utmProj = getSirgas2000UTMProj(zone, isSouth);
+            
+            const result = proj4('WGS84', utmProj, [lon, lat]);
+            return {
+                easting: result[0],
+                northing: result[1],
+                zone: zone,
+                hemisphere: isSouth ? 'S' : 'N'
+            };
+        }
+
         function handleFiles(files) {
             if (!files || files.length === 0) return;
 
@@ -603,8 +666,9 @@
             statusText.textContent = `Processando ${files.length} arquivos...`;
             progressBar.style.width = '0%';
 
-            // Clear existing markers
+            // Clear existing markers and photo data
             markers.clearLayers();
+            photoDataForExport = [];
 
             let processedCount = 0;
             const bounds = L.latLngBounds();
@@ -622,6 +686,8 @@
                     const lon = EXIF.getTag(this, "GPSLongitude");
                     const latRef = EXIF.getTag(this, "GPSLatitudeRef");
                     const lonRef = EXIF.getTag(this, "GPSLongitudeRef");
+                    const altitude = EXIF.getTag(this, "GPSAltitude");
+                    const altitudeRef = EXIF.getTag(this, "GPSAltitudeRef");
 
                     if (lat && lon && latRef && lonRef) {
                         const latDec = convertDMSToDD(lat, latRef);
@@ -629,6 +695,28 @@
 
                         if (!isNaN(latDec) && !isNaN(lonDec)) {
                             const objectUrl = URL.createObjectURL(file);
+
+                            // Get altitude value (default to 0 if not available)
+                            let altitudeValue = 0;
+                            if (altitude !== undefined && altitude !== null) {
+                                const parsedAlt = typeof altitude === 'number' ? altitude : parseFloat(altitude);
+                                // Only use parsed value if it's a valid number
+                                if (!isNaN(parsedAlt)) {
+                                    altitudeValue = parsedAlt;
+                                    // Check altitude reference (0 = above sea level, 1 = below sea level)
+                                    if (altitudeRef === 1) {
+                                        altitudeValue = -altitudeValue;
+                                    }
+                                }
+                            }
+
+                            // Store photo data for export
+                            photoDataForExport.push({
+                                filename: file.name,
+                                latitude: latDec,
+                                longitude: lonDec,
+                                altitude: altitudeValue
+                            });
 
                             const marker = L.marker([latDec, lonDec]);
                             const popupContent = `
@@ -664,13 +752,62 @@
 
                         if (hasPhotos) {
                             map.fitBounds(bounds, { padding: [50, 50], maxZoom: 18 });
+                            // Show export section when photos are loaded
+                            document.getElementById('exportSection').classList.remove('d-none');
                         } else {
                             alert('Nenhuma informação de GPS encontrada nas fotos selecionadas.');
+                            // Hide export section if no photos with GPS
+                            document.getElementById('exportSection').classList.add('d-none');
                         }
                     }
                 }
             });
         }
+
+        // Function to generate and download TXT file
+        function downloadCoordinatesTXT() {
+            if (photoDataForExport.length === 0) {
+                alert('Nenhuma foto com coordenadas carregada.');
+                return;
+            }
+
+            const startingNumber = parseInt(document.getElementById('startingPointNumber').value) || 1;
+            let txtContent = '';
+
+            photoDataForExport.forEach((photo, index) => {
+                const pointNumber = startingNumber + index;
+                const utmCoords = convertToSirgas2000UTM(photo.latitude, photo.longitude);
+                
+                // Format for Civil 3D: point_number,description,easting,northing,elevation
+                // Comma-separated values in TXT file, no thousand separators, decimal point as separator
+                const line = [
+                    pointNumber,
+                    photo.filename,
+                    utmCoords.easting.toFixed(3),
+                    utmCoords.northing.toFixed(3),
+                    photo.altitude.toFixed(3)
+                ].join(',');
+                
+                txtContent += line + '\n';
+            });
+
+            // Remove trailing newline
+            txtContent = txtContent.trimEnd();
+
+            // Create and trigger download
+            const blob = new Blob([txtContent], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'coordenadas_fotos_sirgas2000.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // Download button event listener
+        document.getElementById('downloadCoordinatesBtn').addEventListener('click', downloadCoordinatesTXT);
 
         // DMS to Decimal Degrees converter
         function convertDMSToDD(dms, ref) {
