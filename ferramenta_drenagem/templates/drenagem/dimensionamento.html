@@ -188,7 +188,11 @@
                                 <label class="form-label">Área de Contribuição (A)</label>
                                 <div class="input-group">
                                     <input type="number" class="form-control" id="area" value="10" step="0.01">
-                                    <span class="input-group-text">ha</span>
+                                    <select class="form-select" id="area-unit" style="max-width: 85px;">
+                                        <option value="ha" selected>ha</option>
+                                        <option value="m2">m²</option>
+                                        <option value="km2">km²</option>
+                                    </select>
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -794,10 +798,34 @@
         const modeAuto = document.getElementById('mode-auto');
         populateCommercialOptions();
 
+        // Helper function to convert area to hectares
+        function getAreaInHectares() {
+            const areaValue = parseFloat(document.getElementById('area').value) || 0;
+            const areaUnit = document.getElementById('area-unit').value;
+            
+            // Convert to hectares based on selected unit
+            // 1 ha = 10,000 m², 1 km² = 100 ha
+            switch (areaUnit) {
+                case 'm2':
+                    return areaValue / 10000;
+                case 'km2':
+                    return areaValue * 100;
+                case 'ha':
+                default:
+                    return areaValue;
+            }
+        }
+
         inputs.forEach(input => {
             input.addEventListener('input', calculateAll);
             input.addEventListener('change', calculateAll);
         });
+
+        // Explicit listener for area unit change (also covered by inputs.forEach above)
+        const areaUnitSelect = document.getElementById('area-unit');
+        if (areaUnitSelect) {
+            areaUnitSelect.addEventListener('change', calculateAll);
+        }
 
         if (pipeCountInput) {
             pipeCountInput.addEventListener('input', () => {
@@ -867,7 +895,7 @@
                 return;
             }
 
-            const A = parseFloat(document.getElementById('area').value) || 0;
+            const A = getAreaInHectares();
             const C = parseFloat(document.getElementById('runoff').value) || 0;
             const TR = parseFloat(document.getElementById('tr').value) || 0;
             const L = parseFloat(document.getElementById('length').value) || 0;
