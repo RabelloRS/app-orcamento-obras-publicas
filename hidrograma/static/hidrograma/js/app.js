@@ -30,15 +30,15 @@ function setupUI() {
         btn.addEventListener('click', (e) => {
             const targetId = e.currentTarget.dataset.target;
             
+            // Update tab buttons - use Bootstrap nav-link classes
             document.querySelectorAll('.tab-btn').forEach(b => {
-                b.classList.remove('text-blue-600', 'border-blue-600');
-                b.classList.add('text-slate-500', 'border-transparent');
+                b.classList.remove('active');
             });
-            e.currentTarget.classList.remove('text-slate-500', 'border-transparent');
-            e.currentTarget.classList.add('text-blue-600', 'border-blue-600');
+            e.currentTarget.classList.add('active');
 
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
-            document.getElementById(targetId).classList.remove('hidden');
+            // Update tab content - use Bootstrap d-none class
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.add('d-none'));
+            document.getElementById(targetId).classList.remove('d-none');
             
 
             if(targetId === 'tab-memorial') updateMemorial();
@@ -62,11 +62,9 @@ function setupUI() {
     document.getElementById('chk-custom-idf').addEventListener('change', (e) => {
         const box = document.getElementById('box-idf-params');
         if (e.target.checked) {
-            box.classList.remove('hidden');
-            box.classList.add('grid');
+            box.classList.remove('d-none');
         } else {
-            box.classList.add('hidden');
-            box.classList.remove('grid');
+            box.classList.add('d-none');
             setupIDFDefaults();
             performCalculation();
         }
@@ -204,14 +202,14 @@ function performCalculation() {
     validList.innerHTML = '';
     
     if (validation.msgs.length > 0) {
-        validBox.classList.remove('hidden');
+        validBox.classList.remove('d-none');
         validation.msgs.forEach(msg => {
             const li = document.createElement('li');
             li.textContent = msg;
             validList.appendChild(li);
         });
     } else {
-        validBox.classList.add('hidden');
+        validBox.classList.add('d-none');
     }
 
     if (!validation.valid) return;
@@ -263,7 +261,7 @@ function updateUI() {
 
 
 
-    if(!document.getElementById('tab-memorial').classList.contains('hidden')) {
+    if(!document.getElementById('tab-memorial').classList.contains('d-none')) {
         updateMemorial();
     }
 }
@@ -284,13 +282,12 @@ function updateDetailedTable(rainSteps, uhOrds, flow, dt) {
         if (q < 0.01 && pInc < 0.01 && i > 20) continue; 
 
         const tr = document.createElement('tr');
-        tr.className = "hover:bg-slate-50 transition-colors";
         tr.innerHTML = `
-            <td class="px-4 py-1 border-b">${t.toFixed(1)}</td>
-            <td class="px-4 py-1 border-b text-slate-500">${pInc.toFixed(2)}</td>
-            <td class="px-4 py-1 border-b text-blue-600">${peInc.toFixed(2)}</td>
-            <td class="px-4 py-1 border-b text-slate-400">${uh.toFixed(3)}</td>
-            <td class="px-4 py-1 border-b text-right font-bold text-slate-700">${q.toFixed(2)}</td>
+            <td>${t.toFixed(1)}</td>
+            <td class="text-muted">${pInc.toFixed(2)}</td>
+            <td class="text-primary">${peInc.toFixed(2)}</td>
+            <td class="text-muted">${uh.toFixed(3)}</td>
+            <td class="text-end fw-bold">${q.toFixed(2)}</td>
         `;
         tbody.appendChild(tr);
     }
