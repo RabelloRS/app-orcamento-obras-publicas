@@ -1,0 +1,138 @@
+{% extends 'layouts/app.html' %}
+
+{% block title %}{{ title }} - Resolve{% endblock %}
+{% block page_title %}{{ content.title }}{% endblock %}
+
+{% block content %}
+<section class="ds-container py-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a href="{% url 'usuarios:public_home' %}">Início</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'usuarios:manual' %}">Manual</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ content.title }}</li>
+        </ol>
+    </nav>
+
+    <!-- Header -->
+    <div class="p-4 rounded-md shadow-1 mb-4" style="background:var(--color-surface);border:1px solid var(--color-border);">
+        <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center gap-3">
+            <div class="d-inline-flex align-items-center justify-content-center rounded-circle" style="width:56px;height:56px;background:rgba(var(--color-primary-rgb),0.1);">
+                <i class="bi {{ content.icon }} text-primary" style="font-size:1.5rem;"></i>
+            </div>
+            <div class="flex-grow-1">
+                <h2 class="h4 fw-semibold mb-1">{{ content.title }}</h2>
+                <p class="text-soft mb-0">{{ content.description }}</p>
+            </div>
+            <div class="d-flex gap-2">
+                {% for tool in tools %}
+                    {% if tool.id == app_name %}
+                    <a href="{% url tool.url %}" class="btn btn-primary">
+                        <i class="bi bi-play-fill me-1"></i>Abrir Ferramenta
+                    </a>
+                    {% endif %}
+                {% endfor %}
+                <a href="{% url 'usuarios:manual' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-1"></i>Voltar
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Main Content -->
+        <div class="col-12 col-lg-8">
+            <!-- Theory Section -->
+            <div class="card shadow-sm mb-4" style="background:var(--color-surface);border-color:var(--color-border)!important;">
+                <div class="card-header bg-transparent border-bottom d-flex align-items-center gap-2">
+                    <i class="bi bi-mortarboard text-primary"></i>
+                    <h5 class="mb-0 fw-semibold">Fundamentação Teórica</h5>
+                </div>
+                <div class="card-body">
+                    {{ content.theory|safe }}
+                </div>
+            </div>
+
+            <!-- How to Use Section -->
+            <div class="card shadow-sm mb-4" style="background:var(--color-surface);border-color:var(--color-border)!important;">
+                <div class="card-header bg-transparent border-bottom d-flex align-items-center gap-2">
+                    <i class="bi bi-list-check text-success"></i>
+                    <h5 class="mb-0 fw-semibold">Como Utilizar</h5>
+                </div>
+                <div class="card-body">
+                    {{ content.how_it_works|safe }}
+                </div>
+            </div>
+
+            <!-- Without Tool Section -->
+            <div class="card shadow-sm mb-4" style="background:var(--color-surface);border-color:var(--color-border)!important;">
+                <div class="card-header bg-transparent border-bottom d-flex align-items-center gap-2">
+                    <i class="bi bi-lightbulb text-warning"></i>
+                    <h5 class="mb-0 fw-semibold">Sem Esta Ferramenta</h5>
+                </div>
+                <div class="card-body">
+                    {{ content.without_tool|safe }}
+                </div>
+            </div>
+
+            <!-- References Section -->
+            <div class="card shadow-sm" style="background:var(--color-surface);border-color:var(--color-border)!important;">
+                <div class="card-header bg-transparent border-bottom d-flex align-items-center gap-2">
+                    <i class="bi bi-journal-bookmark text-info"></i>
+                    <h5 class="mb-0 fw-semibold">Referências Técnicas</h5>
+                </div>
+                <div class="card-body">
+                    {{ content.references|safe }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-12 col-lg-4">
+            <!-- Developer Info -->
+            <div class="card shadow-sm mb-4" style="background:var(--color-surface);border-color:var(--color-border)!important;">
+                <div class="card-header bg-transparent border-bottom d-flex align-items-center gap-2">
+                    <i class="bi bi-person-circle text-primary"></i>
+                    <h6 class="mb-0 fw-semibold">Desenvolvedor</h6>
+                </div>
+                <div class="card-body">
+                    <p class="mb-1 fw-semibold">{{ content.developer }}</p>
+                    <p class="mb-1 text-soft small">{{ content.developer_title }}</p>
+                    <p class="mb-0 text-soft small">
+                        <i class="bi bi-geo-alt me-1"></i>{{ content.developer_location }}
+                    </p>
+                </div>
+            </div>
+
+            <!-- Quick Navigation -->
+            <div class="card shadow-sm mb-4" style="background:var(--color-surface);border-color:var(--color-border)!important;">
+                <div class="card-header bg-transparent border-bottom d-flex align-items-center gap-2">
+                    <i class="bi bi-compass text-primary"></i>
+                    <h6 class="mb-0 fw-semibold">Outras Ferramentas</h6>
+                </div>
+                <div class="list-group list-group-flush">
+                    {% for tool in tools %}
+                        {% if tool.id != app_name %}
+                        <a href="{% url 'usuarios:manual_detail' tool.id %}" class="list-group-item list-group-item-action d-flex align-items-center gap-2" style="background:transparent;">
+                            <i class="bi {{ tool.icon }} text-primary"></i>
+                            <span class="small">{{ tool.name }}</span>
+                        </a>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Help Box -->
+            <div class="card shadow-sm" style="background:rgba(var(--color-primary-rgb),0.05);border-color:var(--color-border)!important;">
+                <div class="card-body text-center">
+                    <i class="bi bi-question-circle text-primary mb-2" style="font-size:2rem;"></i>
+                    <h6 class="fw-semibold">Precisa de Ajuda?</h6>
+                    <p class="small text-soft mb-0">
+                        Se você tiver dúvidas sobre esta ferramenta, entre em contato através da página inicial.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
