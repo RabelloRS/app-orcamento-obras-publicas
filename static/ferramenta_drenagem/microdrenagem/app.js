@@ -152,6 +152,57 @@ document.getElementById('clear-btn').addEventListener('click', () => {
     updateUI();
 });
 
+// Save project button
+const saveProjectBtn = document.getElementById('btn-save-project');
+if (saveProjectBtn) {
+    saveProjectBtn.addEventListener('click', () => {
+        const projectData = {
+            sections: sections,
+            globalParams: {
+                region: document.getElementById('region-select')?.value,
+                tr: document.getElementById('tr-input')?.value,
+                tcIni: document.getElementById('tc-ini-input')?.value,
+                material: document.getElementById('global-material')?.value,
+                cValue: document.getElementById('global-c-value')?.value
+            },
+            rainData: rainData
+        };
+        
+        if (window.ResolveDataManager) {
+            window.ResolveDataManager.downloadProjectFile('microdrenagem_projeto', projectData);
+        } else {
+            // Fallback
+            const content = JSON.stringify(projectData, null, 2);
+            const blob = new Blob([content], { type: 'application/json;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `microdrenagem_projeto_${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+    });
+}
+
+// Listen for project load event
+window.addEventListener('resolveProjectLoaded', (event) => {
+    const data = event.detail;
+    if (data.custom && data.custom.sections) {
+        sections = data.custom.sections;
+        if (data.custom.globalParams) {
+            const params = data.custom.globalParams;
+            if (params.region) document.getElementById('region-select').value = params.region;
+            if (params.tr) document.getElementById('tr-input').value = params.tr;
+            if (params.tcIni) document.getElementById('tc-ini-input').value = params.tcIni;
+            if (params.material) document.getElementById('global-material').value = params.material;
+            if (params.cValue) document.getElementById('global-c-value').value = params.cValue;
+        }
+        updateUI();
+    }
+});
+
 function updateUI() {
     renderTable(sections);
     renderQuantitiesDetailed(sections);

@@ -39,28 +39,37 @@
     .memorial-table th, .memorial-table td { border: 1px solid #cbd5e1; padding: 4px 8px; text-align: center; font-size: 0.75rem; }
     .memorial-table th { background-color: #f8fafc; font-weight: 600; }
 
-    /* HUT specific styles */
-    .hut-container {
-        max-width: 100%;
-    }
-    .hut-export-bar {
-        display: flex;
-        justify-content: flex-end;
-        gap: 0.75rem;
-        margin-bottom: 1.5rem;
-        flex-wrap: wrap;
-    }
-    @media (max-width: 575px) {
-        .hut-export-bar {
-            justify-content: center;
-        }
-        .hut-export-bar button {
-            flex: 1;
-            min-width: 120px;
-        }
-    }
-</style>
-{% endblock %}
+    <nav class="bg-slate-900 text-white shadow-lg sticky top-0 z-50 border-b-4 border-emerald-500">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center gap-3">
+                    <i data-lucide="droplets" class="text-emerald-400 h-8 w-8"></i>
+                    <div>
+                        <h1 class="text-xl font-bold tracking-tight">HidroCalc Pro</h1>
+                        <p class="text-xs text-slate-400 font-medium">SCS Unit Hydrograph & HUFF</p>
+                    </div>
+                </div>
+                <div class="flex space-x-3 text-sm font-medium">
+                    <button id="btn-export-csv" class="flex items-center gap-2 bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded transition">
+                        <i data-lucide="file-spreadsheet" class="h-4 w-4"></i>
+                        <span class="hidden md:inline">CSV</span>
+                    </button>
+                    <button id="btn-export-pdf" class="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 px-3 py-1.5 rounded transition shadow-lg shadow-emerald-900/20">
+                        <i data-lucide="file-down" class="h-4 w-4"></i>
+                        <span class="hidden md:inline">Memorial PDF</span>
+                    </button>
+                    <button id="btn-save-project" class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 px-3 py-1.5 rounded transition">
+                        <i data-lucide="save" class="h-4 w-4"></i>
+                        <span class="hidden md:inline">Salvar Projeto</span>
+                    </button>
+                    <button id="btn-load-project" class="flex items-center gap-2 bg-slate-600 hover:bg-slate-500 px-3 py-1.5 rounded transition">
+                        <i data-lucide="folder-open" class="h-4 w-4"></i>
+                        <span class="hidden md:inline">Carregar</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
 
 {% block extra_header_actions %}
 <button id="btn-export-csv" class="btn btn-outline-secondary">
