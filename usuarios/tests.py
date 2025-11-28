@@ -107,3 +107,88 @@ class UsuariosAuthTestCase(TestCase):
             }
         )
         self.assertFalse(User.objects.filter(username='newuser2').exists())
+
+
+class ManualTestCase(TestCase):
+    """Test manual/help pages functionality."""
+
+    def setUp(self):
+        """Set up test client."""
+        self.client = Client()
+
+    def test_manual_index_accessible(self):
+        """Test that manual index page is accessible without authentication."""
+        response = self.client.get(reverse('usuarios:manual'))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Manual de Instruções e Ajuda')
+
+    def test_manual_index_lists_tools(self):
+        """Test that manual index page lists all tools."""
+        response = self.client.get(reverse('usuarios:manual'))
+        self.assertEqual(response.status_code, 200)
+        # Check that tool cards are present
+        self.assertContains(response, 'Microdrenagem Urbana')
+        self.assertContains(response, 'IDFGeo RS')
+        self.assertContains(response, 'Mapa de Fotos')
+        self.assertContains(response, 'HidroCalc Pro')
+        self.assertContains(response, 'Pavimentação.br')
+        self.assertContains(response, 'Dimensionamento Hidráulico')
+
+    def test_manual_detail_microdrenagem(self):
+        """Test that microdrenagem manual detail page is accessible."""
+        response = self.client.get(reverse('usuarios:manual_detail', kwargs={'app_name': 'microdrenagem'}))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Microdrenagem Urbana')
+        self.assertContains(response, 'Fundamentação Teórica')
+        self.assertContains(response, 'Como Utilizar')
+
+    def test_manual_detail_idfgeo(self):
+        """Test that idfgeo manual detail page is accessible."""
+        response = self.client.get(reverse('usuarios:manual_detail', kwargs={'app_name': 'idfgeo'}))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'IDFGeo RS')
+
+    def test_manual_detail_mapa_fotos(self):
+        """Test that mapa_fotos manual detail page is accessible."""
+        response = self.client.get(reverse('usuarios:manual_detail', kwargs={'app_name': 'mapa_fotos'}))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Mapa de Fotos')
+
+    def test_manual_detail_hidrograma(self):
+        """Test that hidrograma manual detail page is accessible."""
+        response = self.client.get(reverse('usuarios:manual_detail', kwargs={'app_name': 'hidrograma'}))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'HidroCalc Pro')
+
+    def test_manual_detail_pavimentacao(self):
+        """Test that pavimentacao manual detail page is accessible."""
+        response = self.client.get(reverse('usuarios:manual_detail', kwargs={'app_name': 'pavimentacao'}))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Pavimentação.br')
+
+    def test_manual_detail_dimensionamento(self):
+        """Test that dimensionamento manual detail page is accessible."""
+        response = self.client.get(reverse('usuarios:manual_detail', kwargs={'app_name': 'dimensionamento'}))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Dimensionamento Hidráulico')
+
+    def test_manual_detail_invalid_app_redirects_to_index(self):
+        """Test that invalid app_name shows the manual index."""
+        response = self.client.get(reverse('usuarios:manual_detail', kwargs={'app_name': 'invalid_app'}))
+        self.assertEqual(response.status_code, 200)
+        # Should show the index page instead
+        self.assertContains(response, 'Manual de Instruções e Ajuda')
+
+    def test_manual_detail_has_developer_info(self):
+        """Test that manual detail pages contain developer information."""
+        response = self.client.get(reverse('usuarios:manual_detail', kwargs={'app_name': 'microdrenagem'}))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Rodrigo Emanuel Rabello')
+        self.assertContains(response, 'Engenheiro Civil')
+
+    def test_manual_detail_has_theory_section(self):
+        """Test that manual detail pages have theory section."""
+        response = self.client.get(reverse('usuarios:manual_detail', kwargs={'app_name': 'microdrenagem'}))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Método Racional')
+        self.assertContains(response, 'Manning')

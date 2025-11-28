@@ -15,43 +15,113 @@
         role="menuitem">
         <i class="bi bi-house"></i><span>Início</span>
       </a>
+      <a href="{% url 'usuarios:manual' %}"
+        class="app-sidebar__link {% if request.resolver_match.url_name == 'manual' or request.resolver_match.url_name == 'manual_detail' %}active{% endif %}"
+        role="menuitem">
+        <i class="bi bi-book"></i><span>Manual de Instruções</span>
+      </a>
     </div>
+
+    <!-- Drenagem e Hidrologia -->
     <div class="app-sidebar__nav-group">
-      <div class="app-sidebar__nav-label">Ferramentas</div>
-      <a href="{% url 'ferramenta_drenagem:dimensionamento' %}"
-        class="app-sidebar__link {% if request.resolver_match.url_name == 'dimensionamento' %}active{% endif %}"
-        role="menuitem">
-        <i class="bi bi-droplet"></i><span>Dimensionamento</span>
-      </a>
-      <a href="{% url 'ferramenta_drenagem:microdrenagem' %}"
-        class="app-sidebar__link {% if request.resolver_match.url_name == 'microdrenagem' or request.resolver_match.url_name == 'calculo_volume' %}active{% endif %}"
-        role="menuitem">
-        <i class="bi bi-bezier"></i><span>Microdrenagem Urbana</span>
-      </a>
-      <a href="{% url 'mapa_fotos:mapa' %}"
-        class="app-sidebar__link {% if request.resolver_match.url_name == 'mapa' or request.resolver_match.url_name == 'mapa_publico' or request.resolver_match.url_name == 'mapa_fotos' %}active{% endif %}"
-        role="menuitem">
-        <i class="bi bi-images"></i><span>Mapa de Fotos</span>
-      </a>
-      <a href="{% url 'ferramenta_drenagem:idfgeo' %}"
-        class="app-sidebar__link {% if request.resolver_match.url_name == 'idfgeo' %}active{% endif %}" role="menuitem">
-        <i class="bi bi-cloud-rain"></i><span>IDFGeo RS</span>
-      </a>
-      <a href="{% url 'bacia_retencao:index' %}"
-        class="app-sidebar__link {% if request.resolver_match.app_name == 'bacia_retencao' %}active{% endif %}" role="menuitem">
-        <i class="bi bi-droplet"></i><span>Bacia de Retenção</span>
-      </a>
-      <a href="{% url 'hidrograma:index' %}"
-        class="app-sidebar__link {% if request.resolver_match.url_name == 'index' %}active{% endif %}" role="menuitem">
-        <i class="bi bi-graph-up"></i><span>HidroCalc Pro</span>
-      </a>
-      <a href="{% url 'pavimentacao:index' %}"
-        class="app-sidebar__link {% if request.resolver_match.url_name == 'index' and request.resolver_match.app_name == 'pavimentacao' %}active{% endif %}"
-        role="menuitem">
-        <i class="bi bi-cone-striped"></i><span>Pavimentação</span>
-      </a>
-      <div class="app-sidebar__link disabled" role="menuitem" aria-disabled="true">
-        <i class="bi bi-tools"></i><span>Novas ferramentas em breve</span>
+      <button class="app-sidebar__expander" type="button" data-bs-toggle="collapse" data-bs-target="#collapseDrenagem" aria-expanded="true" aria-controls="collapseDrenagem">
+        <i class="bi bi-water"></i>
+        <span>Drenagem e Hidrologia</span>
+        <i class="bi bi-chevron-down app-sidebar__expander-icon"></i>
+      </button>
+      <div class="collapse show" id="collapseDrenagem">
+        <div class="app-sidebar__submenu">
+          <a href="{% url 'ferramenta_drenagem:dimensionamento' %}"
+            class="app-sidebar__link {% if request.resolver_match.url_name == 'dimensionamento' %}active{% endif %}"
+            role="menuitem">
+            <i class="bi bi-droplet"></i><span>Dimensionamento</span>
+          </a>
+          <a href="{% url 'ferramenta_drenagem:microdrenagem' %}"
+            class="app-sidebar__link {% if request.resolver_match.url_name == 'microdrenagem' or request.resolver_match.url_name == 'calculo_volume' %}active{% endif %}"
+            role="menuitem">
+            <i class="bi bi-bezier"></i><span>Microdrenagem Urbana</span>
+          </a>
+          <a href="{% url 'ferramenta_drenagem:idfgeo' %}"
+            class="app-sidebar__link {% if request.resolver_match.url_name == 'idfgeo' %}active{% endif %}" role="menuitem">
+            <i class="bi bi-cloud-rain"></i><span>IDFGeo RS</span>
+          </a>
+          <a href="{% url 'bacia_retencao:index' %}"
+            class="app-sidebar__link {% if request.resolver_match.app_name == 'bacia_retencao' %}active{% endif %}" role="menuitem">
+            <i class="bi bi-droplet-half"></i><span>Bacia de Retenção</span>
+          </a>
+          <a href="{% url 'hidrograma:index' %}"
+            class="app-sidebar__link {% if request.resolver_match.url_name == 'index' and request.resolver_match.app_name == 'hidrograma' %}active{% endif %}" role="menuitem">
+            <i class="bi bi-graph-up"></i><span>HidroCalc Pro</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pavimentação -->
+    <div class="app-sidebar__nav-group">
+      <button class="app-sidebar__expander" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePavimentacao" aria-expanded="true" aria-controls="collapsePavimentacao">
+        <i class="bi bi-cone-striped"></i>
+        <span>Pavimentação</span>
+        <i class="bi bi-chevron-down app-sidebar__expander-icon"></i>
+      </button>
+      <div class="collapse show" id="collapsePavimentacao">
+        <div class="app-sidebar__submenu">
+          <a href="{% url 'pavimentacao:index' %}"
+            class="app-sidebar__link {% if request.resolver_match.url_name == 'index' and request.resolver_match.app_name == 'pavimentacao' %}active{% endif %}"
+            role="menuitem">
+            <i class="bi bi-layers"></i><span>Pavimentação.br</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Produtividade e Relatórios -->
+    <div class="app-sidebar__nav-group">
+      <button class="app-sidebar__expander" type="button" data-bs-toggle="collapse" data-bs-target="#collapseProdutividade" aria-expanded="true" aria-controls="collapseProdutividade">
+        <i class="bi bi-clipboard-data"></i>
+        <span>Produtividade e Relatórios</span>
+        <i class="bi bi-chevron-down app-sidebar__expander-icon"></i>
+      </button>
+      <div class="collapse show" id="collapseProdutividade">
+        <div class="app-sidebar__submenu">
+          <a href="{% url 'mapa_fotos:mapa' %}"
+            class="app-sidebar__link {% if request.resolver_match.url_name == 'mapa' or request.resolver_match.url_name == 'mapa_publico' or request.resolver_match.url_name == 'mapa_fotos' %}active{% endif %}"
+            role="menuitem">
+            <i class="bi bi-images"></i><span>Mapa de Fotos</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Orçamento de Obras Públicas -->
+    <div class="app-sidebar__nav-group">
+      <button class="app-sidebar__expander" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOrcamento" aria-expanded="false" aria-controls="collapseOrcamento">
+        <i class="bi bi-currency-dollar"></i>
+        <span>Orçamento de Obras Públicas</span>
+        <i class="bi bi-chevron-down app-sidebar__expander-icon"></i>
+      </button>
+      <div class="collapse" id="collapseOrcamento">
+        <div class="app-sidebar__submenu">
+          <div class="app-sidebar__link disabled" role="menuitem" aria-disabled="true">
+            <i class="bi bi-tools"></i><span>Em desenvolvimento</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Banco de Conhecimento -->
+    <div class="app-sidebar__nav-group">
+      <button class="app-sidebar__expander" type="button" data-bs-toggle="collapse" data-bs-target="#collapseConhecimento" aria-expanded="false" aria-controls="collapseConhecimento">
+        <i class="bi bi-book"></i>
+        <span>Banco de Conhecimento</span>
+        <i class="bi bi-chevron-down app-sidebar__expander-icon"></i>
+      </button>
+      <div class="collapse" id="collapseConhecimento">
+        <div class="app-sidebar__submenu">
+          <div class="app-sidebar__link disabled" role="menuitem" aria-disabled="true">
+            <i class="bi bi-journal-text"></i><span>Em desenvolvimento</span>
+          </div>
+        </div>
       </div>
     </div>
   </div>

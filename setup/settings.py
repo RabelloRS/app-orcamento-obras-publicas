@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'hidrograma',
     'pavimentacao',
     'bacia_retencao',
+    'banco_idf',
 ]
 
 

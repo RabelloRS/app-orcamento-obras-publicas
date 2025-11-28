@@ -4,112 +4,96 @@
 
 {% block content %}
 <section class="ds-container py-5">
-    <div class="row align-items-center g-4">
-        <div class="col-lg-6">
-            <p class="text-uppercase text-muted small fw-semibold mb-2">Resolve Sistemas de Engenharia</p>
-            <h1 class="display-6 fw-bold mb-3">Ferramentas digitais para acelerar projetos e inspeções</h1>
-            <p class="text-soft mb-4">Modelos hidrológicos, mapas interativos e calculadoras especializadas reunidos em um único ambiente seguro. As aplicações desta página são públicas — use imediatamente — e, se quiser salvar configurações, crie seu acesso restrito.</p>
-            <div class="d-flex flex-wrap gap-3">
-                <a href="{% url 'usuarios:dashboard' %}" class="btn btn-primary btn-lg">
-                    <i class="bi bi-shield-lock me-2"></i>Entrar na Área Restrita
-                </a>
-                <a href="{% url 'usuarios:register' %}" class="btn btn-outline-secondary btn-lg">
-                    <i class="bi bi-person-plus me-2"></i>Criar conta
-                </a>
-            </div>
-        </div>
-        <div class="col-lg-6">
-            <div class="p-4 p-lg-5 rounded-lg shadow-2" style="background:var(--color-surface);border:1px solid var(--color-border);">
-                <div class="d-flex align-items-center gap-3 mb-4">
-                    <div class="rounded-circle bg-primary bg-opacity-10 text-primary d-inline-flex align-items-center justify-content-center" style="width:64px;height:64px;">
-                        <i class="bi bi-speedometer" style="font-size:1.5rem;"></i>
-                    </div>
-                    <div>
-                        <h2 class="h4 fw-semibold mb-1">Acesso centralizado</h2>
-                        <p class="mb-0 text-soft">Autenticação, tema claro/escuro e navegação responsiva prontos para desktop, tablet ou mobile.</p>
-                    </div>
-                </div>
-                <ul class="list-unstyled mb-0 text-soft small">
-                    <li class="d-flex align-items-center mb-2"><i class="bi bi-check-circle text-success me-2"></i>Ferramentas exclusivas apenas para usuários autenticados</li>
-                    <li class="d-flex align-items-center mb-2"><i class="bi bi-check-circle text-success me-2"></i>Experiência consistente de 360px a telas ultrawide</li>
-                    <li class="d-flex align-items-center"><i class="bi bi-check-circle text-success me-2"></i>Infra pronta para receber novos módulos</li>
-                </ul>
-            </div>
-        </div>
-    </div>
-</section>
-
-<section class="ds-container pb-5">
     <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
         <div>
-            <h3 class="h4 mb-0">Aplicações atuais</h3>
+            <h3 class="h4 mb-0">Aplicações por Área</h3>
         </div>
-        <a href="{% url 'usuarios:dashboard' %}" class="btn btn-outline-primary btn-sm"><i class="bi bi-lock me-1"></i>Painel Restrito</a>
+        <a href="{% url 'usuarios:dashboard' %}" class="btn btn-outline-primary btn-sm"><i
+                class="bi bi-lock me-1"></i>Painel Restrito</a>
     </div>
-    <div class="row g-4">
-        <!-- HidroCalc Pro (Hidrograma) -->
-        <div class="col-md-4">
-            <article class="h-100 p-4 rounded-md shadow-1 d-flex flex-column" style="background:var(--color-surface);border:1px solid var(--color-border);">
-                <i class="bi bi-water text-primary" style="font-size:2rem;"></i>
-                <h4 class="h5 fw-semibold mt-3 mb-2">HidroCalc Pro</h4>
-                <p class="text-soft small mb-4">Geração de hidrogramas e análise hidrológica com método SCS e HUFF.</p>
-                <div class="mt-auto">
-                    <a href="{% url 'hidrograma:index' %}" class="btn btn-sm btn-primary"><i class="bi bi-arrow-right me-1"></i>Usar agora</a>
+
+    <!-- Accordion for grouped applications -->
+    <div class="accordion" id="accordionApps">
+
+        <!-- Drenagem e Hidrologia -->
+        <div class="accordion-item border-0 mb-3 rounded-md shadow-1" style="background:var(--color-surface);">
+            <h2 class="accordion-header">
+                <button class="accordion-button rounded-md" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#collapseDrenagemHome" aria-expanded="true" aria-controls="collapseDrenagemHome"
+                    style="background:var(--color-surface);">
+                    <i class="bi bi-water text-primary me-2" style="font-size:1.25rem;"></i>
+                    <span class="fw-semibold">Drenagem e Hidrologia</span>
+                </button>
+            </h2>
+            <div id="collapseDrenagemHome" class="accordion-collapse collapse show" data-bs-parent="#accordionApps">
+                <div class="accordion-body pt-0">
+                    <div class="row g-3">
+                        <div class="col-md-6 col-lg-3">
+                            <article class="h-100 p-3 rounded-md d-flex flex-column"
+                                style="background:var(--color-bg);border:1px solid var(--color-border);">
+                                <i class="bi bi-droplet-fill text-info" style="font-size:1.5rem;"></i>
+                                <h4 class="h6 fw-semibold mt-2 mb-1">Dimensionamento Hidráulico</h4>
+                                <p class="text-soft small mb-3">Métodos Racional, I-Pai-Wu e SCS.</p>
+                                <div class="mt-auto">
+                                    <a href="{% url 'ferramenta_drenagem:dimensionamento' %}"
+                                        class="btn btn-sm btn-primary"><i class="bi bi-arrow-right me-1"></i>Usar</a>
+                                </div>
+                            </article>
+                        </div>
+                        <div class="col-md-6 col-lg-3">
+                            <article class="h-100 p-3 rounded-md d-flex flex-column"
+                                style="background:var(--color-bg);border:1px solid var(--color-border);">
+                                <i class="bi bi-bezier text-primary" style="font-size:1.5rem;"></i>
+                                <h4 class="h6 fw-semibold mt-2 mb-1">Microdrenagem Urbana</h4>
+                                <p class="text-soft small mb-3">Cálculo de redes de drenagem.</p>
+                                <div class="mt-auto">
+                                    <a href="{% url 'ferramenta_drenagem:microdrenagem' %}"
+                                        class="btn btn-sm btn-primary"><i class="bi bi-arrow-right me-1"></i>Usar</a>
+                                </div>
+                            </article>
+                        </div>
+                        <div class="col-md-6 col-lg-3">
+                            <article class="h-100 p-3 rounded-md d-flex flex-column"
+                                style="background:var(--color-bg);border:1px solid var(--color-border);">
+                                <i class="bi bi-cloud-rain text-primary" style="font-size:1.5rem;"></i>
+                                <h4 class="h6 fw-semibold mt-2 mb-1">IDFGeo RS</h4>
+                                <p class="text-soft small mb-3">Equações IDF em mapas interativos.</p>
+                                <div class="mt-auto">
+                                    <a href="{% url 'ferramenta_drenagem:idfgeo' %}" class="btn btn-sm btn-primary"><i
+                                            class="bi bi-arrow-right me-1"></i>Usar</a>
+                                </div>
+                            </article>
+                        </div>
+                        <div class="col-md-6 col-lg-3">
+                            <article class="h-100 p-3 rounded-md d-flex flex-column"
+                                style="background:var(--color-bg);border:1px solid var(--color-border);">
+                                <i class="bi bi-graph-up text-success" style="font-size:1.5rem;"></i>
+                                <h4 class="h6 fw-semibold mt-2 mb-1">HidroCalc Pro</h4>
+                                <p class="text-soft small mb-3">Hidrogramas com SCS e HUFF.</p>
+                                <div class="mt-auto">
+                                    <a href="{% url 'hidrograma:index' %}" class="btn btn-sm btn-primary"><i
+                                            class="bi bi-arrow-right me-1"></i>Usar</a>
+                                </div>
+                            </article>
+                        </div>
+                    </div>
                 </div>
-            </article>
-        </div>
-        <!-- Pavimentação.br -->
-        <div class="col-md-4">
-            <article class="h-100 p-4 rounded-md shadow-1 d-flex flex-column" style="background:var(--color-surface);border:1px solid var(--color-border);">
-                <i class="bi bi-layers text-dark" style="font-size:2rem;"></i>
-                <h4 class="h5 fw-semibold mt-3 mb-2">Pavimentação.br</h4>
-                <p class="text-soft small mb-4">Dimensionamento de pavimentos flexíveis (Método DNIT).</p>
-                <div class="mt-auto">
-                    <a href="{% url 'pavimentacao:index' %}" class="btn btn-sm btn-primary"><i class="bi bi-arrow-right me-1"></i>Usar agora</a>
+                <div class="col-md-6 col-lg-3">
+                    <article class="h-100 p-3 rounded-md d-flex flex-column"
+                        style="background:var(--color-bg);border:1px solid var(--color-border);">
+                        <i class="bi bi-droplet-half text-info" style="font-size:1.5rem;"></i>
+                        <h4 class="h6 fw-semibold mt-2 mb-1">Bacia de Retenção</h4>
+                        <p class="text-soft small mb-3">Volume útil e vazão de saída.</p>
+                        <div class="mt-auto">
+                            <a href="{% url 'bacia_retencao:index' %}" class="btn btn-sm btn-primary"><i
+                                    class="bi bi-arrow-right me-1"></i>Usar</a>
+                        </div>
+                    </article>
                 </div>
-            </article>
+            </div>
         </div>
-        <!-- Bacia de Retenção -->
-        <div class="col-md-4">
-            <article class="h-100 p-4 rounded-md shadow-1 d-flex flex-column" style="background:var(--color-surface);border:1px solid var(--color-border);">
-                <i class="bi bi-droplet text-info" style="font-size:2rem;"></i>
-                <h4 class="h5 fw-semibold mt-3 mb-2">Bacia de Retenção</h4>
-                <p class="text-soft small mb-4">Calcule volume útil, vazão de saída e tubulação com relatório técnico.</p>
-                <div class="mt-auto">
-                    <a href="{% url 'bacia_retencao:index' %}" class="btn btn-sm btn-primary"><i class="bi bi-arrow-right me-1"></i>Usar agora</a>
-                </div>
-            </article>
-        </div>
-        <div class="col-md-4">
-            <article class="h-100 p-4 rounded-md shadow-1 d-flex flex-column" style="background:var(--color-surface);border:1px solid var(--color-border);">
-                <i class="bi bi-droplet-fill text-info" style="font-size:2rem;"></i>
-                <h4 class="h5 fw-semibold mt-3 mb-2">Dimensionamento Hidráulico</h4>
-                <p class="text-soft small mb-4">Calculadora completa para métodos Racional, I-Pai-Wu e SCS, com geração de memória técnica.</p>
-                <div class="mt-auto">
-                    <a href="{% url 'ferramenta_drenagem:dimensionamento' %}" class="btn btn-sm btn-primary"><i class="bi bi-arrow-right me-1"></i>Usar agora</a>
-                </div>
-            </article>
-        </div>
-        <div class="col-md-4">
-            <article class="h-100 p-4 rounded-md shadow-1 d-flex flex-column" style="background:var(--color-surface);border:1px solid var(--color-border);">
-                <i class="bi bi-images text-danger" style="font-size:2rem;"></i>
-                <h4 class="h5 fw-semibold mt-3 mb-2">Mapa de Fotos</h4>
-                <p class="text-soft small mb-4">Combine EXIF e Leaflet para mapear inspeções de campo diretamente no navegador.</p>
-                <div class="mt-auto">
-                    <a href="{% url 'mapa_fotos:mapa_publico' %}" class="btn btn-sm btn-primary"><i class="bi bi-arrow-right me-1"></i>Usar agora</a>
-                </div>
-            </article>
-        </div>
-        <div class="col-md-4">
-            <article class="h-100 p-4 rounded-md shadow-1 d-flex flex-column" style="background:var(--color-surface);border:1px solid var(--color-border);">
-                <i class="bi bi-cloud-rain text-primary" style="font-size:2rem;"></i>
-                <h4 class="h5 fw-semibold mt-3 mb-2">IDFGeo RS</h4>
-                <p class="text-soft small mb-4">Visualize parâmetros das equações intensidade-duração-frequência em mapas interativos.</p>
-                <div class="mt-auto">
-                    <a href="{% url 'ferramenta_drenagem:idfgeo' %}" class="btn btn-sm btn-primary"><i class="bi bi-arrow-right me-1"></i>Usar agora</a>
-                </div>
-            </article>
-        </div>
+    </div>
+    </div>
     </div>
 </section>
 
@@ -118,12 +102,111 @@
         <div class="row g-4 align-items-center">
             <div class="col-md-7">
                 <h3 class="h4 fw-semibold mb-2">Próximas entregas</h3>
-                <p class="text-soft mb-0">A área restrita está recebendo novos módulos de drenagem, estrutura e automação. Assim que cada ferramenta estiver validada, ela aparecerá automaticamente no menu lateral.</p>
+                <p class="text-soft mb-0">A área restrita está recebendo novos módulos de drenagem, estrutura e
+                    automação. Assim que cada ferramenta estiver validada, ela aparecerá automaticamente no menu
+                    lateral.</p>
             </div>
-            <div class="col-md-5 text-md-end">
-                <a href="{% url 'usuarios:dashboard' %}" class="btn btn-primary">
-                    <i class="bi bi-arrow-right-circle me-1"></i>Fique por dentro
-                </a>
+        </div>
+
+        <!-- Pavimentação -->
+        <div class="accordion-item border-0 mb-3 rounded-md shadow-1" style="background:var(--color-surface);">
+            <h2 class="accordion-header">
+                <button class="accordion-button collapsed rounded-md" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#collapsePavimentacaoHome" aria-expanded="false"
+                    aria-controls="collapsePavimentacaoHome" style="background:var(--color-surface);">
+                    <i class="bi bi-cone-striped text-warning me-2" style="font-size:1.25rem;"></i>
+                    <span class="fw-semibold">Pavimentação</span>
+                </button>
+            </h2>
+            <div id="collapsePavimentacaoHome" class="accordion-collapse collapse" data-bs-parent="#accordionApps">
+                <div class="accordion-body pt-0">
+                    <div class="row g-3">
+                        <div class="col-md-6 col-lg-3">
+                            <article class="h-100 p-3 rounded-md d-flex flex-column"
+                                style="background:var(--color-bg);border:1px solid var(--color-border);">
+                                <i class="bi bi-layers text-dark" style="font-size:1.5rem;"></i>
+                                <h4 class="h6 fw-semibold mt-2 mb-1">Pavimentação.br</h4>
+                                <p class="text-soft small mb-3">Dimensionamento de pavimentos flexíveis (DNIT).</p>
+                                <div class="mt-auto">
+                                    <a href="{% url 'pavimentacao:index' %}" class="btn btn-sm btn-primary"><i
+                                            class="bi bi-arrow-right me-1"></i>Usar</a>
+                                </div>
+                            </article>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Produtividade e Relatórios -->
+        <div class="accordion-item border-0 mb-3 rounded-md shadow-1" style="background:var(--color-surface);">
+            <h2 class="accordion-header">
+                <button class="accordion-button collapsed rounded-md" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#collapseProdutividadeHome" aria-expanded="false"
+                    aria-controls="collapseProdutividadeHome" style="background:var(--color-surface);">
+                    <i class="bi bi-clipboard-data text-info me-2" style="font-size:1.25rem;"></i>
+                    <span class="fw-semibold">Produtividade e Relatórios</span>
+                </button>
+            </h2>
+            <div id="collapseProdutividadeHome" class="accordion-collapse collapse" data-bs-parent="#accordionApps">
+                <div class="accordion-body pt-0">
+                    <div class="row g-3">
+                        <div class="col-md-6 col-lg-3">
+                            <article class="h-100 p-3 rounded-md d-flex flex-column"
+                                style="background:var(--color-bg);border:1px solid var(--color-border);">
+                                <i class="bi bi-images text-danger" style="font-size:1.5rem;"></i>
+                                <h4 class="h6 fw-semibold mt-2 mb-1">Mapa de Fotos</h4>
+                                <p class="text-soft small mb-3">Mapeie inspeções com EXIF e Leaflet.</p>
+                                <div class="mt-auto">
+                                    <a href="{% url 'mapa_fotos:mapa_publico' %}" class="btn btn-sm btn-primary"><i
+                                            class="bi bi-arrow-right me-1"></i>Usar</a>
+                                </div>
+                            </article>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Orçamento de Obras Públicas -->
+        <div class="accordion-item border-0 mb-3 rounded-md shadow-1" style="background:var(--color-surface);">
+            <h2 class="accordion-header">
+                <button class="accordion-button collapsed rounded-md" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#collapseOrcamentoHome" aria-expanded="false" aria-controls="collapseOrcamentoHome"
+                    style="background:var(--color-surface);">
+                    <i class="bi bi-currency-dollar text-success me-2" style="font-size:1.25rem;"></i>
+                    <span class="fw-semibold">Orçamento de Obras Públicas</span>
+                </button>
+            </h2>
+            <div id="collapseOrcamentoHome" class="accordion-collapse collapse" data-bs-parent="#accordionApps">
+                <div class="accordion-body pt-0">
+                    <div class="text-center py-4">
+                        <i class="bi bi-tools text-muted" style="font-size:2rem;"></i>
+                        <p class="text-soft mt-2 mb-0">Ferramentas de orçamento em desenvolvimento.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Banco de Conhecimento -->
+        <div class="accordion-item border-0 mb-3 rounded-md shadow-1" style="background:var(--color-surface);">
+            <h2 class="accordion-header">
+                <button class="accordion-button collapsed rounded-md" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#collapseConhecimentoHome" aria-expanded="false"
+                    aria-controls="collapseConhecimentoHome" style="background:var(--color-surface);">
+                    <i class="bi bi-book text-secondary me-2" style="font-size:1.25rem;"></i>
+                    <span class="fw-semibold">Banco de Conhecimento</span>
+                </button>
+            </h2>
+            <div id="collapseConhecimentoHome" class="accordion-collapse collapse" data-bs-parent="#accordionApps">
+                <div class="accordion-body pt-0">
+                    <div class="text-center py-4">
+                        <i class="bi bi-journal-text text-muted" style="font-size:2rem;"></i>
+                        <p class="text-soft mt-2 mb-0">Base de conhecimentos técnicos em desenvolvimento. Aqui serão
+                            agregados materiais sobre drenagem, hidrologia, pavimentação e engenharia civil em geral.
+                        </p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

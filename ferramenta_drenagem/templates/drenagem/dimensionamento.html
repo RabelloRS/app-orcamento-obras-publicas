@@ -161,9 +161,14 @@
             <h1 class="h3 mb-1">Dimensionamento Hidráulico</h1>
             <p class="text-muted mb-0">Configure parâmetros e acompanhe resultados em tempo real.</p>
         </div>
-        <button onclick="window.print()" class="btn btn-outline-secondary btn-no-print align-self-lg-center">
-            <i class="bi bi-printer me-2"></i>Imprimir Memória
-        </button>
+        <div class="d-flex gap-2 flex-wrap align-self-lg-center">
+            <button onclick="downloadDimensionamentoMemoria()" class="btn btn-outline-primary btn-no-print">
+                <i class="bi bi-file-earmark-text me-2"></i>Baixar Memória
+            </button>
+            <button onclick="window.print()" class="btn btn-outline-secondary btn-no-print">
+                <i class="bi bi-printer me-2"></i>Imprimir
+            </button>
+        </div>
     </div>
 
     <div class="row g-4">
@@ -183,7 +188,11 @@
                                 <label class="form-label">Área de Contribuição (A)</label>
                                 <div class="input-group">
                                     <input type="number" class="form-control" id="area" value="10" step="0.01">
-                                    <span class="input-group-text">ha</span>
+                                    <select class="form-select" id="area-unit" style="max-width: 85px;">
+                                        <option value="ha" selected>ha</option>
+                                        <option value="m2">m²</option>
+                                        <option value="km2">km²</option>
+                                    </select>
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -207,31 +216,59 @@
                                 <div id="collapseAdvanced" class="accordion-collapse collapse"
                                     data-bs-parent="#advancedHydro">
                                     <div class="accordion-body bg-light rounded-bottom">
-                                        <h6 class="text-primary small fw-bold">Método I-Pai-Wu</h6>
+                                        <h6 class="text-primary small fw-bold">
+                                            Método I-Pai-Wu
+                                            <i class="bi bi-info-circle ms-1" tabindex="0" role="button" aria-label="Informação sobre o método I-Pai-Wu" data-bs-toggle="tooltip" data-bs-placement="top" 
+                                               title="Método desenvolvido por I-Pai-Wu para estimar vazões de projeto em bacias urbanas e rurais."></i>
+                                        </h6>
                                         <div class="row g-2 mb-3">
                                             <div class="col-6">
-                                                <label class="form-label small">Coef. Forma (C2)</label>
+                                                <label class="form-label small">
+                                                    Coef. Forma (C2)
+                                                    <i class="bi bi-question-circle text-muted" tabindex="0" role="button" aria-label="Ajuda sobre Coeficiente de Forma" data-bs-toggle="tooltip" data-bs-placement="top" 
+                                                       title="Coeficiente de forma da bacia (0.1 a 1.0). Representa a relação entre a forma real e uma forma padrão. Obtido através de análise geométrica da bacia."></i>
+                                                </label>
                                                 <input type="number" class="form-control form-control-sm" id="ipaiwu-c2"
                                                     value="0.5">
+                                                <div class="form-text" style="font-size: 0.65rem;">Ex: 0.3 (alongada), 0.5 (média), 0.8 (circular)</div>
                                             </div>
                                             <div class="col-6">
-                                                <label class="form-label small">Fator Distribuição (K)</label>
+                                                <label class="form-label small">
+                                                    Fator Distribuição (K)
+                                                    <i class="bi bi-question-circle text-muted" tabindex="0" role="button" aria-label="Ajuda sobre Fator de Distribuição" data-bs-toggle="tooltip" data-bs-placement="top" 
+                                                       title="Fator de distribuição espacial da chuva (0.5 a 1.0). Considera a não-uniformidade da precipitação sobre a bacia. Obtido em literatura técnica ou calibração."></i>
+                                                </label>
                                                 <input type="number" class="form-control form-control-sm" id="ipaiwu-k"
                                                     value="0.9">
+                                                <div class="form-text" style="font-size: 0.65rem;">Ex: 0.7 (bacia grande), 0.9 (bacia pequena), 1.0 (pontual)</div>
                                             </div>
                                         </div>
 
-                                        <h6 class="text-primary small fw-bold">Método SCS (CN)</h6>
+                                        <h6 class="text-primary small fw-bold">
+                                            Método SCS (CN)
+                                            <i class="bi bi-info-circle ms-1" tabindex="0" role="button" aria-label="Informação sobre o método SCS" data-bs-toggle="tooltip" data-bs-placement="top" 
+                                               title="Método do Soil Conservation Service (SCS) para estimativa de escoamento superficial baseado no Curve Number."></i>
+                                        </h6>
                                         <div class="row g-2">
                                             <div class="col-6">
-                                                <label class="form-label small">Curve Number (CN)</label>
+                                                <label class="form-label small">
+                                                    Curve Number (CN)
+                                                    <i class="bi bi-question-circle text-muted" tabindex="0" role="button" aria-label="Ajuda sobre Curve Number" data-bs-toggle="tooltip" data-bs-placement="top" 
+                                                       title="Número de curva SCS (30 a 98). Representa o potencial de escoamento do solo. Obtido através de tabelas do SCS considerando tipo de solo, uso e cobertura."></i>
+                                                </label>
                                                 <input type="number" class="form-control form-control-sm" id="scs-cn"
                                                     value="75" max="100">
+                                                <div class="form-text" style="font-size: 0.65rem;">Ex: 98 (impermeável), 75 (residencial), 55 (pasto)</div>
                                             </div>
                                             <div class="col-6">
-                                                <label class="form-label small">Abstração (Ia/S)</label>
+                                                <label class="form-label small">
+                                                    Abstração (Ia/S)
+                                                    <i class="bi bi-question-circle text-muted" tabindex="0" role="button" aria-label="Ajuda sobre Abstração Ia/S" data-bs-toggle="tooltip" data-bs-placement="top" 
+                                                       title="Relação entre abstração inicial e retenção potencial (λ). Tradicionalmente 0.2 pelo SCS, estudos recentes sugerem 0.05 a 0.20."></i>
+                                                </label>
                                                 <input type="number" class="form-control form-control-sm"
                                                     id="scs-lambda" value="0.2" step="0.05">
+                                                <div class="form-text" style="font-size: 0.65rem;">Ex: 0.05 (revisado), 0.15 (médio), 0.20 (tradicional)</div>
                                             </div>
                                         </div>
                                     </div>
@@ -249,10 +286,22 @@
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Equação de Chuva</label>
-                                <button type="button" class="btn btn-outline-primary btn-sm w-100"
+                                <button type="button" class="btn btn-outline-primary btn-sm w-100" id="rainConfigBtn"
                                     data-bs-toggle="modal" data-bs-target="#rainModal">
                                     Configurar (Nova Petrópolis)
                                 </button>
+                            </div>
+                        </div>
+
+                        <!-- Active IDF Info Display -->
+                        <div class="alert alert-info py-2 mb-3" id="idf-info-display">
+                            <div class="d-flex flex-column">
+                                <small class="fw-bold">
+                                    <i class="bi bi-geo-alt me-1"></i>Município: <span id="active-city-name">Nova Petrópolis - RS</span>
+                                </small>
+                                <small class="mt-1">
+                                    <i class="bi bi-calculator me-1"></i>IDF: i = <span id="active-k">--</span> × TR<sup><span id="active-a">--</span></sup> / (t + <span id="active-b">--</span>)<sup><span id="active-c">--</span></sup>
+                                </small>
                             </div>
                         </div>
 
@@ -582,6 +631,10 @@
                             data-bs-target="#select-pane" type="button" role="tab">Selecionar Cidade</button>
                     </li>
                     <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="custom-tab" data-bs-toggle="tab" data-bs-target="#custom-pane"
+                            type="button" role="tab">Valores Personalizados</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
                         <button class="nav-link" id="new-tab" data-bs-toggle="tab" data-bs-target="#new-pane"
                             type="button" role="tab">Nova Equação</button>
                     </li>
@@ -600,24 +653,63 @@
                             </select>
                         </div>
                         <hr>
-                        <p class="small text-muted">Equação: i = K * TR^a / (t + b)^c</p>
+                        <p class="small text-muted">Equação: i = K × TR<sup>a</sup> / (t + b)<sup>c</sup></p>
                         <div class="row g-3">
                             <div class="col-6 col-md-3">
                                 <label class="form-label">K</label>
-                                <input type="number" class="form-control" id="rain-k">
+                                <input type="number" class="form-control" id="rain-k" readonly>
                             </div>
                             <div class="col-6 col-md-3">
                                 <label class="form-label">a</label>
-                                <input type="number" class="form-control" id="rain-a">
+                                <input type="number" class="form-control" id="rain-a" readonly>
                             </div>
                             <div class="col-6 col-md-3">
                                 <label class="form-label">b</label>
-                                <input type="number" class="form-control" id="rain-b">
+                                <input type="number" class="form-control" id="rain-b" readonly>
                             </div>
                             <div class="col-6 col-md-3">
                                 <label class="form-label">c</label>
-                                <input type="number" class="form-control" id="rain-c">
+                                <input type="number" class="form-control" id="rain-c" readonly>
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- Custom Values Pane (localStorage) -->
+                    <div class="tab-pane fade" id="custom-pane" role="tabpanel">
+                        <div class="alert alert-secondary py-2 mb-3">
+                            <i class="bi bi-info-circle me-1"></i>
+                            Insira valores personalizados das constantes IDF. Estes valores serão salvos no navegador e carregados automaticamente em futuras visitas.
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Nome / Descrição (opcional)</label>
+                            <input type="text" class="form-control" id="custom-name" placeholder="Ex: Meu Município ou Estudo Específico">
+                        </div>
+                        <p class="small text-muted">Equação: i = K × TR<sup>a</sup> / (t + b)<sup>c</sup></p>
+                        <div class="row g-3">
+                            <div class="col-6 col-md-3">
+                                <label class="form-label">K</label>
+                                <input type="number" class="form-control" id="custom-k" step="any" placeholder="Ex: 3358.33">
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <label class="form-label">a</label>
+                                <input type="number" class="form-control" id="custom-a" step="any" placeholder="Ex: 0.211">
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <label class="form-label">b</label>
+                                <input type="number" class="form-control" id="custom-b" step="any" placeholder="Ex: 11.33">
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <label class="form-label">c</label>
+                                <input type="number" class="form-control" id="custom-c" step="any" placeholder="Ex: 0.812">
+                            </div>
+                        </div>
+                        <div class="mt-3 d-flex justify-content-between">
+                            <button type="button" class="btn btn-outline-danger btn-sm" id="clear-custom-values">
+                                <i class="bi bi-trash me-1"></i> Limpar Valores Salvos
+                            </button>
+                            <button type="button" class="btn btn-success" id="save-custom-values">
+                                <i class="bi bi-save me-1"></i> Salvar e Usar
+                            </button>
                         </div>
                     </div>
 
@@ -648,7 +740,7 @@
                             </div>
                             <div class="mt-3 text-end">
                                 <button type="submit" class="btn btn-success">
-                                    <i class="bi bi-plus-circle me-1"></i> Adicionar
+                                    <i class="bi bi-plus-circle me-1"></i> Adicionar ao Sistema
                                 </button>
                             </div>
                         </form>
@@ -706,10 +798,34 @@
         const modeAuto = document.getElementById('mode-auto');
         populateCommercialOptions();
 
+        // Helper function to convert area to hectares
+        function getAreaInHectares() {
+            const areaValue = parseFloat(document.getElementById('area').value) || 0;
+            const areaUnit = document.getElementById('area-unit').value;
+            
+            // Convert to hectares based on selected unit
+            // 1 ha = 10,000 m², 1 km² = 100 ha
+            switch (areaUnit) {
+                case 'm2':
+                    return areaValue / 10000;
+                case 'km2':
+                    return areaValue * 100;
+                case 'ha':
+                default:
+                    return areaValue;
+            }
+        }
+
         inputs.forEach(input => {
             input.addEventListener('input', calculateAll);
             input.addEventListener('change', calculateAll);
         });
+
+        // Explicit listener for area unit change (also covered by inputs.forEach above)
+        const areaUnitSelect = document.getElementById('area-unit');
+        if (areaUnitSelect) {
+            areaUnitSelect.addEventListener('change', calculateAll);
+        }
 
         if (pipeCountInput) {
             pipeCountInput.addEventListener('input', () => {
@@ -779,7 +895,7 @@
                 return;
             }
 
-            const A = parseFloat(document.getElementById('area').value) || 0;
+            const A = getAreaInHectares();
             const C = parseFloat(document.getElementById('runoff').value) || 0;
             const TR = parseFloat(document.getElementById('tr').value) || 0;
             const L = parseFloat(document.getElementById('length').value) || 0;
@@ -1210,11 +1326,57 @@
         const citySelect = document.getElementById('city-select');
         const selectTabBtn = document.getElementById('select-tab');
         const rainModal = document.getElementById('rainModal');
+        const rainConfigBtn = document.getElementById('rainConfigBtn');
+        const STORAGE_KEY = 'dimensionamento_custom_idf';
+        
+        // Track current IDF source: 'city' or 'custom'
+        let currentIDFSource = 'city';
+        let currentCityName = 'Nova Petrópolis - RS';
+
         function toNumberString(val) {
             const s = (val ?? '').toString().trim();
             // normaliza vírgula decimal para ponto
             return s.replace(/,/g, '.');
         }
+
+        function updateIDFDisplay(cityName, k, a, b, c) {
+            // Update button text
+            if (rainConfigBtn) {
+                const shortName = cityName.length > 20 ? cityName.substring(0, 17) + '...' : cityName;
+                rainConfigBtn.textContent = `Configurar (${shortName})`;
+            }
+            // Update IDF info display
+            const activeCityEl = document.getElementById('active-city-name');
+            const activeKEl = document.getElementById('active-k');
+            const activeAEl = document.getElementById('active-a');
+            const activeBEl = document.getElementById('active-b');
+            const activeCEl = document.getElementById('active-c');
+            
+            // Normalize comma to dot for decimal separator
+            const kNum = parseFloat(toNumberString(k));
+            const aNum = parseFloat(toNumberString(a));
+            const bNum = parseFloat(toNumberString(b));
+            const cNum = parseFloat(toNumberString(c));
+            
+            if (activeCityEl) activeCityEl.textContent = cityName;
+            if (activeKEl) activeKEl.textContent = isNaN(kNum) ? '--' : kNum.toFixed(2);
+            if (activeAEl) activeAEl.textContent = isNaN(aNum) ? '--' : aNum.toFixed(3);
+            if (activeBEl) activeBEl.textContent = isNaN(bNum) ? '--' : bNum.toFixed(2);
+            if (activeCEl) activeCEl.textContent = isNaN(cNum) ? '--' : cNum.toFixed(3);
+        }
+
+        function applyIDFValues(k, a, b, c) {
+            const kEl = document.getElementById('rain-k');
+            const aEl = document.getElementById('rain-a');
+            const bEl = document.getElementById('rain-b');
+            const cEl = document.getElementById('rain-c');
+            if (kEl) kEl.value = toNumberString(k);
+            if (aEl) aEl.value = toNumberString(a);
+            if (bEl) bEl.value = toNumberString(b);
+            if (cEl) cEl.value = toNumberString(c);
+            calculateAll();
+        }
+
         function applySelectedCity() {
             if (!citySelect) return;
             const normalize = (s) => (s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
@@ -1232,33 +1394,165 @@
                 }
             }
             if (!option) return;
-            const kEl = document.getElementById('rain-k');
-            const aEl = document.getElementById('rain-a');
-            const bEl = document.getElementById('rain-b');
-            const cEl = document.getElementById('rain-c');
-            if (!kEl || !aEl || !bEl || !cEl) return;
+            
             const k = option.dataset.k ?? option.getAttribute('data-k');
             const a = option.dataset.a ?? option.getAttribute('data-a');
             const b = option.dataset.b ?? option.getAttribute('data-b');
             const c = option.dataset.c ?? option.getAttribute('data-c');
-            kEl.value = toNumberString(k);
-            aEl.value = toNumberString(a);
-            bEl.value = toNumberString(b);
-            cEl.value = toNumberString(c);
-            calculateAll();
+            const cityName = option.textContent || option.text;
+            
+            currentIDFSource = 'city';
+            currentCityName = cityName;
+            
+            applyIDFValues(k, a, b, c);
+            updateIDFDisplay(cityName, k, a, b, c);
         }
-        applySelectedCity();
+
+        function loadCustomValues() {
+            try {
+                const stored = localStorage.getItem(STORAGE_KEY);
+                if (stored) {
+                    const data = JSON.parse(stored);
+                    // Populate custom fields
+                    const customNameEl = document.getElementById('custom-name');
+                    const customKEl = document.getElementById('custom-k');
+                    const customAEl = document.getElementById('custom-a');
+                    const customBEl = document.getElementById('custom-b');
+                    const customCEl = document.getElementById('custom-c');
+                    
+                    if (customNameEl && data.name) customNameEl.value = data.name;
+                    if (customKEl && data.k) customKEl.value = data.k;
+                    if (customAEl && data.a) customAEl.value = data.a;
+                    if (customBEl && data.b) customBEl.value = data.b;
+                    if (customCEl && data.c) customCEl.value = data.c;
+                    
+                    return data;
+                }
+            } catch (e) {
+                console.warn('Erro ao carregar valores personalizados:', e);
+            }
+            return null;
+        }
+
+        function applyCustomValuesFromStorage() {
+            const data = loadCustomValues();
+            if (data && data.k && data.a && data.b && data.c) {
+                const cityName = data.name || 'Valores Personalizados';
+                currentIDFSource = 'custom';
+                currentCityName = cityName;
+                applyIDFValues(data.k, data.a, data.b, data.c);
+                updateIDFDisplay(cityName, data.k, data.a, data.b, data.c);
+                return true;
+            }
+            return false;
+        }
+
+        function saveCustomValues() {
+            const customNameEl = document.getElementById('custom-name');
+            const customKEl = document.getElementById('custom-k');
+            const customAEl = document.getElementById('custom-a');
+            const customBEl = document.getElementById('custom-b');
+            const customCEl = document.getElementById('custom-c');
+            
+            // Use toNumberString to handle comma decimal separators
+            const k = parseFloat(toNumberString(customKEl?.value));
+            const a = parseFloat(toNumberString(customAEl?.value));
+            const b = parseFloat(toNumberString(customBEl?.value));
+            const c = parseFloat(toNumberString(customCEl?.value));
+            
+            // Check which values are invalid and provide specific feedback
+            const invalidFields = [];
+            if (isNaN(k)) invalidFields.push('K');
+            if (isNaN(a)) invalidFields.push('a');
+            if (isNaN(b)) invalidFields.push('b');
+            if (isNaN(c)) invalidFields.push('c');
+            
+            if (invalidFields.length > 0) {
+                alert(`Por favor, preencha valores numéricos válidos para: ${invalidFields.join(', ')}.`);
+                return false;
+            }
+            
+            const name = customNameEl?.value?.trim() || 'Valores Personalizados';
+            
+            const data = { name, k, a, b, c };
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+                currentIDFSource = 'custom';
+                currentCityName = name;
+                applyIDFValues(k, a, b, c);
+                updateIDFDisplay(name, k, a, b, c);
+                
+                // Close modal
+                const modalEl = document.getElementById('rainModal');
+                if (modalEl) {
+                    const modalInstance = bootstrap.Modal.getInstance(modalEl);
+                    if (modalInstance) modalInstance.hide();
+                }
+                
+                return true;
+            } catch (e) {
+                console.error('Erro ao salvar valores:', e);
+                alert('Erro ao salvar valores no navegador. ' + (e.message || 'Verifique se o localStorage está disponível.'));
+                return false;
+            }
+        }
+
+        function clearCustomValues() {
+            try {
+                localStorage.removeItem(STORAGE_KEY);
+                // Clear form fields
+                const customNameEl = document.getElementById('custom-name');
+                const customKEl = document.getElementById('custom-k');
+                const customAEl = document.getElementById('custom-a');
+                const customBEl = document.getElementById('custom-b');
+                const customCEl = document.getElementById('custom-c');
+                
+                if (customNameEl) customNameEl.value = '';
+                if (customKEl) customKEl.value = '';
+                if (customAEl) customAEl.value = '';
+                if (customBEl) customBEl.value = '';
+                if (customCEl) customCEl.value = '';
+                
+                // Revert to selected city
+                applySelectedCity();
+                alert('Valores personalizados removidos. Usando equação da cidade selecionada.');
+            } catch (e) {
+                console.warn('Erro ao limpar valores:', e);
+            }
+        }
+
+        // Initialize: try to load custom values, otherwise use selected city
+        const hasCustomValues = applyCustomValuesFromStorage();
+        if (!hasCustomValues) {
+            applySelectedCity();
+        }
+
+        // Load custom field values for editing (even if not applying them)
+        loadCustomValues();
+
         if (citySelect) {
             citySelect.addEventListener('change', applySelectedCity);
         }
         if (rainModal) {
-            rainModal.addEventListener('shown.bs.modal', applySelectedCity);
+            rainModal.addEventListener('shown.bs.modal', () => {
+                // Load custom values into custom tab when modal opens
+                loadCustomValues();
+            });
         }
         if (selectTabBtn) {
             selectTabBtn.addEventListener('shown.bs.tab', applySelectedCity);
         }
 
+        // Custom values tab handlers
+        const saveCustomBtn = document.getElementById('save-custom-values');
+        const clearCustomBtn = document.getElementById('clear-custom-values');
         
+        if (saveCustomBtn) {
+            saveCustomBtn.addEventListener('click', saveCustomValues);
+        }
+        if (clearCustomBtn) {
+            clearCustomBtn.addEventListener('click', clearCustomValues);
+        }
 
         const newEqForm = document.getElementById('new-eq-form');
         if (newEqForm) {
@@ -1296,6 +1590,11 @@
                             document.getElementById('rain-b').value = b;
                             document.getElementById('rain-c').value = c;
 
+                            // Update IDF display with new equation
+                            currentIDFSource = 'city';
+                            currentCityName = data.name;
+                            updateIDFDisplay(data.name, k, a, b, c);
+
                             const bsTab = new bootstrap.Tab(document.getElementById('select-tab'));
                             bsTab.show();
 
@@ -1310,5 +1609,82 @@
             });
         }
     });
+
+    // Download calculation memory function
+    function downloadDimensionamentoMemoria() {
+        const getValue = (id) => {
+            const el = document.getElementById(id);
+            return el ? (el.textContent || el.value || '--') : '--';
+        };
+        
+        const calculationData = {
+            titulo: 'Dimensionamento Hidráulico - Resolve Eng',
+            dadosEntrada: {
+                area_ha: getValue('area'),
+                coeficiente_runoff: getValue('runoff'),
+                tempo_retorno_anos: getValue('tr'),
+                comprimento_m: getValue('length'),
+                desnivel_m: getValue('deltaH'),
+                declividade_m_m: getValue('slope'),
+                equacao_chuva: {
+                    K: getValue('rain-k'),
+                    a: getValue('rain-a'),
+                    b: getValue('rain-b'),
+                    c: getValue('rain-c')
+                }
+            },
+            resultadosHidrologicos: {
+                tempo_concentracao_min: getValue('res-tc'),
+                intensidade_mm_h: getValue('res-i'),
+                vazao_racional_m3_s: getValue('res-q-rational'),
+                vazao_ipaiqu_m3_s: getValue('res-q-ipaiwu'),
+                vazao_scs_m3_s: getValue('res-q-scs'),
+                metodo_ativo: getValue('method-active-label'),
+                vazao_projeto_m3_s: getValue('method-active-flow')
+            },
+            dimensionamentoTubulacao: {
+                coef_rugosidade_n: getValue('n-pipe'),
+                diametro_teorico_m: getValue('res-d-theo'),
+                diametro_comercial_m: getValue('res-d-comm'),
+                capacidade_m3_s: getValue('res-pipe-capacity')
+            },
+            dimensionamentoGaleria: {
+                coef_rugosidade_n: getValue('n-box'),
+                base_m: getValue('box-base'),
+                altura_m: getValue('box-height'),
+                altura_dagua_m: getValue('res-box-h'),
+                capacidade_m3_s: getValue('res-box-capacity')
+            },
+            dimensionamentoCanal: {
+                coef_rugosidade_n: getValue('n-channel'),
+                base_m: getValue('channel-b'),
+                talude_z: getValue('channel-z'),
+                altura_normal_m: getValue('res-channel-y')
+            }
+        };
+        
+        if (window.ResolveDataManager) {
+            window.ResolveDataManager.downloadCalculationMemory(
+                calculationData, 
+                'Dimensionamento Hidráulico',
+                'json'
+            );
+        } else {
+            // Fallback if manager not loaded
+            const content = JSON.stringify(calculationData, null, 2);
+            const blob = new Blob([content], { type: 'application/json;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `memoria_dimensionamento_${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+    }
+    
+    // Make function available globally
+    window.downloadDimensionamentoMemoria = downloadDimensionamentoMemoria;
 </script>
 {% endblock %}
