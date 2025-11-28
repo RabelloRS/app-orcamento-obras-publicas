@@ -782,7 +782,7 @@
                 // Comma-separated values in TXT file, no thousand separators, decimal point as separator
                 const line = [
                     pointNumber,
-                    photo.filename,
+                    photo.filename.replace(/,/g, '_'), // Sanitize filename
                     utmCoords.easting.toFixed(3),
                     utmCoords.northing.toFixed(3),
                     photo.altitude.toFixed(3)

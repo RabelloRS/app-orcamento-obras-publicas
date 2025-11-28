@@ -1,7 +1,7 @@
 {% extends 'layouts/app.html' %}
 {% load static %}
 {% block title %}IDFGeo RS | Ferramenta Interativa{% endblock %}
-{% block body_classes %}full-visual{% endblock %}
+{% block body_classes %}full-visual sidebar-collapsed{% endblock %}
 {% block extra_css %}
     <meta name="description" content="Mapa interativo de equações de chuva (IDF) para o Rio Grande do Sul.">
 
@@ -11,6 +11,15 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 
     <!-- Tailwind (somente para este mapa por enquanto) -->
+    <script>
+      tailwind = {
+        config: {
+          corePlugins: {
+            preflight: false,
+          }
+        }
+      }
+    </script>
     <script src="https://cdn.tailwindcss.com"></script>
 
     <!-- Leaflet CSS -->
