@@ -1,3 +1,36 @@
+# Guia de Deploy
+
+## Deploy Rápido (Mudanças Leves)
+
+Use `deploy_fast.sh` para alterações apenas em templates, arquivos estáticos ou pequenos ajustes de view sem mudança em `requirements.txt` ou `Dockerfile`.
+
+### Comandos
+
+```bash
+cd /var/www/resolve_django
+./deploy_fast.sh --pull           # puxa alterações e faz restart simples
+./deploy_fast.sh --dry-run --pull # simula e mostra decisões
+./deploy_fast.sh --force-build    # força rebuild completo da imagem
+```
+
+### Critérios automáticos
+
+- Se detectar mudanças em `requirements.txt`, `Dockerfile`, `setup/` ou opção `--force-build` → rebuild.
+- Caso contrário → restart do container + collectstatic.
+
+### Health-check
+
+Health-check automático verifica `/inicio/` e reporta status HTTP.
+
+### Rollback rápido
+
+```bash
+git reflog
+git reset --hard <commit_anterior>
+docker restart resolve_django_app
+```
+
+Para maior segurança (build completo + backups) continue usando `deploy.sh`.
 # 📋 Resumo de Configuração - resolve.eng.br Django
 
 **Data:** 20 de Novembro de 2025  

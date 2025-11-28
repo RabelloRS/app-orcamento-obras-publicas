@@ -33,19 +33,26 @@ class DDoSProtectionMiddleware:
         # Create cache key for this IP
         cache_key = f'ddos_limit_{client_ip}'
 
-        # Get current count
-        current_count = cache.get(cache_key, 0)
+        # Try to add key with value 1. Returns True if added (didn't exist), False if existed.
+        # This sets the timeout only when the key is created (fixed window).
+        if cache.add(cache_key, 1, self.rate_period):
+            current_count = 1
+        else:
+            # Key exists, increment it. incr() does not reset the timeout.
+            try:
+                current_count = cache.incr(cache_key)
+            except ValueError:
+                # Key might have expired or been evicted
+                cache.set(cache_key, 1, self.rate_period)
+                current_count = 1
 
-        if current_count >= self.rate_limit:
+        if current_count > self.rate_limit:
             # Too many requests
             return HttpResponse(
                 'Too many requests. Please try again later.',
                 status=429,
                 content_type='text/plain'
             )
-
-        # Increment counter
-        cache.set(cache_key, current_count + 1, self.rate_period)
 
         response = self.get_response(request)
         return response

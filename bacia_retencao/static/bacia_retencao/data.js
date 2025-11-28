@@ -1,11 +1,49 @@
 export const CITIES_IDF = {
-    "curitiba": { name: "Curitiba - PR (Fendrich, 1984)", k: 3221.07, a: 0.258, b: 26, c: 1.01 },
-    "saopaulo": { name: "São Paulo - SP (DAEE/USP)", k: 3462.7, a: 0.172, b: 22, c: 1.025 },
-    "brasilia": { name: "Brasília - DF (ADASA)", k: 1574.7, a: 0.207, b: 11, c: 0.884 },
-    "aracaju": { name: "Aracaju - SE (Aragão)", k: 2084.8, a: 0.188, b: 10.52, c: 0.753 },
-    "bh": { name: "Belo Horizonte - MG (Ramos, 1995)", k: 5802, a: 0.15, b: 30, c: 1.08 },
-    "rj": { name: "Rio de Janeiro - RJ (Prefeitura)", k: 1400, a: 0.2, b: 20, c: 0.8 }
+    "curitiba": {
+        name: "Curitiba - PR (Fendrich, 1984)",
+        k: 3221.07,
+        a: 0.258,
+        b: 26,
+        c: 1.01
+    },
+    "saopaulo": {
+        name: "São Paulo - SP (DAEE/USP)",
+        k: 3462.7, 
+        a: 0.172,
+        b: 22,
+        c: 1.025
+    },
+    "brasilia": {
+        name: "Brasília - DF (ADASA)",
+        k: 1574.7,
+        a: 0.207,
+        b: 11,
+        c: 0.884
+    },
+    "aracaju": {
+        name: "Aracaju - SE (Aragão)",
+        k: 2084.8,
+        a: 0.188,
+        b: 10.52,
+        c: 0.753
+    },
+    "bh": {
+        name: "Belo Horizonte - MG (Ramos, 1995)",
+        k: 5802,
+        a: 0.15,
+        b: 30,
+        c: 1.08
+    },
+    "rj": {
+        name: "Rio de Janeiro - RJ (Prefeitura)",
+        k: 1400, // Generic approx for coastal zone, needs specific validation
+        a: 0.2,
+        b: 20,
+        c: 0.8
+    }
 };
+
+
 
 export const PIPES = [
     { dn: 300, inner: 0.30 },
