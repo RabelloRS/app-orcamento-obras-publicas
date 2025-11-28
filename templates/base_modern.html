@@ -25,6 +25,7 @@
         <a href="{% url 'ferramenta_drenagem:microdrenagem' %}" class="nav-item {% if request.resolver_match.url_name == 'microdrenagem' or request.resolver_match.url_name == 'calculo_volume' %}active{% endif %}"><i class="bi bi-droplet"></i> Microdrenagem</a>
         <a href="{% url 'mapa_fotos:mapa' %}" class="nav-item {% if request.resolver_match.url_name == 'mapa' %}active{% endif %}"><i class="bi bi-map"></i> Mapa de Fotos</a>
         <a href="{% url 'ferramenta_drenagem:idfgeo' %}" class="nav-item {% if request.resolver_match.url_name == 'idfgeo' %}active{% endif %}"><i class="bi bi-cloud-rain"></i> IDFGeo RS</a>
+        <a href="{% url 'bacia_retencao:index' %}" class="nav-item {% if request.resolver_match.app_name == 'bacia_retencao' %}active{% endif %}"><i class="bi bi-droplet"></i> Bacia de Retenção</a>
         <div class="mt-auto border-top pt-3">
           <form action="{% url 'usuarios:logout' %}" method="post" class="nav-item text-danger p-0">
             {% csrf_token %}

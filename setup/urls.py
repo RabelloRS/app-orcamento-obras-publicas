@@ -33,6 +33,7 @@ urlpatterns = [
     path('ferramentas/', include('ferramenta_mapa.urls')),
     path('hidrograma/', include('hidrograma.urls')),
     path('pavimentacao/', include('pavimentacao.urls')),
+    path('bacia_retencao/', include('bacia_retencao.urls')),
 ]
 
 if settings.DEBUG:

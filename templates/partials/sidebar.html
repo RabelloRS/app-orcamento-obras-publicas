@@ -37,6 +37,10 @@
         class="app-sidebar__link {% if request.resolver_match.url_name == 'idfgeo' %}active{% endif %}" role="menuitem">
         <i class="bi bi-cloud-rain"></i><span>IDFGeo RS</span>
       </a>
+      <a href="{% url 'bacia_retencao:index' %}"
+        class="app-sidebar__link {% if request.resolver_match.app_name == 'bacia_retencao' %}active{% endif %}" role="menuitem">
+        <i class="bi bi-droplet"></i><span>Bacia de Retenção</span>
+      </a>
       <a href="{% url 'hidrograma:index' %}"
         class="app-sidebar__link {% if request.resolver_match.url_name == 'index' %}active{% endif %}" role="menuitem">
         <i class="bi bi-graph-up"></i><span>HidroCalc Pro</span>
