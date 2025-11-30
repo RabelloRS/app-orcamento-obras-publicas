@@ -1,0 +1,16 @@
+[Unit]
+Description=gunicorn daemon for resolve_django
+After=network.target
+
+[Service]
+User=root
+Group=www-data
+WorkingDirectory=/var/www/resolve_django
+ExecStart=/var/www/resolve_django/.venv/bin/gunicorn \
+          --access-logfile - \
+          --workers 3 \
+          --bind unix:/var/www/resolve_django/gunicorn.sock \
+          setup.wsgi:application
+
+[Install]
+WantedBy=multi-user.target
