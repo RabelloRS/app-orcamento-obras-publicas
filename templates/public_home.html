@@ -55,6 +55,17 @@
                         <div class="col-md-6 col-lg-3">
                             <article class="h-100 p-3 rounded-md d-flex flex-column"
                                 style="background:var(--color-bg);border:1px solid var(--color-border);">
+                                <i class="bi bi-database text-warning" style="font-size:1.5rem;"></i>
+                                <h4 class="h6 fw-semibold mt-2 mb-1">Banco de IDF</h4>
+                                <p class="text-soft small mb-3">Biblioteca nacional de equações IDF.</p>
+                                <div class="mt-auto">
+                                    <a href="{% url 'banco_idf:consulta' %}" class="btn btn-sm btn-warning"><i class="bi bi-arrow-right me-1"></i>Acessar</a>
+                                </div>
+                            </article>
+                        </div>
+                        <div class="col-md-6 col-lg-3">
+                            <article class="h-100 p-3 rounded-md d-flex flex-column"
+                                style="background:var(--color-bg);border:1px solid var(--color-border);">
                                 <i class="bi bi-cloud-rain text-primary" style="font-size:1.5rem;"></i>
                                 <h4 class="h6 fw-semibold mt-2 mb-1">IDFGeo RS</h4>
                                 <p class="text-soft small mb-3">Equações IDF em mapas interativos.</p>
@@ -76,19 +87,19 @@
                                 </div>
                             </article>
                         </div>
-                    </div>
-                </div>
-                <div class="col-md-6 col-lg-3">
-                    <article class="h-100 p-3 rounded-md d-flex flex-column"
-                        style="background:var(--color-bg);border:1px solid var(--color-border);">
-                        <i class="bi bi-droplet-half text-info" style="font-size:1.5rem;"></i>
-                        <h4 class="h6 fw-semibold mt-2 mb-1">Bacia de Retenção</h4>
-                        <p class="text-soft small mb-3">Volume útil e vazão de saída.</p>
-                        <div class="mt-auto">
-                            <a href="{% url 'bacia_retencao:index' %}" class="btn btn-sm btn-primary"><i
-                                    class="bi bi-arrow-right me-1"></i>Usar</a>
+                        <div class="col-md-6 col-lg-3">
+                            <article class="h-100 p-3 rounded-md d-flex flex-column"
+                                style="background:var(--color-bg);border:1px solid var(--color-border);">
+                                <i class="bi bi-droplet-half text-info" style="font-size:1.5rem;"></i>
+                                <h4 class="h6 fw-semibold mt-2 mb-1">Bacia de Retenção</h4>
+                                <p class="text-soft small mb-3">Volume útil e vazão de saída.</p>
+                                <div class="mt-auto">
+                                    <a href="{% url 'bacia_retencao:index' %}" class="btn btn-sm btn-primary"><i
+                                            class="bi bi-arrow-right me-1"></i>Usar</a>
+                                </div>
+                            </article>
                         </div>
-                    </article>
+                    </div>
                 </div>
             </div>
         </div>
@@ -166,7 +177,7 @@
             </h2>
             <div id="collapseOrcamentoHome" class="accordion-collapse collapse" data-bs-parent="#accordionApps">
                 <div class="accordion-body pt-0">
-                    <div class="text-center py-4">
+                    <div class="text-center py-4" style="color:var(--color-text)">
                         <i class="bi bi-tools text-muted" style="font-size:2rem;"></i>
                         <p class="text-soft mt-2 mb-0">Ferramentas de orçamento em desenvolvimento.</p>
                     </div>

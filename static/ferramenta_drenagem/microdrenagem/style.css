@@ -2,25 +2,37 @@
 
 .microdrenagem-app {
     font-family: 'Inter', sans-serif;
-    color: #0f172a;
+    color: var(--color-text);
 }
 
 .microdrenagem-app .form-input {
     width: 100%;
-    background-color: #f8fafc;
-    border: 1px solid #e2e8f0;
+    background-color: var(--color-surface);
+    background-image: none !important;
+    border: 1px solid var(--color-border);
     border-radius: 0.75rem;
     padding: 0.5rem 0.75rem;
     font-size: 0.875rem;
     line-height: 1.4;
+    color: var(--color-text);
     transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
     outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+    background-clip: padding-box;
 }
 
 .microdrenagem-app .form-input:focus {
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
-    background-color: #ffffff;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb), 0.2);
+    background-color: var(--color-surface);
+}
+
+.microdrenagem-app input:-webkit-autofill,
+.microdrenagem-app textarea:-webkit-autofill,
+.microdrenagem-app select:-webkit-autofill {
+    -webkit-box-shadow: 0 0 0px 1000px var(--color-surface) inset;
+    -webkit-text-fill-color: var(--color-text);
 }
 
 .microdrenagem-app .fade-in {
@@ -76,8 +88,8 @@
 }
 
 .microdrenagem-app .qty-card {
-    background-color: #f8fafc;
-    border: 1px solid #e2e8f0;
+    background-color: var(--color-surface-alt);
+    border: 1px solid var(--color-border);
     border-radius: 1rem;
     padding: 0.75rem;
     display: flex;
@@ -89,18 +101,18 @@
     font-size: 0.6rem;
     font-weight: 700;
     text-transform: uppercase;
-    color: #475569;
+    color: var(--color-text-soft);
     letter-spacing: 0.1em;
 }
 
 .microdrenagem-app .qty-value {
     font-size: 1.35rem;
     font-weight: 700;
-    color: #0f172a;
+    color: var(--color-text);
 }
 
 .microdrenagem-app .qty-unit {
     font-size: 0.65rem;
-    color: #94a3b8;
+    color: var(--color-text-soft);
     margin-left: 0.35rem;
 }

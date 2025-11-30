@@ -1,4 +1,4 @@
-import { CITIES_IDF } from './data.js';
+import IDFService from '/static/js/idf_service.js'; // Importando o novo serviço (absolute path)
 import { toHa, formatNumber } from './utils.js';
 import { calculateKirpich, calculateIntensity, calculateRationalQ, selectPipe, calculateEnvelope } from './calculations.js';
 import { debounce } from './utils.js';
@@ -8,7 +8,7 @@ let state = {
     areaUnit: 'ha',
     c: 0.75,
     tr: 25,
-    city: 'curitiba',
+    city: 'custom', // Default to custom initially until loaded or user selects
     tcMode: 'manual',
     tc: 10,
     tcL: 0,
@@ -18,13 +18,16 @@ let state = {
     limitV: 0, // m3
     slopeS: 0.005,
     manningN: 0.013,
+    // IDF Params (state-managed for custom values or current selection)
+    idf: { k: 0, a: 0, b: 0, c: 0 }
 };
 
 let volumeChart = null;
 
 document.addEventListener('DOMContentLoaded', () => {
     lucide.createIcons();
-    loadCities();
+    // loadCities(); // Replaced by IDFService
+    setupIDFService(); // Setup new service
     setupEventListeners();
     loadFromStorage();
 
@@ -36,16 +39,44 @@ document.addEventListener('DOMContentLoaded', () => {
     updateCalculation();
 });
 
-function loadCities() {
+async function setupIDFService() {
     const select = document.getElementById('select-city');
-    Object.keys(CITIES_IDF).forEach(key => {
-        const option = document.createElement('option');
-        option.value = key;
-        option.text = CITIES_IDF[key].name;
-        select.appendChild(option);
+    await IDFService.populateSelect(select, (params) => {
+        if (params) {
+            // Update state with selected IDF parameters
+            state.idf = params;
+            state.city = select.value; // Store ID or 'custom'
+            
+            // Update inputs visually (and set them read-only or just fill them)
+            document.getElementById('idf-k').value = params.k;
+            document.getElementById('idf-a').value = params.a;
+            document.getElementById('idf-b').value = params.b;
+            document.getElementById('idf-c').value = params.c;
+            
+            // Hide custom fields container if we want to hide details for selected cities
+            // OR keep them visible but read-only? Let's keep visible as reference
+            document.getElementById('idf-params').classList.remove('hidden'); 
+            
+            updateCalculation();
+        } else {
+            // Custom selected
+            state.city = 'custom';
+            document.getElementById('idf-params').classList.remove('hidden');
+            // Don't clear values, let user edit
+        }
     });
-    select.value = state.city;
+    
+    // If we had a stored city value that matches an ID, select it
+    if (state.city && state.city !== 'custom') {
+        select.value = state.city;
+        // Trigger change to load params if needed, or just let loadFromStorage handle params
+        // But we need to ensure params are loaded if we just have the ID
+        // The populateSelect adds listener, but setting value programmatically doesn't trigger it automatically usually
+        select.dispatchEvent(new Event('change'));
+    }
 }
+
+// function loadCities() { ... } // Removed
 
 function setupEventListeners() {
     const els = {
@@ -53,7 +84,7 @@ function setupEventListeners() {
         unit: document.getElementById('select-unit'),
         cSlider: document.getElementById('slider-c'),
         trSlider: document.getElementById('slider-tr'),
-        city: document.getElementById('select-city'),
+        city: document.getElementById('select-city'), // Managed by IDFService now mostly
         tcMode: document.getElementById('check-calc-tc'),
         tcInput: document.getElementById('input-tc'),
         tcL: document.getElementById('input-L'),
@@ -84,15 +115,15 @@ function setupEventListeners() {
         debouncedUpdate();
     });
 
-    els.city.addEventListener('change', (e) => {
-        state.city = e.target.value;
-        const customDiv = document.getElementById('idf-params');
-        customDiv.classList.toggle('hidden', state.city !== 'custom');
-        debouncedUpdate();
-    });
+    // City change listener is handled inside setupIDFService via callback, 
+    // but we might need extra logic here if we want to handle UI visibility changes not covered there.
+    // The service callback handles updating state.idf and calling updateCalculation.
 
     ['k', 'a', 'b', 'c'].forEach(p => {
-        document.getElementById(`idf-${p}`).addEventListener('input', debouncedUpdate);
+        document.getElementById(`idf-${p}`).addEventListener('input', (e) => {
+             state.idf[p] = parseFloat(e.target.value) || 0;
+             debouncedUpdate();
+        });
     });
 
     els.tcMode.addEventListener('change', (e) => {
@@ -163,13 +194,8 @@ function setupEventListeners() {
 }
 
 function getIDF() {
-    if (state.city !== 'custom') return CITIES_IDF[state.city];
-    return {
-        k: parseFloat(document.getElementById('idf-k').value) || 0,
-        a: parseFloat(document.getElementById('idf-a').value) || 0,
-        b: parseFloat(document.getElementById('idf-b').value) || 0,
-        c: parseFloat(document.getElementById('idf-c').value) || 0,
-    };
+    // Return current state IDF which is synced with inputs/selection
+    return state.idf;
 }
 
 function updateCalculation() {

@@ -53,6 +53,10 @@
             class="app-sidebar__link {% if request.resolver_match.url_name == 'index' and request.resolver_match.app_name == 'hidrograma' %}active{% endif %}" role="menuitem">
             <i class="bi bi-graph-up"></i><span>HidroCalc Pro</span>
           </a>
+          <a href="{% url 'banco_idf:consulta' %}"
+            class="app-sidebar__link {% if request.resolver_match.app_name == 'banco_idf' %}active{% endif %}" role="menuitem">
+            <i class="bi bi-database"></i><span>Banco de IDF</span>
+          </a>
         </div>
       </div>
     </div>

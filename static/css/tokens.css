@@ -95,3 +95,23 @@
     padding-right: var(--space-3);
   }
 }
+
+[data-theme="dark"] .text-dark { color: var(--color-text) !important; }
+[data-theme="dark"] .text-secondary { color: var(--color-text-soft) !important; }
+[data-theme="dark"] .text-muted { color: var(--color-text-soft) !important; }
+[data-theme="dark"] .bg-light { background-color: var(--color-surface) !important; }
+[data-theme="dark"] .bg-white { background-color: var(--color-surface) !important; }
+[data-theme="dark"] .table-light { background-color: var(--color-surface-alt) !important; color: var(--color-text) !important; }
+[data-theme="dark"] .card { background-color: var(--color-surface) !important; color: var(--color-text) !important; }
+[data-theme="dark"] .form-control, [data-theme="dark"] .form-select { color: var(--color-text) !important; background-color: var(--color-surface) !important; border-color: var(--color-border) !important; }
+[data-theme="dark"] .form-input, [data-theme="dark"] select.form-input { color: var(--color-text) !important; background-color: var(--color-surface) !important; border-color: var(--color-border) !important; }
+[data-theme="dark"] .form-input:focus { border-color: var(--color-primary) !important; box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb), 0.2) !important; }
+[data-theme="dark"] .form-check-label, [data-theme="dark"] .form-label { color: var(--color-text) !important; }
+
+[data-theme="dark"] .text-slate-900, [data-theme="dark"] .text-slate-800, [data-theme="dark"] .text-slate-700 { color: var(--color-text) !important; }
+[data-theme="dark"] .text-slate-600, [data-theme="dark"] .text-slate-500, [data-theme="dark"] .text-slate-400 { color: var(--color-text-soft) !important; }
+[data-theme="dark"] .bg-slate-50, [data-theme="dark"] .bg-slate-100, [data-theme="dark"] .bg-slate-200 { background-color: var(--color-surface-alt) !important; }
+[data-theme="dark"] .border-slate-100, [data-theme="dark"] .border-slate-200 { border-color: var(--color-border) !important; }
+[data-theme="dark"] .form-control::placeholder, [data-theme="dark"] .form-select::placeholder { color: var(--color-text-soft) !important; opacity: 0.7; }
+[data-theme="dark"] .form-input::placeholder { color: var(--color-text-soft) !important; opacity: 0.7; }
+[data-theme="dark"] input::placeholder, [data-theme="dark"] textarea::placeholder { color: var(--color-text-soft) !important; opacity: 0.7; }

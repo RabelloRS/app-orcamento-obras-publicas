@@ -4,23 +4,34 @@
 {% block title %}Microdrenagem Urbana - Resolve Eng{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'ferramenta_drenagem/microdrenagem/style.css' %}">
-<script>
-  tailwind = {
-    config: {
+  <!-- Vue 3 -->
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
       corePlugins: {
-        preflight: false,
+        preflight: false, // Desabilita reset global para não quebrar layout do Django
+      },
+      theme: {
+        extend: {
+          colors: {
+            hydro: { 50: '#f0f9ff', 100: '#e0f2fe', 500: '#0ea5e9', 600: '#0284c7', 800: '#075985', 900: '#0c4a6e' }
+          }
+        }
       }
     }
-  }
-</script>
-<script src="https://cdn.tailwindcss.com"></script>
+  </script>
+  <link rel="stylesheet" href="{% static 'ferramenta_drenagem/microdrenagem/style.css' %}">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+  <style>
+  </style>
 {% endblock %}
 
 {% block content %}
-<div id="microdrenagem-app" class="microdrenagem-app py-4">
-  <div class="max-w-6xl mx-auto px-2 sm:px-3">
-    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 mb-8">
+<div id="microdrenagem-app" class="microdrenagem-app py-4" style="z-index: 0; position: relative; width: 100%;">
+  <div class="ds-container">
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 mb-8" style="color:var(--color-text)">
       <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div class="flex items-center gap-4">
           <div class="bg-blue-600 text-white rounded-2xl p-3 shadow-lg">
@@ -41,7 +52,7 @@
       </div>
     </div>
 
-    <section class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 mb-8" id="config-panel">
+    <section class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 mb-8" id="config-panel" style="color:var(--color-text)">
       <div class="flex items-center justify-between mb-6 border-b border-slate-100 pb-4">
         <div class="flex items-center gap-2">
           <i data-lucide="settings" class="text-slate-400 w-5 h-5"></i>
@@ -55,7 +66,7 @@
         <div class="lg:col-span-2 space-y-3">
           <label class="block text-xs font-bold text-slate-500 uppercase">Região &amp; Chuva (IDF)</label>
           <div class="flex flex-wrap gap-2">
-            <select id="region-select" class="flex-1 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500/20 transition-all">
+            <select id="region-select" class="form-input flex-1 text-sm">
               {% if equations %}
                 {% for eq in equations %}
                   <option value="{{ eq.key }}">{{ eq.name }}</option>
@@ -63,11 +74,11 @@
               {% endif %}
             </select>
             <div class="w-24">
-              <input type="number" id="tr-input" value="10" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm text-center" title="Tempo de Recorrência (anos)">
+              <input type="number" id="tr-input" value="10" class="form-input w-full text-sm text-center" title="Tempo de Recorrência (anos)">
               <span class="text-[10px] text-slate-400 block text-center">TR (Anos)</span>
             </div>
             <div class="w-24">
-              <input type="number" id="tc-ini-input" value="10" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm text-center" title="Tempo de Concentração Inicial (min)">
+              <input type="number" id="tc-ini-input" value="10" class="form-input w-full text-sm text-center" title="Tempo de Concentração Inicial (min)">
               <span class="text-[10px] text-slate-400 block text-center">tc ini (min)</span>
             </div>
           </div>
@@ -75,13 +86,13 @@
         </div>
         <div>
           <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Material da Tubulação</label>
-          <select id="global-material" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500/20 transition-all"></select>
+          <select id="global-material" class="form-input w-full text-sm"></select>
         </div>
         <div>
           <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Coeficiente Runoff (C)</label>
           <div class="flex gap-2">
-            <select id="global-c-type" class="flex-1 bg-slate-50 border border-slate-200 rounded-lg px-2 py-2 text-xs"></select>
-            <input type="number" id="global-c-value" step="0.01" max="1" min="0" class="w-20 bg-slate-50 border border-slate-200 rounded-lg px-2 py-2 text-sm text-center font-mono text-blue-600 font-bold">
+            <select id="global-c-type" class="form-input flex-1 text-xs"></select>
+            <input type="number" id="global-c-value" step="0.01" max="1" min="0" class="form-input w-20 text-sm text-center font-mono text-blue-600 font-bold">
           </div>
         </div>
       </div>
@@ -94,14 +105,14 @@
           <h2 class="text-lg font-semibold">Adicionar Trecho</h2>
         </div>
         <form id="drainage-form" class="space-y-4">
-          <div class="grid grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label class="block text-xs text-slate-500 mb-1">PV Montante</label>
-              <input type="text" name="pv_start" placeholder="PV-01" class="form-input" required>
+              <input type="text" name="pv_start" placeholder="PV-01" class="form-input w-full" required>
             </div>
             <div>
               <label class="block text-xs text-slate-500 mb-1">PV Jusante</label>
-              <input type="text" name="pv_end" placeholder="PV-02" class="form-input" required>
+              <input type="text" name="pv_end" placeholder="PV-02" class="form-input w-full" required>
             </div>
           </div>
           <div>
@@ -110,35 +121,35 @@
           </div>
           <div class="bg-slate-50 p-3 rounded-lg border border-slate-100">
             <span class="block text-xs font-bold text-slate-400 mb-2 uppercase">Cotas (m)</span>
-            <div class="grid grid-cols-2 gap-x-4 gap-y-3">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-3">
               <div>
                 <label class="block text-[10px] text-slate-500">Tampa Mont.</label>
-                <input type="number" name="ct_up" id="ct_up" step="0.01" class="form-input bg-white" required>
+                <input type="number" name="ct_up" id="ct_up" step="0.01" class="form-input w-full" required>
               </div>
               <div>
                 <label class="block text-[10px] text-slate-500">Fundo Mont.</label>
-                <input type="number" name="cf_up" id="cf_up" step="0.01" class="form-input bg-white border-blue-100">
+                <input type="number" name="cf_up" id="cf_up" step="0.01" class="form-input w-full">
               </div>
               <div>
                 <label class="block text-[10px] text-slate-500">Tampa Jus.</label>
-                <input type="number" name="ct_down" id="ct_down" step="0.01" class="form-input bg-white" required>
+                <input type="number" name="ct_down" id="ct_down" step="0.01" class="form-input w-full" required>
               </div>
               <div>
                 <label class="block text-[10px] text-slate-500">Fundo Jus.</label>
-                <input type="number" name="cf_down" id="cf_down" step="0.01" class="form-input bg-white border-blue-100">
+                <input type="number" name="cf_down" id="cf_down" step="0.01" class="form-input w-full">
               </div>
             </div>
             <p class="text-[10px] text-blue-400 mt-2 text-center">*Auto: Recobrimento 1.0m + Diâmetro</p>
           </div>
           <div class="pt-2 border-t border-slate-100">
-            <div class="grid grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label class="block text-xs text-slate-500 mb-1">Área Própria (ha)</label>
-                <input type="number" name="area_own" step="0.0001" class="form-input" required>
+                <input type="number" name="area_own" step="0.0001" class="form-input w-full" required>
               </div>
               <div>
                 <label class="block text-xs text-slate-500 mb-1">Área Acum. Ant.</label>
-                <input type="number" name="area_accum_prev" step="0.0001" value="0" class="form-input">
+                <input type="number" name="area_accum_prev" step="0.0001" value="0" class="form-input w-full">
               </div>
             </div>
           </div>

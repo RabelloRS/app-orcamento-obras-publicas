@@ -102,6 +102,23 @@
         </div>
     </div>
 
+    <!-- Export Controls (Initially Hidden) -->
+    <div id="exportSection" class="card mb-4 d-none">
+        <div class="card-body">
+            <h5 class="card-title"><i class="bi bi-file-earmark-arrow-down me-2"></i>Exportação de Dados</h5>
+            <p class="card-text text-muted small">Exporte os pontos mapeados para utilização em softwares CAD/GIS.</p>
+            
+            <div class="d-flex gap-2 flex-wrap">
+                <button id="downloadCoordinatesBtn" class="btn btn-success btn-sm">
+                    <i class="bi bi-filetype-txt me-1"></i>TXT (SIRGAS 2000)
+                </button>
+                <button id="exportCivil3DBtn" class="btn btn-primary btn-sm">
+                    <i class="bi bi-file-earmark-code me-1"></i>Civil 3D (P,N,E,Z,D)
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Map Container -->
     <div class="p-0 rounded-0 shadow-sm position-relative" style="background:var(--color-surface);border:1px solid var(--color-border);">
         <div id="measureInfo"></div>
@@ -808,6 +825,42 @@
 
         // Download button event listener
         document.getElementById('downloadCoordinatesBtn').addEventListener('click', downloadCoordinatesTXT);
+
+        // Civil 3D Export
+        document.getElementById('exportCivil3DBtn').addEventListener('click', function() {
+            if (photoDataForExport.length === 0) {
+                alert('Não há dados para exportar.');
+                return;
+            }
+
+            let content = '';
+            // Civil 3D format: Point Number, Northing, Easting, Elevation, Description (P,N,E,Z,D)
+            // Using comma as delimiter
+            
+            photoDataForExport.forEach((photo, index) => {
+                const pointNumber = index + 1;
+                const utm = convertToSirgas2000UTM(photo.latitude, photo.longitude);
+                
+                // Note: Civil 3D usually expects P,N,E,Z,D or P,E,N,Z,D depending on settings.
+                // Standard is often P,E,N,Z,D (Point, Easting, Northing, Elevation, Description)
+                // But the request asked for: Ponto, Nome_da_Foto, Este, Norte, Cota
+                // Let's follow the request: Point, Name, Easting, Northing, Elevation
+                
+                // Format: Ponto,Nome_da_Foto,Este,Norte,Cota
+                const line = `${pointNumber},${photo.filename},${utm.easting.toFixed(3)},${utm.northing.toFixed(3)},${photo.altitude.toFixed(3)}\r\n`;
+                content += line;
+            });
+
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'pontos_civil3d.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        });
 
         // DMS to Decimal Degrees converter
         function convertDMSToDD(dms, ref) {

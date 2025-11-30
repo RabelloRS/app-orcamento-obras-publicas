@@ -35,7 +35,7 @@ body.app-layout.public-area .app-content {
   border-right: 1px solid var(--color-border);
   display: flex;
   flex-direction: column;
-  z-index: 1020;
+  z-index: 2000 !important; /* Aumentado para sobrepor qualquer elemento de mapa ou UI framework */
   box-shadow: var(--shadow-2);
 }
 body.sidebar-collapsed .app-sidebar { width: var(--sidebar-width-collapsed); }
@@ -67,26 +67,71 @@ body.sidebar-collapsed .app-sidebar { width: var(--sidebar-width-collapsed); }
   text-align: left;
   cursor: pointer;
   transition: background .15s ease, color .15s ease;
+  overflow: visible; /* MUDANÇA: Permitir overflow visível para tooltips/dropdowns */
+  min-height: 40px; /* MUDANÇA: Altura mínima maior para facilitar clique e visualização */
+  box-sizing: border-box;
+  position: relative; /* Para contexto de posicionamento */
 }
 .app-sidebar__expander:hover {
   background: rgba(var(--color-primary-rgb), 0.08);
   color: var(--color-primary);
+  z-index: 10; /* Eleva ao passar o mouse */
 }
 .app-sidebar__expander-icon {
   margin-left: auto;
   font-size: .7rem;
   transition: transform .2s ease;
+  flex-shrink: 0; 
 }
 .app-sidebar__expander[aria-expanded="true"] .app-sidebar__expander-icon {
   transform: rotate(180deg);
 }
+.app-sidebar__expander span {
+    white-space: normal; /* MUDANÇA: Permitir quebra de linha se necessário, ou controlar melhor */
+    line-height: 1.2;
+    flex: 1; 
+    display: block; 
+    overflow: hidden; /* Mantém hidden para texto longo não vazar */
+    text-overflow: ellipsis;
+    white-space: nowrap; /* Retornando para nowrap para manter padrão, mas com height controlado */
+}
 .app-sidebar__submenu {
   padding-left: var(--space-3);
   margin-top: var(--space-1);
+  overflow: visible; 
+  display: block; /* Garante display block */
+}
+.app-sidebar__link {
+    display:flex; align-items:center; gap: var(--space-2); padding: var(--space-2) var(--space-3); border-radius: var(--radius-sm); color: var(--color-text-soft); text-decoration:none; font-size:.85rem; font-weight:500;
+    min-height: 36px;
+    box-sizing: border-box;
+    overflow: visible; /* Garante visibilidade */
+    position: relative;
+}
+.app-sidebar__link span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1;
+    display: block;
+}
+/* Correção específica para conflito com Tailwind */
+.app-sidebar * {
+    box-sizing: border-box; /* Força box-model padrão */
+}
+.app-sidebar .collapse.show {
+    display: block !important; /* Força display block quando expandido */
+    visibility: visible !important;
+    height: auto !important;
+}
+/* Garante que o ícone do Bootstrap não seja afetado pelo Tailwind */
+.app-sidebar i {
+    display: inline-block;
+    line-height: 1;
 }
 /* Collapsed sidebar: show only icons, hide text and chevron */
-body.sidebar-collapsed .app-sidebar__expander span { display: none; }
-body.sidebar-collapsed .app-sidebar__expander-icon { display: none; }
+body.sidebar-collapsed .app-sidebar__expander span { display: none !important; }
+body.sidebar-collapsed .app-sidebar__expander-icon { display: none !important; }
 body.sidebar-collapsed .app-sidebar__submenu { padding-left: 0; }
 /* When collapsed, keep expanders functional but smaller */
 body.sidebar-collapsed .app-sidebar__expander {

@@ -38,52 +38,13 @@
 
     .memorial-table th, .memorial-table td { border: 1px solid #cbd5e1; padding: 4px 8px; text-align: center; font-size: 0.75rem; }
     .memorial-table th { background-color: #f8fafc; font-weight: 600; }
-
-    <nav class="bg-slate-900 text-white shadow-lg sticky top-0 z-50 border-b-4 border-emerald-500">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-16">
-                <div class="flex items-center gap-3">
-                    <i data-lucide="droplets" class="text-emerald-400 h-8 w-8"></i>
-                    <div>
-                        <h1 class="text-xl font-bold tracking-tight">HidroCalc Pro</h1>
-                        <p class="text-xs text-slate-400 font-medium">SCS Unit Hydrograph & HUFF</p>
-                    </div>
-                </div>
-                <div class="flex space-x-3 text-sm font-medium">
-                    <button id="btn-export-csv" class="flex items-center gap-2 bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded transition">
-                        <i data-lucide="file-spreadsheet" class="h-4 w-4"></i>
-                        <span class="hidden md:inline">CSV</span>
-                    </button>
-                    <button id="btn-export-pdf" class="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 px-3 py-1.5 rounded transition shadow-lg shadow-emerald-900/20">
-                        <i data-lucide="file-down" class="h-4 w-4"></i>
-                        <span class="hidden md:inline">Memorial PDF</span>
-                    </button>
-                    <button id="btn-save-project" class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 px-3 py-1.5 rounded transition">
-                        <i data-lucide="save" class="h-4 w-4"></i>
-                        <span class="hidden md:inline">Salvar Projeto</span>
-                    </button>
-                    <button id="btn-load-project" class="flex items-center gap-2 bg-slate-600 hover:bg-slate-500 px-3 py-1.5 rounded transition">
-                        <i data-lucide="folder-open" class="h-4 w-4"></i>
-                        <span class="hidden md:inline">Carregar</span>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </nav>
-
-{% block extra_header_actions %}
-<button id="btn-export-csv" class="btn btn-outline-secondary">
-    <i class="bi bi-file-earmark-spreadsheet"></i>
-    <span class="d-none d-md-inline ms-1">CSV</span>
-</button>
-<button id="btn-export-pdf" class="btn btn-primary">
-    <i class="bi bi-file-earmark-pdf"></i>
-    <span class="d-none d-md-inline ms-1">Memorial PDF</span>
-</button>
+</style>
 {% endblock %}
 
 {% block content %}
 <div class="hut-container">
+    <!-- Removed embedded nav, using app layout -->
+    
     <div class="row g-4">
         
         <!-- LEFT COLUMN: INPUTS -->
@@ -153,9 +114,16 @@
                             </div>
                         </div>
                         
-                        <div class="alert alert-info mt-3 py-2 small">
-                            <div class="fw-medium">IDF Curitiba/PR</div>
-                            <code class="small">i = 5726.64 * TR^0.159 / (t + 41)^1.041</code>
+                        <div class="alert bg-white border mt-3 py-2 small" style="color:var(--color-text)">
+                            <div class="mb-2">
+                                <label class="form-label small fw-bold">Localidade (IDF)</label>
+                                <select id="select-city" class="form-select form-select-sm">
+                                    <option value="custom">Carregando...</option>
+                                </select>
+                            </div>
+                            <div id="idf-formula-display" class="text-center mb-2">
+                                <code class="small">i = K * TR^a / (t + b)^c</code>
+                            </div>
                             <div class="form-check mt-2">
                                 <input type="checkbox" id="chk-custom-idf" class="form-check-input">
                                 <label for="chk-custom-idf" class="form-check-label small">Editar Parâmetros</label>
@@ -304,7 +272,7 @@
 
                     <!-- MEMORIAL -->
                     <div id="tab-memorial" class="tab-content d-none">
-                        <div id="print-area" class="bg-white p-4 p-md-5 mx-auto border rounded shadow-sm" style="max-width:900px;">
+                            <div id="print-area" class="bg-white p-4 p-md-5 mx-auto border rounded shadow-sm" style="max-width:900px;color:var(--color-text)">
                             
                             <!-- Header -->
                             <div class="border-bottom border-success border-4 pb-3 mb-4 d-flex justify-content-between align-items-end flex-wrap gap-3">
@@ -473,5 +441,9 @@
 {% endblock %}
 
 {% block extra_js %}
+<script>
+  window.__IDF_PRELOAD__ = {{ idf_preload|safe }};
+  window.__IDF_API__ = '/banco-idf/api/formulas/';
+</script>
 <script type="module" src="{% static 'hidrograma/js/app.js' %}"></script>
 {% endblock %}

@@ -45,7 +45,7 @@ export const manningQFull = (diameter_m, slope_S, n = 0.013) => {
     if (!diameter_m || diameter_m <= 0 || !slope_S || slope_S <= 0) return { Q: 0, A: 0, Rh: 0, V: 0 };
     const A = Math.PI * Math.pow(diameter_m, 2) / 4;
     const Rh = diameter_m / 4; // Para seção circular cheia, Rh = D/4
-
+    
     // Q = (1/n) * A * Rh^(2/3) * S^(1/2)
     const Q = (1 / n) * A * Math.pow(Rh, 2/3) * Math.pow(slope_S, 1/2);
     const V = Q / A;
@@ -57,13 +57,13 @@ export const manningQFull = (diameter_m, slope_S, n = 0.013) => {
  */
 export const selectPipe = (Q_m3s, slope_S = 0.005, n = 0.013, maxV = 5.0) => {
     if (!Q_m3s || Q_m3s <= 0) return null;
-
+    
     // Encontra o primeiro tubo onde a capacidade > demanda e velocidade < max
     const pipe = PIPES.find(p => {
         const { Q, V } = manningQFull(p.inner, slope_S, n);
         return Q >= Q_m3s && V <= maxV;
     }) || PIPES[PIPES.length - 1]; // Fallback para o maior tubo se nenhum servir
-
+    
     const { Q, V } = manningQFull(pipe.inner, slope_S, n);
     return { dn: pipe.dn, inner: pipe.inner, v: V, capacity: Q };
 };

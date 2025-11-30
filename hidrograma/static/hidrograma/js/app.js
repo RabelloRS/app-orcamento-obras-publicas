@@ -1,4 +1,5 @@
-import { DEFAULT_IDF } from './data.js';
+// import { DEFAULT_IDF } from './data.js';
+import IDFService from '/static/js/idf_service.js';
 import { calculateTc, calculateIntensity, generateHuffDistribution, calculateSCSAbstractions, generateTriangularUH, convolve, validateInputs } from './math.js';
 import { renderHydrograph, renderHyetograph, renderQuartiles, getChartImages } from './charts.js';
 
@@ -9,19 +10,107 @@ let currentData = {
 
 const DEBOUNCE_DELAY = 400;
 let debounceTimer;
+// Store current IDF selection
+let currentIDF = { K: 1000, a: 0.2, b: 15, c: 0.8, name: 'Padrão' }; // Default fallback
 
 document.addEventListener('DOMContentLoaded', () => {
     lucide.createIcons();
-    setupUI();
-    setupIDFDefaults();
-    performCalculation(); // Initial calc
+    try { setupUI(); } catch (e) { console.error('setupUI failed', e); }
+    setupIDFService();
 });
 
+async function setupIDFService() {
+    const select = document.getElementById('select-city');
+    if (!select) return;
+    const preload = (typeof window !== 'undefined') ? window.__IDF_PRELOAD__ : null;
+    if (Array.isArray(preload) && preload.length) {
+        const norm = (s) => (s || '').toString().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+        preload.sort((a,b)=>{
+            const ac = norm(a.city), bc = norm(b.city);
+            if (ac !== bc) return ac.localeCompare(bc);
+            const as = norm(a.state), bs = norm(b.state);
+            if (as !== bs) return as.localeCompare(bs);
+            return norm(a.name).localeCompare(b.name);
+        });
+        select.innerHTML = '';
+        const optCustom = document.createElement('option');
+        optCustom.value = 'custom';
+        optCustom.textContent = 'Personalizado';
+        select.appendChild(optCustom);
+        preload.forEach(f => {
+            const option = document.createElement('option');
+            option.value = f.id;
+            option.textContent = `${f.city}/${f.state} - ${f.name}`;
+            option.dataset.k = f.k;
+            option.dataset.a = f.a;
+            option.dataset.b = f.b;
+            option.dataset.c = f.c;
+            option.dataset.city = f.city;
+            option.dataset.state = f.state;
+            select.appendChild(option);
+        });
+        if (preload.length) {
+            select.value = String(preload[0].id);
+            const p = preload[0];
+            const params = { k: p.k, a: p.a, b: p.b, c: p.c, city: p.city, state: p.state };
+            currentIDF = { K: params.k, a: params.a, b: params.b, c: params.c, name: `${params.city}/${params.state}` };
+            updateIDFInputs(currentIDF);
+            const box = document.getElementById('box-idf-params');
+            if(box) box.classList.remove('d-none');
+        }
+        select.addEventListener('change', (e) => {
+            const selectedOption = select.selectedOptions[0];
+            if (selectedOption && selectedOption.value !== 'custom') {
+                const params = {
+                    k: parseFloat(selectedOption.dataset.k),
+                    a: parseFloat(selectedOption.dataset.a),
+                    b: parseFloat(selectedOption.dataset.b),
+                    c: parseFloat(selectedOption.dataset.c),
+                    city: selectedOption.dataset.city,
+                    state: selectedOption.dataset.state
+                };
+                currentIDF = { K: params.k, a: params.a, b: params.b, c: params.c, name: `${params.city}/${params.state}` };
+                updateIDFInputs(currentIDF);
+                performCalculation();
+            }
+        });
+    } else {
+        await IDFService.populateSelect(select, (params) => {
+            if (params) {
+                currentIDF = {
+                    K: params.k,
+                    a: params.a,
+                    b: params.b,
+                    c: params.c,
+                    name: `${params.city}/${params.state}`
+                };
+                
+                updateIDFInputs(currentIDF);
+                
+            const box = document.getElementById('box-idf-params');
+            if(box) box.classList.remove('d-none');
+                performCalculation();
+            } else {
+                // Custom selected
+            const box = document.getElementById('box-idf-params');
+            if(box) box.classList.remove('d-none');
+            }
+        });
+    }
+    
+    // Trigger initial calculation if we have values
+    performCalculation();
+}
+
+function updateIDFInputs(idf) {
+    document.getElementById('idf-k').value = idf.K;
+    document.getElementById('idf-a').value = idf.a;
+    document.getElementById('idf-b').value = idf.b;
+    document.getElementById('idf-c').value = idf.c;
+}
+
 function setupIDFDefaults() {
-    document.getElementById('idf-k').value = DEFAULT_IDF.K;
-    document.getElementById('idf-a').value = DEFAULT_IDF.a;
-    document.getElementById('idf-b').value = DEFAULT_IDF.b;
-    document.getElementById('idf-c').value = DEFAULT_IDF.c;
+    updateIDFInputs(DEFAULT_IDF);
 }
 
 function setupUI() {
@@ -47,37 +136,49 @@ function setupUI() {
 
 
     document.querySelectorAll('.input-calc').forEach(input => {
+        if(!input) return;
         input.addEventListener('input', () => {
             clearTimeout(debounceTimer);
             debounceTimer = setTimeout(performCalculation, DEBOUNCE_DELAY);
         });
     });
 
-    document.getElementById('in-cn').addEventListener('input', (e) => {
-        document.getElementById('val-cn').textContent = e.target.value;
-        clearTimeout(debounceTimer);
-        debounceTimer = setTimeout(performCalculation, DEBOUNCE_DELAY);
-    });
+    const inCn = document.getElementById('in-cn');
+    if(inCn){
+        inCn.addEventListener('input', (e) => {
+            const valCn = document.getElementById('val-cn');
+            if(valCn) valCn.textContent = e.target.value;
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(performCalculation, DEBOUNCE_DELAY);
+        });
+    }
 
-    document.getElementById('chk-custom-idf').addEventListener('change', (e) => {
-        const box = document.getElementById('box-idf-params');
-        if (e.target.checked) {
-            box.classList.remove('d-none');
-        } else {
-            box.classList.add('d-none');
-            setupIDFDefaults();
-            performCalculation();
-        }
-    });
+    const chkIdf = document.getElementById('chk-custom-idf');
+    if(chkIdf){
+        chkIdf.addEventListener('change', (e) => {
+            const box = document.getElementById('box-idf-params');
+            if (e.target.checked) {
+                // visual toggle
+            } else {
+                // visual toggle
+            }
+        });
+    }
+    // Ensure params box is visible for now as per new design intent to show params
+    const boxParams = document.getElementById('box-idf-params');
+    if(boxParams) boxParams.classList.remove('d-none');
 
-    document.getElementById('btn-export-csv').addEventListener('click', exportCSV);
-    document.getElementById('btn-export-pdf').addEventListener('click', exportPDF);
-    
-    // Save/Load project buttons
-    document.getElementById('btn-save-project').addEventListener('click', saveProject);
-    document.getElementById('btn-load-project').addEventListener('click', loadProject);
+    const elCsv = document.getElementById('btn-export-csv');
+    if(elCsv) elCsv.addEventListener('click', exportCSV);
+    const elPdf = document.getElementById('btn-export-pdf');
+    if(elPdf) elPdf.addEventListener('click', exportPDF);
+    const elSave = document.getElementById('btn-save-project');
+    if(elSave) elSave.addEventListener('click', saveProject);
+    const elLoad = document.getElementById('btn-load-project');
+    if(elLoad) elLoad.addEventListener('click', loadProject);
 
-    document.getElementById('btn-load-example').addEventListener('click', loadExampleData);
+    const btnExample = document.getElementById('btn-load-example');
+    if(btnExample) btnExample.addEventListener('click', loadExampleData);
 }
 
 function saveProject() {
@@ -178,7 +279,10 @@ function loadExampleData() {
 
 function getInputs() {
     const val = (id) => parseFloat(document.getElementById(id).value);
-    const isCustomIdf = document.getElementById('chk-custom-idf').checked;
+    // Always read from inputs as they are updated by selection or user
+    const idf = {
+        K: val('idf-k'), a: val('idf-a'), b: val('idf-b'), c: val('idf-c')
+    };
 
     return {
         area: val('in-area'),
@@ -187,9 +291,7 @@ function getInputs() {
         cn: val('in-cn'),
         tr: val('in-tr'),
         duration: val('in-duration'),
-        idf: isCustomIdf ? {
-            K: val('idf-k'), a: val('idf-a'), b: val('idf-b'), c: val('idf-c')
-        } : DEFAULT_IDF
+        idf: idf
     };
 }
 

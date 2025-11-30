@@ -3,6 +3,114 @@
 
 {% block title %}{{ title }} - Resolve Eng{% endblock %}
 
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Map interaction
+        const states = document.querySelectorAll('.state');
+        const stateFilter = document.getElementById('stateFilter');
+        const searchForm = document.getElementById('searchForm');
+        
+        // Highlight active state based on URL/Filter
+        const currentState = stateFilter.value;
+        if (currentState) {
+            const activePath = document.getElementById(currentState);
+            if (activePath) {
+                activePath.classList.add('active');
+            }
+        }
+        
+        // Click event for map states
+        states.forEach(state => {
+            state.addEventListener('click', function() {
+                const stateCode = this.id;
+                
+                // If clicking active state, clear filter
+                if (this.classList.contains('active')) {
+                    stateFilter.value = '';
+                } else {
+                    stateFilter.value = stateCode;
+                }
+                
+                // Submit form
+                searchForm.submit();
+            });
+        });
+        
+        // Change map highlight when select changes
+        stateFilter.addEventListener('change', function() {
+            const stateCode = this.value;
+            
+            // Remove active class from all
+            states.forEach(s => s.classList.remove('active'));
+            
+            // Add to selected
+            if (stateCode) {
+                const path = document.getElementById(stateCode);
+                if (path) path.classList.add('active');
+            }
+            
+            // Form will submit naturally
+        });
+
+        // Copy formula parameters to clipboard
+        document.querySelectorAll('.copy-formula-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const k = btn.dataset.k;
+                const a = btn.dataset.a;
+                const b = btn.dataset.b;
+                const c = btn.dataset.c;
+                
+                const text = `K=${k}, a=${a}, b=${b}, c=${c}`;
+                navigator.clipboard.writeText(text).then(() => {
+                    const toast = new bootstrap.Toast(document.getElementById('copyToast'));
+                    toast.show();
+                });
+            });
+        });
+        
+        // Use formula - save to localStorage and redirect to calculator
+        document.querySelectorAll('.use-formula-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const formulaData = {
+                    id: btn.dataset.id,
+                    name: btn.dataset.name,
+                    city: btn.dataset.city,
+                    state: btn.dataset.state,
+                    k: parseFloat(btn.dataset.k.replace(',', '.')),
+                    a: parseFloat(btn.dataset.a.replace(',', '.')),
+                    b: parseFloat(btn.dataset.b.replace(',', '.')),
+                    c: parseFloat(btn.dataset.c.replace(',', '.')),
+                    range: {
+                        min_duration: btn.dataset.minDuration || btn.dataset.durationMin,
+                        max_duration: btn.dataset.maxDuration || btn.dataset.durationMax,
+                        min_tr: btn.dataset.minTr || btn.dataset.trMin,
+                        max_tr: btn.dataset.maxTr || btn.dataset.trMax
+                    },
+                    timestamp: Date.now()
+                };
+                
+                // Save to localStorage
+                localStorage.setItem('resolve_idf_formula', JSON.stringify(formulaData));
+                localStorage.setItem('selected_idf_formula', JSON.stringify(formulaData)); // Duplicate for compatibility
+                
+                // Redirect to calculator
+                window.location.href = '{% url "banco_idf:calculadora" %}';
+            });
+        });
+        
+        // Auto-submit on state change (if not already handled)
+        // Note: This is partially redundant with the change listener above but kept for safety if ID changes
+        const stateSelect = document.getElementById('stateFilter');
+        if (stateSelect) {
+            stateSelect.addEventListener('change', () => {
+                document.getElementById('searchForm').submit();
+            });
+        }
+    });
+</script>
+{% endblock %}
+
 {% block extra_css %}
 <style>
     .idf-header {
@@ -137,6 +245,22 @@
         </div>
     </div>
     
+    <!-- Map Container -->
+    <div class="row mb-4">
+        <div class="col-md-8 offset-md-2">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-transparent border-0 pb-0">
+                    <h5 class="h5 mb-0 text-center">Selecione um estado no mapa</h5>
+                </div>
+                <div class="card-body d-flex justify-content-center">
+                    <div style="width: 100%; max-width: 500px;">
+                        {% include 'banco_idf/brazil_map.svg' %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Search and Filters -->
     <div class="search-box">
         <form method="get" id="searchForm">
@@ -275,56 +399,3 @@
 </div>
 {% endblock %}
 
-{% block extra_js %}
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-    // Copy formula parameters to clipboard
-    document.querySelectorAll('.copy-formula-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const k = btn.dataset.k;
-            const a = btn.dataset.a;
-            const b = btn.dataset.b;
-            const c = btn.dataset.c;
-            
-            const text = `K=${k}, a=${a}, b=${b}, c=${c}`;
-            navigator.clipboard.writeText(text).then(() => {
-                const toast = new bootstrap.Toast(document.getElementById('copyToast'));
-                toast.show();
-            });
-        });
-    });
-    
-    // Use formula - save to localStorage and redirect to calculator
-    document.querySelectorAll('.use-formula-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const formulaData = {
-                id: btn.dataset.id,
-                name: btn.dataset.name,
-                city: btn.dataset.city,
-                state: btn.dataset.state,
-                k: parseFloat(btn.dataset.k),
-                a: parseFloat(btn.dataset.a),
-                b: parseFloat(btn.dataset.b),
-                c: parseFloat(btn.dataset.c),
-                durationMin: parseInt(btn.dataset.durationMin),
-                durationMax: parseInt(btn.dataset.durationMax),
-                trMin: parseInt(btn.dataset.trMin),
-                trMax: parseInt(btn.dataset.trMax),
-                timestamp: Date.now()
-            };
-            
-            // Save to localStorage
-            localStorage.setItem('resolve_idf_formula', JSON.stringify(formulaData));
-            
-            // Redirect to calculator
-            window.location.href = '{% url "banco_idf:calculadora" %}';
-        });
-    });
-    
-    // Auto-submit on state change
-    document.getElementById('stateFilter').addEventListener('change', () => {
-        document.getElementById('searchForm').submit();
-    });
-});
-</script>
-{% endblock %}
