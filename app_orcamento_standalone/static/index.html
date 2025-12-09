@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resolve Engenharia - Portal</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <div class="container" style="max-width: 600px; text-align: center;">
+        <img src="https://via.placeholder.com/150x50?text=LOGO+RESOLVE" alt="Logo" style="margin-bottom: 30px;">
+        <h1>Portal de Engenharia</h1>
+
+        <!-- Login Form -->
+        <div id="login-section">
+            <p>Faça login para acessar os módulos.</p>
+            <div class="form-group">
+                <input type="email" id="email" placeholder="Email" value="admin@admin.com">
+            </div>
+            <div class="form-group">
+                <input type="password" id="password" placeholder="Senha" value="admin">
+            </div>
+            <button onclick="performLogin()">Entrar</button>
+            <div id="status"></div>
+        </div>
+
+        <!-- Dashboard / Modules -->
+        <div id="dashboard-section" style="display:none;">
+            <p>Bem-vindo, <span id="user-display"></span></p>
+
+            <div class="card" onclick="window.location.href='importer.html'" style="cursor: pointer; text-align: left;">
+                <div class="card-title">📂 Importador de Dados</div>
+                <p>Gerencie bases de dados SINAPI e SICRO. Importe novos arquivos e mantenha os preços atualizados.</p>
+            </div>
+
+            <div class="card" onclick="window.location.href='explorer.html'" style="cursor: pointer; text-align: left;">
+                <div class="card-title">🔍 Explorador de Composições</div>
+                <p>Pesquise CPU's detalhadas, visualize insumos, equipes e custos analíticos.</p>
+            </div>
+
+            <button class="secondary" onclick="logout()" style="margin-top: 20px;">Sair</button>
+        </div>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', checkLoginState);
+
+        async function performLogin() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            const formData = new URLSearchParams();
+            formData.append('username', email);
+            formData.append('password', password);
+
+            try {
+                const response = await fetch('/api/v1/auth/token', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    setAuthToken(data.access_token, email);
+                    // Redirecionar para o app principal após login
+                    window.location.href = '/static/app.html';
+                } else {
+                    showStatus('Erro: ' + (data.detail || 'Falha no login'), 'error');
+                }
+            } catch (e) {
+                showStatus('Erro de conexão: ' + e.message, 'error');
+            }
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Explorador de CPU - Resolve Engenharia</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <div class="navbar">
+        <div>ORÇAMENTO <strong>V2</strong></div>
+        <div>
+            <a href="index.html">Dashboard</a>
+            <a href="#" onclick="logout()">Sair</a>
+        </div>
+    </div>
+
+    <div class="container" style="max-width: 1200px;">
+        <h1>🔍 Explorador de Composições e Insumos</h1>
+
+        <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+            <div class="form-row" style="display: flex; gap: 15px; flex-wrap: wrap; align-items: flex-end;">
+                <div style="flex: 2; min-width: 300px;">
+                    <label>Busca Inteligente</label>
+                    <input type="text" id="query"
+                        placeholder="Digite código (ex: 307731) ou descrição (ex: Concreto)...">
+                </div>
+                <div style="flex: 1; min-width: 150px;">
+                    <label>Origem</label>
+                    <select id="filter-source">
+                        <option value="ALL">Todas</option>
+                        <option value="SINAPI">SINAPI</option>
+                        <option value="SICRO">SICRO</option>
+                    </select>
+                </div>
+                <div style="flex: 1; min-width: 150px;">
+                    <label>Tipo de Item</label>
+                    <select id="filter-type">
+                        <option value="ALL">Todos</option>
+                        <option value="COMPOSITION">Composições</option>
+                        <option value="INPUT">Insumos (Geral)</option>
+                        <option value="EQUIPMENT">Equipamentos</option>
+                        <option value="LABOR">Mão de Obra</option>
+                        <option value="MATERIAL">Materiais</option>
+                    </select>
+                </div>
+                <div style="flex: 0 0 120px;">
+                    <button onclick="searchItems()">Pesquisar</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="status"></div>
+
+        <div id="results-container" style="margin-top: 20px; overflow-x: auto;">
+            <table id="results-table" style="width: 100%; border-collapse: collapse; display: none;">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Descrição</th>
+                        <th>Tipo</th>
+                        <th>Unid.</th>
+                        <th>Preço (R$)</th>
+                        <th>Fonte</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="results-body">
+                    <!-- Results -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div id="comp-modal"
+        style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); font-family: 'Segoe UI', sans-serif; z-index: 1000;">
+        <div
+            style="background: white; width: 85%; max-width: 900px; margin: 50px auto; padding: 25px; border-radius: 8px; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
+            <div
+                style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 20px;">
+                <h2 style="margin: 0; color: #0056b3;">Detalhes da Composição</h2>
+                <button onclick="closeModal()" style="width: auto; background: #dc3545; padding: 8px 15px;">Fechar
+                    X</button>
+            </div>
+
+            <div id="modal-content">
+                <!-- Content loaded dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!requireAuth()) return;
+        });
+
+        async function searchItems() {
+            const token = getAuthToken();
+            const q = document.getElementById('query').value;
+            const source = document.getElementById('filter-source').value;
+            const type = document.getElementById('filter-type').value;
+
+            if (!q) { showStatus("Digite algo para pesquisar", "error"); return; }
+
+            showStatus("Pesquisando...", "info");
+
+            try {
+                let url = `/api/v1/data/items?q=${encodeURIComponent(q)}&limit=50`;
+                if (source !== 'ALL') url += `&source=${source}`;
+                if (type !== 'ALL') url += `&item_type=${type}`;
+
+                const res = await fetch(url, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const items = await res.json();
+
+                const tbody = document.getElementById('results-body');
+                tbody.innerHTML = "";
+
+                if (items.length === 0) {
+                    showStatus("Nenhum item encontrado.", "info");
+                    document.getElementById('results-table').style.display = 'none';
+                    return;
+                }
+
+                items.forEach(item => {
+                    const priceVal = parseFloat(item.price);
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${item.code}</td>
+                        <td>${item.description}</td>
+                        <td><span style="background: #e9ecef; padding: 2px 6px; border-radius: 4px; font-size: 0.85em;">${item.type || '-'}</span></td>
+                        <td>${item.unit}</td>
+                        <td style="font-weight: bold; color: #28a745;">R$ ${priceVal.toFixed(2)}</td>
+                        <td>${item.source}</td>
+                        <td>
+                            <button onclick="viewComposition('${item.id}')" style="background:#17a2b8; padding: 6px 12px; font-size: 13px; width: auto;">Ver CPU</button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+
+                document.getElementById('results-table').style.display = 'table';
+                showStatus(`Encontrados ${items.length} itens.`, "success");
+
+            } catch (e) {
+                showStatus("Erro na pesquisa: " + e.message, "error");
+            }
+        }
+
+        async function viewComposition(id) {
+            const token = getAuthToken();
+            const modal = document.getElementById('comp-modal');
+            const content = document.getElementById('modal-content');
+
+            content.innerHTML = '<div style="text-align:center; padding:40px;"><p>Carregando detalhes...</p></div>';
+            modal.style.display = 'block';
+
+            try {
+                const res = await fetch(`/api/v1/data/items/${id}/composition`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (!res.ok) throw new Error("Falha ao carregar composição.");
+
+                const data = await res.json();
+
+                // Header
+                let html = `
+                    <div style="background:#f8f9fa; padding:20px; border-radius:8px; margin-bottom:20px; border-left: 5px solid #0056b3;">
+                        <span style="color:#666; font-size: 0.9em;">${data.item.type || 'ITEM'}</span>
+                        <h3 style="margin: 5px 0 10px 0;">${data.item.code} - ${data.item.description}</h3>
+                        <div style="display:flex; gap: 20px;">
+                            <span><strong>Unidade:</strong> ${data.item.unit}</span>
+                            <span><strong>Fonte:</strong> SICRO/SINAPI</span>
+                        </div>
+                    </div>
+                `;
+
+                // 1. Production (SICRO)
+                if (data.sicro_production && data.sicro_production.length > 0) {
+                    html += `<div style="margin-bottom: 25px;">
+                                <h4 style="border-bottom: 2px solid #eee; padding-bottom: 8px; color: #495057;">Produção da Equipe</h4>
+                                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px;">`;
+                    data.sicro_production.forEach(r => {
+                        html += `<div style="padding: 15px; background: #e3f2fd; border-radius: 6px; border: 1px solid #b3d7ff;">
+                                    <div style="font-size: 1.2em; font-weight: bold; color: #0056b3;">${r.rate} ${r.unit}/h</div>
+                                    <div style="font-size: 0.85em; color: #555;">${r.scenario}</div>
+                                 </div>`;
+                    });
+                    html += `   </div>
+                             </div>`;
+                }
+
+                // Helper for Tables
+                const renderTable = (title, items) => {
+                    if (!items || items.length === 0) return '';
+                    let rows = '';
+                    let totalSum = 0;
+
+                    items.forEach(i => {
+                        totalSum += i.total_price;
+                        rows += `<tr>
+                                    <td>${i.type}</td>
+                                    <td><strong>${i.code}</strong></td>
+                                    <td>${i.description}</td>
+                                    <td style="text-align:right;">${i.quantity || i.coefficient}</td>
+                                    <td style="text-align:right;">R$ ${i.unit_price.toFixed(2)}</td>
+                                    <td style="text-align:right; font-weight:bold;">R$ ${i.total_price.toFixed(2)}</td>
+                                 </tr>`;
+                    });
+
+                    return `<div style="margin-bottom: 25px;">
+                                <h4 style="border-bottom: 2px solid #eee; padding-bottom: 8px; color: #495057;">${title}</h4>
+                                <table style="font-size: 0.9em;">
+                                    <tr style="background:#f8f9fa;">
+                                        <th>Tipo</th>
+                                        <th>Código</th>
+                                        <th>Descrição</th>
+                                        <th style="text-align:right;">Qtd/Fator</th>
+                                        <th style="text-align:right;">Preço Unit.</th>
+                                        <th style="text-align:right;">Total</th>
+                                    </tr>
+                                    ${rows}
+                                    <tr style="background:#e9ecef; font-weight:bold;">
+                                        <td colspan="5" style="text-align:right;">SUBTOTAL:</td>
+                                        <td style="text-align:right;">R$ ${totalSum.toFixed(2)}</td>
+                                    </tr>
+                                </table>
+                            </div>`;
+                };
+
+                html += renderTable('Equipe (Mão de Obra e Equipamentos)', data.team);
+                html += renderTable('Insumos (Materiais e Atividades)', data.ingredients);
+
+                if (data.sicro_production.length === 0 && data.team.length === 0 && data.ingredients.length === 0) {
+                    html += `<div style="padding: 30px; text-align: center; color: #666; background: #f8f9fa; border-radius: 8px;">
+                                <p>Este item não possui composição detalhada.</p>
+                                <small>Pode ser um insumo básico (Material/Mão de Obra) ou os dados não foram importados.</small>
+                             </div>`;
+                }
+
+                content.innerHTML = html;
+
+            } catch (e) {
+                content.innerHTML = `<div style="padding: 20px; background: #ffebee; color: #c62828; border-radius: 8px;">Erro: ${e.message}</div>`;
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('comp-modal').style.display = 'none';
+        }
+    </script>
+</body>
+
+</html>
