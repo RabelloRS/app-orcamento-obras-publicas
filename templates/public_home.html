@@ -59,7 +59,8 @@
                                 <h4 class="h6 fw-semibold mt-2 mb-1">Banco de IDF</h4>
                                 <p class="text-soft small mb-3">Biblioteca nacional de equações IDF.</p>
                                 <div class="mt-auto">
-                                    <a href="{% url 'banco_idf:consulta' %}" class="btn btn-sm btn-warning"><i class="bi bi-arrow-right me-1"></i>Acessar</a>
+                                    <a href="{% url 'banco_idf:consulta' %}" class="btn btn-sm btn-warning"><i
+                                            class="bi bi-arrow-right me-1"></i>Acessar</a>
                                 </div>
                             </article>
                         </div>
@@ -130,6 +131,18 @@
                                 </div>
                             </article>
                         </div>
+                        <div class="col-md-6 col-lg-3">
+                            <article class="h-100 p-3 rounded-md d-flex flex-column"
+                                style="background:var(--color-bg);border:1px solid var(--color-border);">
+                                <i class="bi bi-bricks text-danger" style="font-size:1.5rem;"></i>
+                                <h4 class="h6 fw-semibold mt-2 mb-1">Pavimento Rígido (PCA)</h4>
+                                <p class="text-soft small mb-3">Dimensionamento de placas de concreto - DNIT.</p>
+                                <div class="mt-auto">
+                                    <a href="{% url 'pav_concreto:index' %}" class="btn btn-sm btn-primary"><i
+                                            class="bi bi-arrow-right me-1"></i>Usar</a>
+                                </div>
+                            </article>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -177,9 +190,19 @@
             </h2>
             <div id="collapseOrcamentoHome" class="accordion-collapse collapse" data-bs-parent="#accordionApps">
                 <div class="accordion-body pt-0">
-                    <div class="text-center py-4" style="color:var(--color-text)">
-                        <i class="bi bi-tools text-muted" style="font-size:2rem;"></i>
-                        <p class="text-soft mt-2 mb-0">Ferramentas de orçamento em desenvolvimento.</p>
+                    <div class="row g-3">
+                        <div class="col-md-6 col-lg-3">
+                            <article class="h-100 p-3 rounded-md d-flex flex-column"
+                                style="background:var(--color-bg);border:1px solid var(--color-border);">
+                                <i class="bi bi-currency-dollar text-success" style="font-size:1.5rem;"></i>
+                                <h4 class="h6 fw-semibold mt-2 mb-1">Orçamento de Obras</h4>
+                                <p class="text-soft small mb-3">SINAPI, SICRO e composições próprias.</p>
+                                <div class="mt-auto">
+                                    <a href="http://127.0.0.1:8002/static/app.html" target="_blank"
+                                        class="block p-6 bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700"></i>Usar</a>
+                                </div>
+                            </article>
+                        </div>
                     </div>
                 </div>
             </div>

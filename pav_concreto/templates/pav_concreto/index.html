@@ -1,0 +1,1282 @@
+{% extends 'layouts/app.html' %}
+{% load static %}
+
+{% block title %}Dimensionamento de Pavimento Rígido - DNIT/PCA - Resolve Eng{% endblock %}
+
+{% block page_title %}Dimensionamento de Pavimento Rígido{% endblock %}
+
+{% block extra_css %}
+<style>
+    .pav-app {
+        padding: 2rem;
+    }
+
+    .pav-header {
+        background: var(--color-surface);
+        padding: 1.5rem;
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--color-border);
+        margin-bottom: 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .pav-header h1 {
+        margin: 0;
+        font-size: 1.5rem;
+        color: var(--color-primary);
+    }
+
+    .pav-header .subtitle {
+        font-size: 0.9rem;
+        color: var(--color-text-soft);
+        margin-top: 0.25rem;
+    }
+
+    .pav-content {
+        display: flex;
+        gap: 1.5rem;
+    }
+
+    .pav-sidebar {
+        width: 220px;
+        flex-shrink: 0;
+    }
+
+    .pav-sidebar button {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        width: 100%;
+        padding: 0.875rem 1rem;
+        margin-bottom: 0.5rem;
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-md);
+        background: var(--color-surface);
+        color: var(--color-text);
+        text-align: left;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-size: 0.95rem;
+    }
+
+    .pav-sidebar button:hover:not(:disabled) {
+        background: var(--color-primary-light);
+        border-color: var(--color-primary);
+        color: var(--color-primary);
+    }
+
+    .pav-sidebar button.active {
+        background: var(--color-primary);
+        color: white;
+        border-color: var(--color-primary);
+    }
+
+    .pav-sidebar button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .pav-main {
+        flex: 1;
+        overflow-y: auto;
+    }
+
+    .pav-panel {
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-lg);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: var(--shadow-1);
+    }
+
+    .pav-panel h2 {
+        margin: 0 0 1.25rem 0;
+        color: var(--color-primary);
+        font-size: 1.1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        border-bottom: 2px solid var(--color-border);
+        padding-bottom: 0.75rem;
+    }
+
+    .form-group {
+        margin-bottom: 1.25rem;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: var(--color-text);
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    .form-group input,
+    .form-group select {
+        width: 100%;
+        padding: 0.625rem 0.875rem;
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-md);
+        background: var(--color-surface-alt);
+        color: var(--color-text);
+        font-size: 0.95rem;
+        transition: border-color 0.2s;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+        outline: none;
+        border-color: var(--color-primary);
+        box-shadow: 0 0 0 3px var(--color-primary-light);
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+    }
+
+    .btn-primary {
+        background: var(--color-primary);
+        color: white;
+        border: none;
+        padding: 1rem 2rem;
+        border-radius: var(--radius-md);
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        width: 100%;
+        transition: all 0.2s;
+    }
+
+    .btn-primary:hover {
+        background: var(--color-primary-dark);
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-2);
+    }
+
+    .btn-print {
+        background: var(--color-success);
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: var(--radius-md);
+        cursor: pointer;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-print:hover {
+        background: var(--color-success-dark);
+    }
+
+    .result-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 1rem;
+    }
+
+    .result-card {
+        background: var(--color-surface-alt);
+        border: 1px solid var(--color-border);
+        border-left: 4px solid var(--color-primary);
+        border-radius: var(--radius-md);
+        padding: 1.25rem;
+        text-align: center;
+    }
+
+    .result-card h3 {
+        margin: 0 0 0.75rem 0;
+        color: var(--color-primary);
+        font-size: 0.9rem;
+        font-weight: 600;
+    }
+
+    .result-value {
+        font-size: 2rem;
+        font-weight: bold;
+        color: var(--color-text);
+    }
+
+    .result-unit {
+        color: var(--color-text-soft);
+        font-size: 0.9rem;
+    }
+
+    .info-box {
+        background: var(--color-info-light);
+        border: 1px solid var(--color-info);
+        border-radius: var(--radius-md);
+        padding: 1rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .info-box h4 {
+        color: var(--color-info);
+        margin: 0 0 0.5rem 0;
+        font-size: 0.95rem;
+    }
+
+    .info-box p {
+        margin: 0;
+        font-size: 0.85rem;
+        color: var(--color-text);
+    }
+
+    .layer-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 1rem;
+    }
+
+    .layer-table th,
+    .layer-table td {
+        padding: 0.875rem;
+        text-align: left;
+        border-bottom: 1px solid var(--color-border);
+    }
+
+    .layer-table th {
+        color: var(--color-primary);
+        font-weight: 600;
+        font-size: 0.9rem;
+        background: var(--color-surface-alt);
+    }
+
+    .layer-table td {
+        color: var(--color-text);
+    }
+
+    .step-card {
+        background: var(--color-surface-alt);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-md);
+        padding: 1.25rem;
+        margin-bottom: 1rem;
+    }
+
+    .step-card h4 {
+        margin: 0 0 0.75rem 0;
+        color: var(--color-primary);
+        font-size: 1rem;
+    }
+
+    .step-formula {
+        background: var(--color-surface);
+        padding: 0.875rem;
+        border-radius: var(--radius-sm);
+        font-family: 'Courier New', monospace;
+        margin: 0.5rem 0;
+        color: var(--color-success);
+        font-size: 0.9rem;
+        border: 1px solid var(--color-border);
+    }
+
+    .step-result {
+        color: var(--color-success);
+        font-weight: 600;
+        margin-top: 0.75rem;
+    }
+
+    .step-explanation {
+        color: var(--color-text-soft);
+        font-size: 0.9rem;
+        margin-top: 0.5rem;
+        line-height: 1.6;
+    }
+
+    .drawing-container {
+        background: white;
+        border-radius: var(--radius-md);
+        padding: 1.5rem;
+        margin-top: 1rem;
+        border: 1px solid var(--color-border);
+    }
+
+    .drawing-canvas {
+        display: block;
+        margin: 0 auto;
+    }
+
+    .report-section {
+        margin-bottom: 2rem;
+        page-break-inside: avoid;
+    }
+
+    .report-section h3 {
+        color: var(--color-primary);
+        border-bottom: 2px solid var(--color-primary);
+        padding-bottom: 0.5rem;
+        margin-bottom: 1rem;
+    }
+
+    @media print {
+        .pav-sidebar,
+        .pav-header,
+        .btn-print,
+        .no-print,
+        nav,
+        footer {
+            display: none !important;
+        }
+
+        .app-content {
+            margin-left: 0 !important;
+        }
+
+        .pav-main {
+            overflow: visible !important;
+        }
+
+        .pav-panel {
+            border: 1px solid #ddd !important;
+            background: white !important;
+            page-break-inside: avoid;
+        }
+
+        .result-card {
+            border: 1px solid #ddd !important;
+            background: #f9f9f9 !important;
+        }
+
+        .step-card {
+            border: 1px solid #ddd !important;
+            background: #fafafa !important;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .pav-content {
+            flex-direction: column;
+        }
+
+        .pav-sidebar {
+            width: 100%;
+            display: flex;
+            overflow-x: auto;
+            gap: 0.5rem;
+        }
+
+        .pav-sidebar button {
+            white-space: nowrap;
+            flex: 1;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="content-body">
+    <div class="pav-app">
+        <div class="pav-header no-print">
+            <div>
+                <h1>🏗️ Dimensionamento de Pavimento Rígido</h1>
+                <div class="subtitle">Método PCA (Portland Cement Association) - Normas DNIT</div>
+            </div>
+            <div>
+                <button class="btn-print" onclick="window.print()">🖨️ Imprimir Relatório</button>
+            </div>
+        </div>
+
+        <div class="pav-content">
+            <aside class="pav-sidebar no-print">
+                <button onclick="showTab('input')" id="tab-input" class="active">📝 Dados</button>
+                <button onclick="showTab('results')" id="tab-results" disabled>📊 Resultados</button>
+                <button onclick="showTab('drawing')" id="tab-drawing" disabled>📐 Desenho</button>
+                <button onclick="showTab('report')" id="tab-report" disabled>📋 Relatório</button>
+            </aside>
+
+            <main class="pav-main">
+                <!-- Input Panel -->
+                <div id="panel-input">
+                <div class="pav-panel">
+                    <h2>📁 Informações do Projeto</h2>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Nome do Projeto</label>
+                            <input type="text" id="projectName" placeholder="Ex: Pista do Aeroporto XYZ">
+                        </div>
+                        <div class="form-group">
+                            <label>Localização</label>
+                            <input type="text" id="projectLocation" placeholder="Ex: Pátio de Estacionamento">
+                        </div>
+                        <div class="form-group">
+                            <label>Engenheiro Responsável</label>
+                            <input type="text" id="engineer" placeholder="Nome do responsável técnico">
+                        </div>
+                        <div class="form-group">
+                            <label>Data</label>
+                            <input type="date" id="projectDate">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pav-panel">
+                    <h2>🚛 Dados de Tráfego</h2>
+                    <div class="info-box">
+                        <h4>ℹ️ Orientação</h4>
+                        <p style="margin:0;font-size:0.85rem;">O número de repetições do eixo padrão (N) deve considerar
+                            todo o período de projeto. Para rodovias, tipicamente 20-30 anos. Para áreas industriais, 20
+                            anos.</p>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Número N (repetições eixo 8,2tf)</label>
+                            <input type="number" id="designN" value="10000000" min="100000">
+                        </div>
+                        <div class="form-group">
+                            <label>Período de Projeto (anos)</label>
+                            <input type="number" id="designPeriod" value="20" min="10" max="40">
+                        </div>
+                        <div class="form-group">
+                            <label>Carga por Eixo Simples (kN)</label>
+                            <input type="number" id="axleLoad" value="80" min="40" max="150">
+                        </div>
+                        <div class="form-group">
+                            <label>Tipo de Via</label>
+                            <select id="roadType">
+                                <option value="highway">Rodovia Principal</option>
+                                <option value="urban">Via Urbana</option>
+                                <option value="industrial">Pátio Industrial</option>
+                                <option value="airport">Área Aeroportuária</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pav-panel">
+                    <h2>🏔️ Dados do Subleito</h2>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>CBR do Subleito (%)</label>
+                            <input type="number" id="cbrSubgrade" value="5" min="2" max="30" step="0.5">
+                        </div>
+                        <div class="form-group">
+                            <label>Módulo de Reação k (MPa/m)</label>
+                            <input type="number" id="kValue" value="0" min="0" step="1"
+                                placeholder="Deixe 0 para calcular do CBR">
+                        </div>
+                        <div class="form-group">
+                            <label>Tipo de Sub-base</label>
+                            <select id="subbaseType">
+                                <option value="granular">Granular (BGS)</option>
+                                <option value="stabilized">Estabilizada com Cimento</option>
+                                <option value="lean">Concreto Magro (CCR)</option>
+                                <option value="none">Sem Sub-base</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Espessura da Sub-base (cm)</label>
+                            <input type="number" id="subbaseThickness" value="15" min="0" max="30">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pav-panel">
+                    <h2>🧱 Propriedades do Concreto</h2>
+                    <div class="info-box">
+                        <h4>ℹ️ Referência DNIT</h4>
+                        <p style="margin:0;font-size:0.85rem;">A resistência à tração na flexão (fctM,k) típica para
+                            pavimentos rígidos varia de 4,0 a 5,0 MPa aos 28 dias. O módulo de elasticidade típico é de
+                            28.000 a 35.000 MPa.</p>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Resistência fck (MPa)</label>
+                            <input type="number" id="fck" value="35" min="25" max="50">
+                        </div>
+                        <div class="form-group">
+                            <label>Resistência à Tração na Flexão fctM,k (MPa)</label>
+                            <input type="number" id="flexuralStrength" value="4.5" min="3.0" max="6.0" step="0.1">
+                        </div>
+                        <div class="form-group">
+                            <label>Módulo de Elasticidade Ec (MPa)</label>
+                            <input type="number" id="concreteModulus" value="30000" min="20000" max="40000">
+                        </div>
+                        <div class="form-group">
+                            <label>Coeficiente de Poisson</label>
+                            <input type="number" id="poissonRatio" value="0.15" min="0.10" max="0.20" step="0.01">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pav-panel">
+                    <h2>📐 Geometria e Juntas</h2>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Largura da Placa (m)</label>
+                            <input type="number" id="slabWidth" value="3.5" min="2.5" max="5.0" step="0.1">
+                        </div>
+                        <div class="form-group">
+                            <label>Comprimento da Placa (m)</label>
+                            <input type="number" id="slabLength" value="4.5" min="3.0" max="6.0" step="0.1">
+                        </div>
+                        <div class="form-group">
+                            <label>Tipo de Junta Transversal</label>
+                            <select id="jointType">
+                                <option value="doweled">Com Barras de Transferência</option>
+                                <option value="undoweled">Sem Barras (Agregado Intertravado)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Transferência de Carga (%)</label>
+                            <input type="number" id="loadTransfer" value="45" min="25" max="50">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pav-panel">
+                    <h2>🔧 Fatores de Projeto</h2>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Fator de Segurança</label>
+                            <select id="safetyFactor">
+                                <option value="1.0">1,0 (Áreas industriais)</option>
+                                <option value="1.1">1,1 (Vias secundárias)</option>
+                                <option value="1.2" selected>1,2 (Rodovias principais)</option>
+                                <option value="1.3">1,3 (Aeroportos)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Confiabilidade (%)</label>
+                            <select id="reliability">
+                                <option value="80">80%</option>
+                                <option value="85">85%</option>
+                                <option value="90" selected>90%</option>
+                                <option value="95">95%</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn-primary" onclick="calculate()">
+                    🔢 Calcular Espessura da Placa
+                </button>
+            </div>
+
+            <!-- Results Panel -->
+            <div id="panel-results" style="display:none;">
+                <div class="pav-panel">
+                    <h2>📊 Resultados do Dimensionamento</h2>
+                    <div class="result-grid">
+                        <div class="result-card">
+                            <h3>Espessura da Placa</h3>
+                            <div class="result-value" id="res-thickness">-</div>
+                            <div class="result-unit">cm</div>
+                        </div>
+                        <div class="result-card">
+                            <h3>Módulo k Efetivo</h3>
+                            <div class="result-value" id="res-keff">-</div>
+                            <div class="result-unit">MPa/m</div>
+                        </div>
+                        <div class="result-card">
+                            <h3>Tensão Admissível</h3>
+                            <div class="result-value" id="res-stress">-</div>
+                            <div class="result-unit">MPa</div>
+                        </div>
+                        <div class="result-card">
+                            <h3>Fator de Fadiga</h3>
+                            <div class="result-value" id="res-fatigue">-</div>
+                            <div class="result-unit"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pav-panel">
+                    <h2>📋 Estrutura do Pavimento</h2>
+                    <table class="layer-table">
+                        <thead>
+                            <tr>
+                                <th>Camada</th>
+                                <th>Material</th>
+                                <th>Espessura</th>
+                                <th>Característica</th>
+                            </tr>
+                        </thead>
+                        <tbody id="layers-table"></tbody>
+                    </table>
+                </div>
+
+                <div class="pav-panel">
+                    <h2>🔩 Especificação das Juntas</h2>
+                    <table class="layer-table">
+                        <thead>
+                            <tr>
+                                <th>Elemento</th>
+                                <th>Especificação</th>
+                                <th>Espaçamento</th>
+                            </tr>
+                        </thead>
+                        <tbody id="joints-table"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Drawing Panel -->
+            <div id="panel-drawing" style="display:none;">
+                <div class="pav-panel">
+                    <h2>📐 Seção Transversal do Pavimento Rígido</h2>
+                    <div class="drawing-container">
+                        <canvas id="crossSectionCanvas" class="drawing-canvas" width="800" height="350"></canvas>
+                    </div>
+                </div>
+                <div class="pav-panel">
+                    <h2>📐 Detalhe das Juntas</h2>
+                    <div class="drawing-container">
+                        <canvas id="jointCanvas" class="drawing-canvas" width="800" height="300"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Report Panel -->
+            <div id="panel-report" style="display:none;">
+                <div class="pav-panel report-section">
+                    <h2>📋 Memorial de Cálculo - Pavimento Rígido</h2>
+                    <div id="report-header"></div>
+                </div>
+
+                <div class="pav-panel report-section">
+                    <h3>1. Dados de Entrada</h3>
+                    <div id="report-input"></div>
+                </div>
+
+                <div class="pav-panel report-section">
+                    <h3>2. Metodologia de Cálculo</h3>
+                    <div id="report-method"></div>
+                </div>
+
+                <div class="pav-panel report-section">
+                    <h3>3. Memorial de Cálculo Detalhado</h3>
+                    <div id="report-steps"></div>
+                </div>
+
+                <div class="pav-panel report-section">
+                    <h3>4. Resultados e Especificações</h3>
+                    <div id="report-results"></div>
+                </div>
+
+                <div class="pav-panel report-section">
+                    <h3>5. Conclusões e Recomendações</h3>
+                    <div id="report-conclusions"></div>
+                </div>
+            </div>
+            </main>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Rigid pavement calculation functions
+    let calculationResults = null;
+    let inputData = null;
+
+    function showTab(tab) {
+        document.querySelectorAll('.pav-main > div').forEach(p => p.style.display = 'none');
+        document.querySelectorAll('.pav-sidebar button').forEach(b => b.classList.remove('active'));
+
+        document.getElementById('panel-' + tab).style.display = 'block';
+        document.getElementById('tab-' + tab).classList.add('active');
+
+        if (tab === 'drawing' && calculationResults) {
+            drawCrossSection();
+            drawJoints();
+        }
+        if (tab === 'report' && calculationResults) {
+            generateReport();
+        }
+    }
+
+    function calculate() {
+        // Collect input data
+        inputData = {
+            projectName: document.getElementById('projectName').value || 'Projeto Pavimento Rígido',
+            projectLocation: document.getElementById('projectLocation').value,
+            engineer: document.getElementById('engineer').value,
+            date: document.getElementById('projectDate').value,
+            designN: parseFloat(document.getElementById('designN').value),
+            designPeriod: parseInt(document.getElementById('designPeriod').value),
+            axleLoad: parseFloat(document.getElementById('axleLoad').value),
+            roadType: document.getElementById('roadType').value,
+            cbrSubgrade: parseFloat(document.getElementById('cbrSubgrade').value),
+            kValue: parseFloat(document.getElementById('kValue').value),
+            subbaseType: document.getElementById('subbaseType').value,
+            subbaseThickness: parseFloat(document.getElementById('subbaseThickness').value),
+            fck: parseFloat(document.getElementById('fck').value),
+            flexuralStrength: parseFloat(document.getElementById('flexuralStrength').value),
+            concreteModulus: parseFloat(document.getElementById('concreteModulus').value),
+            poissonRatio: parseFloat(document.getElementById('poissonRatio').value),
+            slabWidth: parseFloat(document.getElementById('slabWidth').value),
+            slabLength: parseFloat(document.getElementById('slabLength').value),
+            jointType: document.getElementById('jointType').value,
+            loadTransfer: parseFloat(document.getElementById('loadTransfer').value),
+            safetyFactor: parseFloat(document.getElementById('safetyFactor').value),
+            reliability: parseFloat(document.getElementById('reliability').value)
+        };
+
+        // Perform calculation
+        calculationResults = calculateRigidPavement(inputData);
+
+        // Display results
+        displayResults();
+
+        // Enable tabs
+        ['results', 'drawing', 'report'].forEach(t => {
+            document.getElementById('tab-' + t).disabled = false;
+        });
+
+        showTab('results');
+    }
+
+    function calculateRigidPavement(data) {
+        const steps = [];
+
+        // Step 1: Calculate k from CBR if not provided
+        let kSubgrade = data.kValue;
+        if (kSubgrade === 0 || isNaN(kSubgrade)) {
+            // CBR to k correlation (DNIT/PCA)
+            kSubgrade = 2.55 * Math.pow(data.cbrSubgrade, 0.64);
+        }
+
+        steps.push({
+            title: 'Cálculo do Módulo de Reação do Subleito (k)',
+            formula: 'k = 2,55 × CBR^0,64',
+            variables: [
+                { name: 'CBR', value: data.cbrSubgrade.toFixed(1), unit: '%' }
+            ],
+            result: `k = ${kSubgrade.toFixed(1)} MPa/m`,
+            explanation: 'O módulo de reação do subleito (k) representa a rigidez do solo de fundação. Correlação empírica conforme DNIT.'
+        });
+
+        // Step 2: Calculate effective k with sub-base
+        let kEffective = kSubgrade;
+        const subbaseFactors = {
+            'granular': { factor: 1.2, name: 'Granular' },
+            'stabilized': { factor: 1.5, name: 'Estabilizada' },
+            'lean': { factor: 2.0, name: 'Concreto Magro' },
+            'none': { factor: 1.0, name: 'Sem sub-base' }
+        };
+
+        if (data.subbaseThickness > 0 && data.subbaseType !== 'none') {
+            const thicknessFactor = 1 + (data.subbaseThickness / 100);
+            kEffective = kSubgrade * subbaseFactors[data.subbaseType].factor * thicknessFactor;
+        }
+
+        steps.push({
+            title: 'Módulo de Reação Efetivo (k efetivo)',
+            formula: 'k_eff = k × F_subbase × F_espessura',
+            variables: [
+                { name: 'k subleito', value: kSubgrade.toFixed(1), unit: 'MPa/m' },
+                { name: 'Fator sub-base', value: subbaseFactors[data.subbaseType].factor.toString(), unit: '' },
+                { name: 'Espessura sub-base', value: data.subbaseThickness.toString(), unit: 'cm' }
+            ],
+            result: `k_eff = ${kEffective.toFixed(1)} MPa/m`,
+            explanation: 'A sub-base aumenta o módulo de reação efetivo, melhorando o suporte da placa de concreto.'
+        });
+
+        // Step 3: Calculate allowable stress
+        const reliabilityFactors = { 80: 0.85, 85: 0.82, 90: 0.78, 95: 0.73 };
+        const reliabilityFactor = reliabilityFactors[data.reliability] || 0.78;
+        const allowableStress = (data.flexuralStrength * reliabilityFactor) / data.safetyFactor;
+
+        steps.push({
+            title: 'Tensão Admissível do Concreto',
+            formula: 'σ_adm = (fctM,k × F_conf) / FS',
+            variables: [
+                { name: 'fctM,k', value: data.flexuralStrength.toFixed(1), unit: 'MPa' },
+                { name: 'Fator confiabilidade', value: reliabilityFactor.toFixed(2), unit: '' },
+                { name: 'Fator segurança', value: data.safetyFactor.toString(), unit: '' }
+            ],
+            result: `σ_adm = ${allowableStress.toFixed(2)} MPa`,
+            explanation: 'A tensão admissível considera a resistência à tração na flexão minorada pelos fatores de segurança e confiabilidade.'
+        });
+
+        // Step 4: Calculate stress ratio (for fatigue)
+        const fatigueRatio = data.flexuralStrength / allowableStress;
+
+        steps.push({
+            title: 'Razão de Tensões (Fadiga)',
+            formula: 'R_fadiga = fctM,k / σ_adm',
+            variables: [
+                { name: 'fctM,k', value: data.flexuralStrength.toFixed(1), unit: 'MPa' },
+                { name: 'σ_adm', value: allowableStress.toFixed(2), unit: 'MPa' }
+            ],
+            result: `R = ${fatigueRatio.toFixed(2)}`,
+            explanation: 'A razão de tensões é usada para verificar a vida de fadiga do pavimento conforme curvas PCA.'
+        });
+
+        // Step 5: Calculate slab thickness (PCA method iteration)
+        // Simplified formula based on PCA charts
+        const P = data.axleLoad; // kN
+        const Ec = data.concreteModulus; // MPa
+        const mu = data.poissonRatio;
+
+        // Westergaard equation approximation for edge loading
+        // thickness iteration
+        let h = 15; // starting thickness in cm
+        let iteration = 0;
+        let calculatedStress;
+
+        do {
+            // Radius of relative stiffness
+            const l = Math.pow((Ec * Math.pow(h / 100, 3)) / (12 * (1 - mu * mu) * kEffective * 1000), 0.25);
+
+            // Equivalent radius of tire contact
+            const a = Math.sqrt((P * 1000) / (Math.PI * 0.7)); // assuming 0.7 MPa tire pressure
+
+            // Edge stress (Westergaard)
+            calculatedStress = (3 * P * 1000 * (1 + mu)) / (Math.PI * Math.pow(h / 100, 2) * 1000000) *
+                (Math.log(Ec * Math.pow(h / 100, 3) / (100 * kEffective * Math.pow(a, 4))) + 1.84 -
+                    4 * mu / 3 + (1 - mu) / 2 + 1.18 * (1 + 2 * mu) * a / l) *
+                (1 - data.loadTransfer / 100);
+
+            // Simplified adjustment
+            calculatedStress = (0.316 * P) / (Math.pow(h, 2)) * (1 + 0.54 * mu) * 10;
+
+            if (calculatedStress > allowableStress) {
+                h += 0.5;
+            } else if (calculatedStress < allowableStress * 0.85 && h > 15) {
+                h -= 0.25;
+            } else {
+                break;
+            }
+            iteration++;
+        } while (iteration < 50);
+
+        // Round up to practical thickness
+        h = Math.ceil(h / 0.5) * 0.5;
+        h = Math.max(h, 15); // minimum 15 cm
+
+        steps.push({
+            title: 'Dimensionamento da Espessura (Método PCA)',
+            formula: 'Iteração usando equação de Westergaard para borda',
+            variables: [
+                { name: 'Carga por eixo', value: data.axleLoad.toString(), unit: 'kN' },
+                { name: 'k efetivo', value: kEffective.toFixed(1), unit: 'MPa/m' },
+                { name: 'Ec', value: data.concreteModulus.toString(), unit: 'MPa' },
+                { name: 'Transferência de carga', value: data.loadTransfer.toString(), unit: '%' }
+            ],
+            result: `h = ${h.toFixed(1)} cm`,
+            explanation: 'A espessura é calculada iterativamente até que a tensão calculada seja menor que a tensão admissível, com margem de segurança.'
+        });
+
+        // Step 6: Dowel bar design
+        const dowelDiameter = h >= 25 ? 32 : (h >= 20 ? 25 : 20); // mm
+        const dowelLength = 450; // mm
+        const dowelSpacing = 300; // mm
+
+        steps.push({
+            title: 'Dimensionamento das Barras de Transferência',
+            formula: 'φ = f(h), conforme tabelas PCA/DNIT',
+            variables: [
+                { name: 'Espessura da placa', value: h.toFixed(1), unit: 'cm' }
+            ],
+            result: `Barras φ${dowelDiameter} mm, L=${dowelLength} mm, espaçamento ${dowelSpacing} mm`,
+            explanation: 'As barras de transferência (dowels) transmitem carga entre placas adjacentes nas juntas transversais.'
+        });
+
+        // Step 7: Tie bars design
+        const tieDiameter = h >= 25 ? 16 : 12; // mm
+        const tieLength = 700; // mm
+        const tieSpacing = 750; // mm
+
+        steps.push({
+            title: 'Dimensionamento das Barras de Ligação',
+            formula: 'φ = f(h), conforme tabelas PCA/DNIT',
+            variables: [
+                { name: 'Espessura da placa', value: h.toFixed(1), unit: 'cm' }
+            ],
+            result: `Barras φ${tieDiameter} mm CA-50, L=${tieLength} mm, espaçamento ${tieSpacing} mm`,
+            explanation: 'As barras de ligação (tie bars) mantêm as placas unidas nas juntas longitudinais.'
+        });
+
+        return {
+            slabThickness: h,
+            kSubgrade,
+            kEffective,
+            allowableStress,
+            fatigueRatio,
+            calculatedStress,
+            dowelDiameter,
+            dowelLength,
+            dowelSpacing,
+            tieDiameter,
+            tieLength,
+            tieSpacing,
+            calculationSteps: steps,
+            subbaseType: subbaseFactors[data.subbaseType].name,
+            subbaseThickness: data.subbaseThickness
+        };
+    }
+
+    function displayResults() {
+        const r = calculationResults;
+
+        document.getElementById('res-thickness').textContent = r.slabThickness.toFixed(1);
+        document.getElementById('res-keff').textContent = r.kEffective.toFixed(1);
+        document.getElementById('res-stress').textContent = r.allowableStress.toFixed(2);
+        document.getElementById('res-fatigue').textContent = r.fatigueRatio.toFixed(2);
+
+        // Layers table
+        const layers = [
+            { name: 'Placa de Concreto', material: `Concreto fck ${inputData.fck} MPa`, thickness: `${r.slabThickness.toFixed(1)} cm`, char: `fctM,k = ${inputData.flexuralStrength} MPa` },
+            { name: 'Sub-base', material: r.subbaseType, thickness: `${r.subbaseThickness} cm`, char: `k_eff = ${r.kEffective.toFixed(1)} MPa/m` },
+            { name: 'Subleito', material: 'Solo Natural', thickness: '-', char: `CBR = ${inputData.cbrSubgrade}%` }
+        ];
+
+        document.getElementById('layers-table').innerHTML = layers.map(l => `
+        <tr>
+            <td>${l.name}</td>
+            <td>${l.material}</td>
+            <td>${l.thickness}</td>
+            <td>${l.char}</td>
+        </tr>
+    `).join('');
+
+        // Joints table
+        const joints = [
+            { element: 'Junta Transversal', spec: `Barras φ${r.dowelDiameter} mm × ${r.dowelLength} mm`, spacing: `a cada ${r.dowelSpacing} mm` },
+            { element: 'Junta Longitudinal', spec: `Barras CA-50 φ${r.tieDiameter} mm × ${r.tieLength} mm`, spacing: `a cada ${r.tieSpacing} mm` },
+            { element: 'Espaçamento Juntas', spec: `${inputData.slabLength} m × ${inputData.slabWidth} m`, spacing: '-' },
+            { element: 'Selante', spec: 'Silicone ou Poliuretano', spacing: 'Em todas as juntas' }
+        ];
+
+        document.getElementById('joints-table').innerHTML = joints.map(j => `
+        <tr>
+            <td>${j.element}</td>
+            <td>${j.spec}</td>
+            <td>${j.spacing}</td>
+        </tr>
+    `).join('');
+    }
+
+    function drawCrossSection() {
+        const canvas = document.getElementById('crossSectionCanvas');
+        const ctx = canvas.getContext('2d');
+        const r = calculationResults;
+
+        ctx.fillStyle = '#f5f5f5';
+        ctx.fillRect(0, 0, 800, 350);
+
+        const centerX = 400;
+        const startY = 50;
+        const width = 500;
+        const scale = 6;
+
+        // Slab
+        const slabHeight = r.slabThickness * scale;
+        ctx.fillStyle = '#808080';
+        ctx.fillRect(centerX - width / 2, startY, width, slabHeight);
+        ctx.strokeStyle = '#000';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(centerX - width / 2, startY, width, slabHeight);
+
+        // Texture lines on concrete
+        ctx.strokeStyle = '#666';
+        ctx.lineWidth = 1;
+        for (let i = 0; i < width; i += 20) {
+            ctx.beginPath();
+            ctx.moveTo(centerX - width / 2 + i, startY + 5);
+            ctx.lineTo(centerX - width / 2 + i + 10, startY + slabHeight - 5);
+            ctx.stroke();
+        }
+
+        // Sub-base
+        const subbaseHeight = r.subbaseThickness * scale;
+        const subbaseY = startY + slabHeight;
+        ctx.fillStyle = '#d4a574';
+        ctx.fillRect(centerX - width / 2, subbaseY, width, subbaseHeight);
+        ctx.strokeStyle = '#000';
+        ctx.strokeRect(centerX - width / 2, subbaseY, width, subbaseHeight);
+
+        // Subgrade
+        const subgradeY = subbaseY + subbaseHeight;
+        ctx.fillStyle = '#8B4513';
+        ctx.fillRect(centerX - width / 2, subgradeY, width, 80);
+        ctx.strokeRect(centerX - width / 2, subgradeY, width, 80);
+
+        // Labels
+        ctx.fillStyle = '#000';
+        ctx.font = 'bold 12px Arial';
+        ctx.textAlign = 'left';
+
+        // Dimension lines
+        const dimX = centerX + width / 2 + 30;
+        ctx.strokeStyle = '#e94560';
+        ctx.lineWidth = 1;
+
+        // Slab dimension
+        ctx.beginPath();
+        ctx.moveTo(dimX, startY);
+        ctx.lineTo(dimX + 20, startY);
+        ctx.moveTo(dimX + 10, startY);
+        ctx.lineTo(dimX + 10, startY + slabHeight);
+        ctx.moveTo(dimX, startY + slabHeight);
+        ctx.lineTo(dimX + 20, startY + slabHeight);
+        ctx.stroke();
+
+        ctx.fillStyle = '#e94560';
+        ctx.font = 'bold 11px Arial';
+        ctx.fillText(`${r.slabThickness.toFixed(1)} cm`, dimX + 25, startY + slabHeight / 2 + 4);
+
+        // Labels inside layers
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 13px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText(`CONCRETO fck ${inputData.fck} MPa`, centerX, startY + slabHeight / 2 + 5);
+
+        ctx.fillStyle = '#000';
+        ctx.fillText(r.subbaseType.toUpperCase(), centerX, subbaseY + subbaseHeight / 2 + 5);
+
+        ctx.fillStyle = '#fff';
+        ctx.fillText('SUBLEITO', centerX, subgradeY + 40);
+
+        // Title
+        ctx.fillStyle = '#1a1a2e';
+        ctx.font = 'bold 16px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('SEÇÃO TRANSVERSAL DO PAVIMENTO RÍGIDO', centerX, 30);
+
+        // Dowel bars indication
+        ctx.fillStyle = '#000';
+        ctx.font = '10px Arial';
+        ctx.fillText(`Barras de transferência: φ${r.dowelDiameter} mm`, centerX, startY + slabHeight + subbaseHeight + 100);
+    }
+
+    function drawJoints() {
+        const canvas = document.getElementById('jointCanvas');
+        const ctx = canvas.getContext('2d');
+        const r = calculationResults;
+
+        ctx.fillStyle = '#f5f5f5';
+        ctx.fillRect(0, 0, 800, 300);
+
+        // Transverse joint detail
+        const leftX = 150;
+        const topY = 60;
+        const slabH = 80;
+        const slabW = 120;
+
+        // Left slab
+        ctx.fillStyle = '#909090';
+        ctx.fillRect(leftX, topY, slabW, slabH);
+        ctx.strokeStyle = '#000';
+        ctx.strokeRect(leftX, topY, slabW, slabH);
+
+        // Right slab
+        ctx.fillRect(leftX + slabW + 10, topY, slabW, slabH);
+        ctx.strokeRect(leftX + slabW + 10, topY, slabW, slabH);
+
+        // Joint
+        ctx.fillStyle = '#333';
+        ctx.fillRect(leftX + slabW, topY, 10, 20);
+
+        // Dowel bar
+        ctx.fillStyle = '#e94560';
+        ctx.fillRect(leftX + slabW - 30, topY + slabH / 2 - 3, 70, 6);
+        ctx.strokeStyle = '#000';
+        ctx.strokeRect(leftX + slabW - 30, topY + slabH / 2 - 3, 70, 6);
+
+        // Labels
+        ctx.fillStyle = '#000';
+        ctx.font = 'bold 14px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('JUNTA TRANSVERSAL', leftX + slabW + 5, 30);
+
+        ctx.font = '11px Arial';
+        ctx.fillText(`Barra de transferência`, leftX + slabW + 5, topY + slabH + 25);
+        ctx.fillText(`φ${r.dowelDiameter} mm × ${r.dowelLength} mm`, leftX + slabW + 5, topY + slabH + 40);
+        ctx.fillText(`Espaçamento: ${r.dowelSpacing} mm`, leftX + slabW + 5, topY + slabH + 55);
+
+        // Longitudinal joint detail
+        const rightX = 500;
+
+        // Top slab
+        ctx.fillStyle = '#909090';
+        ctx.fillRect(rightX, topY, slabW, slabH / 2 - 5);
+        ctx.strokeRect(rightX, topY, slabW, slabH / 2 - 5);
+
+        // Bottom slab
+        ctx.fillRect(rightX, topY + slabH / 2 + 5, slabW, slabH / 2 - 5);
+        ctx.strokeRect(rightX, topY + slabH / 2 + 5, slabW, slabH / 2 - 5);
+
+        // Joint
+        ctx.fillStyle = '#333';
+        ctx.fillRect(rightX, topY + slabH / 2 - 5, slabW, 10);
+
+        // Tie bar
+        ctx.fillStyle = '#4ade80';
+        ctx.fillRect(rightX + 30, topY + 10, 6, slabH - 20);
+        ctx.fillRect(rightX + slabW - 36, topY + 10, 6, slabH - 20);
+
+        ctx.fillStyle = '#000';
+        ctx.font = 'bold 14px Arial';
+        ctx.fillText('JUNTA LONGITUDINAL', rightX + slabW / 2, 30);
+
+        ctx.font = '11px Arial';
+        ctx.fillText(`Barra de ligação CA-50`, rightX + slabW / 2, topY + slabH + 25);
+        ctx.fillText(`φ${r.tieDiameter} mm × ${r.tieLength} mm`, rightX + slabW / 2, topY + slabH + 40);
+        ctx.fillText(`Espaçamento: ${r.tieSpacing} mm`, rightX + slabW / 2, topY + slabH + 55);
+
+        // Title
+        ctx.fillStyle = '#1a1a2e';
+        ctx.font = 'bold 14px Arial';
+        ctx.fillText('DETALHE DAS JUNTAS', 400, 280);
+    }
+
+    function generateReport() {
+        const r = calculationResults;
+        const d = inputData;
+
+        // Header
+        document.getElementById('report-header').innerHTML = `
+        <table class="layer-table">
+            <tr><td><strong>Projeto:</strong></td><td>${d.projectName}</td></tr>
+            <tr><td><strong>Localização:</strong></td><td>${d.projectLocation}</td></tr>
+            <tr><td><strong>Responsável Técnico:</strong></td><td>${d.engineer}</td></tr>
+            <tr><td><strong>Data:</strong></td><td>${d.date}</td></tr>
+        </table>
+    `;
+
+        // Input data
+        document.getElementById('report-input').innerHTML = `
+        <h4>Tráfego</h4>
+        <ul>
+            <li>Número N de projeto: ${d.designN.toExponential(2)} repetições</li>
+            <li>Período de projeto: ${d.designPeriod} anos</li>
+            <li>Carga por eixo simples: ${d.axleLoad} kN</li>
+        </ul>
+        <h4>Subleito e Sub-base</h4>
+        <ul>
+            <li>CBR do subleito: ${d.cbrSubgrade}%</li>
+            <li>Módulo k do subleito: ${r.kSubgrade.toFixed(1)} MPa/m</li>
+            <li>Tipo de sub-base: ${r.subbaseType}</li>
+            <li>Espessura da sub-base: ${r.subbaseThickness} cm</li>
+            <li>Módulo k efetivo: ${r.kEffective.toFixed(1)} MPa/m</li>
+        </ul>
+        <h4>Concreto</h4>
+        <ul>
+            <li>Resistência fck: ${d.fck} MPa</li>
+            <li>Resistência à tração na flexão fctM,k: ${d.flexuralStrength} MPa</li>
+            <li>Módulo de elasticidade Ec: ${d.concreteModulus} MPa</li>
+        </ul>
+    `;
+
+        // Method
+        document.getElementById('report-method').innerHTML = `
+        <p>O dimensionamento foi realizado pelo <strong>Método PCA (Portland Cement Association)</strong>, conforme orientações do DNIT para pavimentos rígidos de concreto de cimento Portland.</p>
+        <p>O método considera:</p>
+        <ul>
+            <li>Análise de fadiga do concreto sob carregamento repetido</li>
+            <li>Tensões de borda conforme teoria de Westergaard</li>
+            <li>Transferência de carga nas juntas</li>
+            <li>Fatores de segurança e confiabilidade</li>
+        </ul>
+        <p><strong>Normas de referência:</strong></p>
+        <ul>
+            <li>DNIT 049/2013-ES - Pavimento Rígido - Execução</li>
+            <li>ABNT NBR 6118:2014 - Projeto de Estruturas de Concreto</li>
+            <li>PCA - Thickness Design for Concrete Highway and Street Pavements</li>
+        </ul>
+    `;
+
+        // Steps
+        document.getElementById('report-steps').innerHTML = r.calculationSteps.map((s, i) => `
+        <div class="step-card">
+            <h4>${i + 1}. ${s.title}</h4>
+            <div class="step-formula">${s.formula}</div>
+            ${s.variables.length ? '<p><strong>Variáveis:</strong></p><ul>' +
+                s.variables.map(v => `<li>${v.name} = ${v.value} ${v.unit}</li>`).join('') +
+                '</ul>' : ''}
+            <p class="step-result"><strong>Resultado:</strong> ${s.result}</p>
+            <p class="step-explanation">${s.explanation}</p>
+        </div>
+    `).join('');
+
+        // Results
+        document.getElementById('report-results').innerHTML = `
+        <h4>Estrutura Final do Pavimento</h4>
+        <table class="layer-table">
+            <tr>
+                <th>Camada</th>
+                <th>Material</th>
+                <th>Espessura</th>
+            </tr>
+            <tr>
+                <td>Placa de Concreto</td>
+                <td>Concreto fck ${d.fck} MPa, fctM,k ${d.flexuralStrength} MPa</td>
+                <td><strong>${r.slabThickness.toFixed(1)} cm</strong></td>
+            </tr>
+            <tr>
+                <td>Sub-base</td>
+                <td>${r.subbaseType}</td>
+                <td>${r.subbaseThickness} cm</td>
+            </tr>
+            <tr>
+                <td>Subleito</td>
+                <td>Solo natural compactado (CBR ${d.cbrSubgrade}%)</td>
+                <td>-</td>
+            </tr>
+        </table>
+        
+        <h4>Especificação das Juntas</h4>
+        <table class="layer-table">
+            <tr>
+                <th>Tipo</th>
+                <th>Elemento</th>
+                <th>Especificação</th>
+            </tr>
+            <tr>
+                <td>Junta Transversal</td>
+                <td>Barras de Transferência</td>
+                <td>Aço liso φ${r.dowelDiameter} mm × ${r.dowelLength} mm, espaçadas a cada ${r.dowelSpacing} mm</td>
+            </tr>
+            <tr>
+                <td>Junta Longitudinal</td>
+                <td>Barras de Ligação</td>
+                <td>Aço CA-50 φ${r.tieDiameter} mm × ${r.tieLength} mm, espaçadas a cada ${r.tieSpacing} mm</td>
+            </tr>
+            <tr>
+                <td>Dimensões da Placa</td>
+                <td>-</td>
+                <td>${d.slabLength} m × ${d.slabWidth} m</td>
+            </tr>
+        </table>
+    `;
+
+        // Conclusions
+        document.getElementById('report-conclusions').innerHTML = `
+        <ul>
+            <li>A espessura da placa de concreto de <strong>${r.slabThickness.toFixed(1)} cm</strong> atende aos requisitos de resistência à fadiga para o tráfego de projeto.</li>
+            <li>O módulo de reação efetivo de <strong>${r.kEffective.toFixed(1)} MPa/m</strong> considera a contribuição da sub-base ${r.subbaseType.toLowerCase()}.</li>
+            <li>A tensão admissível de <strong>${r.allowableStress.toFixed(2)} MPa</strong> garante fator de segurança de ${d.safetyFactor} com confiabilidade de ${d.reliability}%.</li>
+            <li>As barras de transferência especificadas garantem adequada transferência de carga nas juntas transversais.</li>
+        </ul>
+        <h4>Recomendações Construtivas</h4>
+        <ul>
+            <li>Executar cura úmida do concreto por no mínimo 7 dias.</li>
+            <li>Selar todas as juntas com material flexível (silicone ou poliuretano).</li>
+            <li>Garantir compactação adequada da sub-base antes da concretagem.</li>
+            <li>Posicionar as barras de transferência no terço médio da espessura da placa.</li>
+        </ul>
+    `;
+    }
+
+    // Initialize
+    document.getElementById('projectDate').value = new Date().toISOString().split('T')[0];
+</script>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Additional initialization if needed
+</script>
+{% endblock %}

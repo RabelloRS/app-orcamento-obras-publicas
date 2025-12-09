@@ -1,0 +1,123 @@
+
+.drawing-panel {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.drawing-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+}
+
+.drawing-title h2 {
+  margin: 0 0 8px 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.drawing-title p {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+.drawing-container {
+  background: var(--surface-color);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color);
+  margin-bottom: 24px;
+}
+
+.technical-drawing {
+  width: 100%;
+  height: auto;
+  background: #fafafa;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+}
+
+.drawing-main-title {
+  font-family: 'Segoe UI', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  fill: #1f2937;
+}
+
+.drawing-subtitle {
+  font-family: 'Segoe UI', sans-serif;
+  font-size: 11px;
+  fill: #64748b;
+}
+
+.layer-label {
+  font-family: 'Segoe UI', sans-serif;
+  font-size: 10px;
+  fill: #1f2937;
+  font-weight: 500;
+}
+
+.dimension-text {
+  font-family: 'Segoe UI', sans-serif;
+  font-size: 9px;
+  fill: #1f2937;
+}
+
+.dimension-text-large {
+  font-family: 'Segoe UI', sans-serif;
+  font-size: 11px;
+  fill: #1f2937;
+  font-weight: 600;
+}
+
+.scale-label {
+  font-family: 'Segoe UI', sans-serif;
+  font-size: 9px;
+  fill: #64748b;
+}
+
+.scale-text {
+  font-family: 'Segoe UI', sans-serif;
+  font-size: 8px;
+  fill: #1f2937;
+  text-anchor: middle;
+}
+
+.legend-title {
+  font-family: 'Segoe UI', sans-serif;
+  font-size: 9px;
+  fill: #1f2937;
+  font-weight: 700;
+}
+
+.legend-text {
+  font-family: 'Segoe UI', sans-serif;
+  font-size: 9px;
+  fill: #1f2937;
+}
+
+.drawing-notes {
+  background: var(--surface-color);
+  border-radius: var(--radius-lg);
+  padding: 20px 24px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color);
+}
+
+.drawing-notes h4 {
+  margin: 0 0 12px 0;
+  font-size: 0.938rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.drawing-notes ol {
+  margin: 0;
+  padding-left: 20px;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  line-height: 1.8;
+}

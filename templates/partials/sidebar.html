@@ -24,7 +24,8 @@
 
     <!-- Drenagem e Hidrologia -->
     <div class="app-sidebar__nav-group">
-      <button class="app-sidebar__expander" type="button" data-bs-toggle="collapse" data-bs-target="#collapseDrenagem" aria-expanded="true" aria-controls="collapseDrenagem">
+      <button class="app-sidebar__expander" type="button" data-bs-toggle="collapse" data-bs-target="#collapseDrenagem"
+        aria-expanded="true" aria-controls="collapseDrenagem">
         <i class="bi bi-water"></i>
         <span>Drenagem e Hidrologia</span>
         <i class="bi bi-chevron-down app-sidebar__expander-icon"></i>
@@ -42,19 +43,23 @@
             <i class="bi bi-bezier"></i><span>Microdrenagem Urbana</span>
           </a>
           <a href="{% url 'ferramenta_drenagem:idfgeo' %}"
-            class="app-sidebar__link {% if request.resolver_match.url_name == 'idfgeo' %}active{% endif %}" role="menuitem">
+            class="app-sidebar__link {% if request.resolver_match.url_name == 'idfgeo' %}active{% endif %}"
+            role="menuitem">
             <i class="bi bi-cloud-rain"></i><span>IDFGeo RS</span>
           </a>
           <a href="{% url 'bacia_retencao:index' %}"
-            class="app-sidebar__link {% if request.resolver_match.app_name == 'bacia_retencao' %}active{% endif %}" role="menuitem">
+            class="app-sidebar__link {% if request.resolver_match.app_name == 'bacia_retencao' %}active{% endif %}"
+            role="menuitem">
             <i class="bi bi-droplet-half"></i><span>Bacia de Retenção</span>
           </a>
           <a href="{% url 'hidrograma:index' %}"
-            class="app-sidebar__link {% if request.resolver_match.url_name == 'index' and request.resolver_match.app_name == 'hidrograma' %}active{% endif %}" role="menuitem">
+            class="app-sidebar__link {% if request.resolver_match.url_name == 'index' and request.resolver_match.app_name == 'hidrograma' %}active{% endif %}"
+            role="menuitem">
             <i class="bi bi-graph-up"></i><span>HidroCalc Pro</span>
           </a>
           <a href="{% url 'banco_idf:consulta' %}"
-            class="app-sidebar__link {% if request.resolver_match.app_name == 'banco_idf' %}active{% endif %}" role="menuitem">
+            class="app-sidebar__link {% if request.resolver_match.app_name == 'banco_idf' %}active{% endif %}"
+            role="menuitem">
             <i class="bi bi-database"></i><span>Banco de IDF</span>
           </a>
         </div>
@@ -63,7 +68,8 @@
 
     <!-- Pavimentação -->
     <div class="app-sidebar__nav-group">
-      <button class="app-sidebar__expander" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePavimentacao" aria-expanded="true" aria-controls="collapsePavimentacao">
+      <button class="app-sidebar__expander" type="button" data-bs-toggle="collapse"
+        data-bs-target="#collapsePavimentacao" aria-expanded="true" aria-controls="collapsePavimentacao">
         <i class="bi bi-cone-striped"></i>
         <span>Pavimentação</span>
         <i class="bi bi-chevron-down app-sidebar__expander-icon"></i>
@@ -75,13 +81,19 @@
             role="menuitem">
             <i class="bi bi-layers"></i><span>Pavimentação.br</span>
           </a>
+          <a href="{% url 'pav_concreto:index' %}"
+            class="app-sidebar__link {% if request.resolver_match.app_name == 'pav_concreto' %}active{% endif %}"
+            role="menuitem">
+            <i class="bi bi-bricks"></i><span>Pavimento Rígido (PCA)</span>
+          </a>
         </div>
       </div>
     </div>
 
     <!-- Produtividade e Relatórios -->
     <div class="app-sidebar__nav-group">
-      <button class="app-sidebar__expander" type="button" data-bs-toggle="collapse" data-bs-target="#collapseProdutividade" aria-expanded="true" aria-controls="collapseProdutividade">
+      <button class="app-sidebar__expander" type="button" data-bs-toggle="collapse"
+        data-bs-target="#collapseProdutividade" aria-expanded="true" aria-controls="collapseProdutividade">
         <i class="bi bi-clipboard-data"></i>
         <span>Produtividade e Relatórios</span>
         <i class="bi bi-chevron-down app-sidebar__expander-icon"></i>
@@ -99,23 +111,27 @@
 
     <!-- Orçamento de Obras Públicas -->
     <div class="app-sidebar__nav-group">
-      <button class="app-sidebar__expander" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOrcamento" aria-expanded="false" aria-controls="collapseOrcamento">
+      <button class="app-sidebar__expander" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOrcamento"
+        aria-expanded="false" aria-controls="collapseOrcamento">
         <i class="bi bi-currency-dollar"></i>
         <span>Orçamento de Obras Públicas</span>
         <i class="bi bi-chevron-down app-sidebar__expander-icon"></i>
       </button>
       <div class="collapse" id="collapseOrcamento">
         <div class="app-sidebar__submenu">
-          <div class="app-sidebar__link disabled" role="menuitem" aria-disabled="true">
-            <i class="bi bi-tools"></i><span>Em desenvolvimento</span>
-          </div>
+          <a href="http://127.0.0.1:8002/static/app.html" target="_blank"
+            class="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group"
+            role="menuitem">
+            <i class="bi bi-currency-dollar"></i><span>Orçamento de Obras</span>
+          </a>
         </div>
       </div>
     </div>
 
     <!-- Banco de Conhecimento -->
     <div class="app-sidebar__nav-group">
-      <button class="app-sidebar__expander" type="button" data-bs-toggle="collapse" data-bs-target="#collapseConhecimento" aria-expanded="false" aria-controls="collapseConhecimento">
+      <button class="app-sidebar__expander" type="button" data-bs-toggle="collapse"
+        data-bs-target="#collapseConhecimento" aria-expanded="false" aria-controls="collapseConhecimento">
         <i class="bi bi-book"></i>
         <span>Banco de Conhecimento</span>
         <i class="bi bi-chevron-down app-sidebar__expander-icon"></i>

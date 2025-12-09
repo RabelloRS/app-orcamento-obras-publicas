@@ -48,6 +48,8 @@ INSTALLED_APPS = [
     'pavimentacao',
     'bacia_retencao',
     'banco_idf',
+    'pav_concreto',
+    # 'app_orcamento', # Moved to standalone
 ]
 
 

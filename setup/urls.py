@@ -35,6 +35,8 @@ urlpatterns = [
     path('pavimentacao/', include('pavimentacao.urls')),
     path('bacia_retencao/', include('bacia_retencao.urls')),
     path('banco-idf/', include('banco_idf.urls')),
+    path('pav-concreto/', include('pav_concreto.urls')),
+    # path('orcamento/', include('app_orcamento.urls')),
 ]
 
 if settings.DEBUG:
