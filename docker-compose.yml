@@ -13,22 +13,51 @@ services:
       - "8002:8000"
     volumes:
       - .:/app
-      - /var/www/resolve_django/static:/app/static
       - /var/www/resolve_django/media:/app/media
     environment:
       - DEBUG=False
-      - ALLOWED_HOSTS=resolve.eng.br,www.resolve.eng.br
+      - ALLOWED_HOSTS=resolve.eng.br,www.resolve.eng.br,localhost,127.0.0.1
       - DATABASE_URL=sqlite:////app/db.sqlite3
     networks:
       - npm-network
+      - traefik-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.resolve-django.rule=Host(`resolve.eng.br`) || Host(`www.resolve.eng.br`)"
+      - "traefik.http.routers.resolve-django.entrypoints=websecure"
+      - "traefik.http.routers.resolve-django.tls.certresolver=le"
+      - "traefik.http.services.resolve-django.loadbalancer.server.port=8000"
     command: >
       sh -c "python manage.py migrate &&
              python manage.py collectstatic --noinput &&
              gunicorn --bind 0.0.0.0:8000 --workers 4 --timeout 60 setup.wsgi:application"
 
+  orcamento-app:
+    build:
+      context: ./app_orcamento_standalone
+      dockerfile: Dockerfile
+    container_name: orcamento_app
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://db_user:ndQ4U7wH0drRFdWL@postgres:5432/orcamento_db
+      - ALLOWED_ORIGINS=["https://resolve.eng.br","https://orcamento.resolve.eng.br"]
+    volumes:
+      - ./app_orcamento_standalone:/app
+    networks:
+      - traefik-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.orcamento.rule=Host(`orcamento.resolve.eng.br`) || (Host(`resolve.eng.br`) && PathPrefix(`/orcamento`))"
+      - "traefik.http.routers.orcamento.entrypoints=websecure"
+      - "traefik.http.routers.orcamento.tls.certresolver=le"
+      - "traefik.http.services.orcamento.loadbalancer.server.port=8000"
+
 networks:
   npm-network:
     external: true
+  traefik-network:
+    external: true
+    name: n8n-traefik_app_network
 
 volumes:
   static_volume:

@@ -140,7 +140,7 @@
         gap: 1rem;
     }
 
-    .btn-primary {
+    .pav-btn-primary {
         background: var(--color-primary);
         color: white;
         border: none;
@@ -153,7 +153,7 @@
         transition: all 0.2s;
     }
 
-    .btn-primary:hover {
+    .pav-btn-primary:hover {
         background: var(--color-primary-dark);
         transform: translateY(-1px);
         box-shadow: var(--shadow-2);
@@ -317,6 +317,7 @@
     }
 
     @media print {
+
         .pav-sidebar,
         .pav-header,
         .btn-print,
@@ -395,277 +396,280 @@
             <main class="pav-main">
                 <!-- Input Panel -->
                 <div id="panel-input">
-                <div class="pav-panel">
-                    <h2>📁 Informações do Projeto</h2>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Nome do Projeto</label>
-                            <input type="text" id="projectName" placeholder="Ex: Pista do Aeroporto XYZ">
+                    <div class="pav-panel">
+                        <h2>📁 Informações do Projeto</h2>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Nome do Projeto</label>
+                                <input type="text" id="projectName" placeholder="Ex: Pista do Aeroporto XYZ">
+                            </div>
+                            <div class="form-group">
+                                <label>Localização</label>
+                                <input type="text" id="projectLocation" placeholder="Ex: Pátio de Estacionamento">
+                            </div>
+                            <div class="form-group">
+                                <label>Engenheiro Responsável</label>
+                                <input type="text" id="engineer" placeholder="Nome do responsável técnico">
+                            </div>
+                            <div class="form-group">
+                                <label>Data</label>
+                                <input type="date" id="projectDate">
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label>Localização</label>
-                            <input type="text" id="projectLocation" placeholder="Ex: Pátio de Estacionamento">
+                    </div>
+
+                    <div class="pav-panel">
+                        <h2>🚛 Dados de Tráfego</h2>
+                        <div class="info-box">
+                            <h4>ℹ️ Orientação</h4>
+                            <p style="margin:0;font-size:0.85rem;">O número de repetições do eixo padrão (N) deve
+                                considerar
+                                todo o período de projeto. Para rodovias, tipicamente 20-30 anos. Para áreas
+                                industriais, 20
+                                anos.</p>
                         </div>
-                        <div class="form-group">
-                            <label>Engenheiro Responsável</label>
-                            <input type="text" id="engineer" placeholder="Nome do responsável técnico">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Número N (repetições eixo 8,2tf)</label>
+                                <input type="number" id="designN" value="10000000" min="100000">
+                            </div>
+                            <div class="form-group">
+                                <label>Período de Projeto (anos)</label>
+                                <input type="number" id="designPeriod" value="20" min="10" max="40">
+                            </div>
+                            <div class="form-group">
+                                <label>Carga por Eixo Simples (kN)</label>
+                                <input type="number" id="axleLoad" value="80" min="40" max="150">
+                            </div>
+                            <div class="form-group">
+                                <label>Tipo de Via</label>
+                                <select id="roadType">
+                                    <option value="highway">Rodovia Principal</option>
+                                    <option value="urban">Via Urbana</option>
+                                    <option value="industrial">Pátio Industrial</option>
+                                    <option value="airport">Área Aeroportuária</option>
+                                </select>
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label>Data</label>
-                            <input type="date" id="projectDate">
+                    </div>
+
+                    <div class="pav-panel">
+                        <h2>🏔️ Dados do Subleito</h2>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>CBR do Subleito (%)</label>
+                                <input type="number" id="cbrSubgrade" value="5" min="2" max="30" step="0.5">
+                            </div>
+                            <div class="form-group">
+                                <label>Módulo de Reação k (MPa/m)</label>
+                                <input type="number" id="kValue" value="0" min="0" step="1"
+                                    placeholder="Deixe 0 para calcular do CBR">
+                            </div>
+                            <div class="form-group">
+                                <label>Tipo de Sub-base</label>
+                                <select id="subbaseType">
+                                    <option value="granular">Granular (BGS)</option>
+                                    <option value="stabilized">Estabilizada com Cimento</option>
+                                    <option value="lean">Concreto Magro (CCR)</option>
+                                    <option value="none">Sem Sub-base</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Espessura da Sub-base (cm)</label>
+                                <input type="number" id="subbaseThickness" value="15" min="0" max="30">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pav-panel">
+                        <h2>🧱 Propriedades do Concreto</h2>
+                        <div class="info-box">
+                            <h4>ℹ️ Referência DNIT</h4>
+                            <p style="margin:0;font-size:0.85rem;">A resistência à tração na flexão (fctM,k) típica para
+                                pavimentos rígidos varia de 4,0 a 5,0 MPa aos 28 dias. O módulo de elasticidade típico é
+                                de
+                                28.000 a 35.000 MPa.</p>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Resistência fck (MPa)</label>
+                                <input type="number" id="fck" value="35" min="25" max="50">
+                            </div>
+                            <div class="form-group">
+                                <label>Resistência à Tração na Flexão fctM,k (MPa)</label>
+                                <input type="number" id="flexuralStrength" value="4.5" min="3.0" max="6.0" step="0.1">
+                            </div>
+                            <div class="form-group">
+                                <label>Módulo de Elasticidade Ec (MPa)</label>
+                                <input type="number" id="concreteModulus" value="30000" min="20000" max="40000">
+                            </div>
+                            <div class="form-group">
+                                <label>Coeficiente de Poisson</label>
+                                <input type="number" id="poissonRatio" value="0.15" min="0.10" max="0.20" step="0.01">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pav-panel">
+                        <h2>📐 Geometria e Juntas</h2>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Largura da Placa (m)</label>
+                                <input type="number" id="slabWidth" value="3.5" min="2.5" max="5.0" step="0.1">
+                            </div>
+                            <div class="form-group">
+                                <label>Comprimento da Placa (m)</label>
+                                <input type="number" id="slabLength" value="4.5" min="3.0" max="6.0" step="0.1">
+                            </div>
+                            <div class="form-group">
+                                <label>Tipo de Junta Transversal</label>
+                                <select id="jointType">
+                                    <option value="doweled">Com Barras de Transferência</option>
+                                    <option value="undoweled">Sem Barras (Agregado Intertravado)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Transferência de Carga (%)</label>
+                                <input type="number" id="loadTransfer" value="45" min="25" max="50">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pav-panel">
+                        <h2>🔧 Fatores de Projeto</h2>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Fator de Segurança</label>
+                                <select id="safetyFactor">
+                                    <option value="1.0">1,0 (Áreas industriais)</option>
+                                    <option value="1.1">1,1 (Vias secundárias)</option>
+                                    <option value="1.2" selected>1,2 (Rodovias principais)</option>
+                                    <option value="1.3">1,3 (Aeroportos)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Confiabilidade (%)</label>
+                                <select id="reliability">
+                                    <option value="80">80%</option>
+                                    <option value="85">85%</option>
+                                    <option value="90" selected>90%</option>
+                                    <option value="95">95%</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="pav-btn-primary" onclick="calculate()">
+                        🔢 Calcular Espessura da Placa
+                    </button>
+                </div>
+
+                <!-- Results Panel -->
+                <div id="panel-results" style="display:none;">
+                    <div class="pav-panel">
+                        <h2>📊 Resultados do Dimensionamento</h2>
+                        <div class="result-grid">
+                            <div class="result-card">
+                                <h3>Espessura da Placa</h3>
+                                <div class="result-value" id="res-thickness">-</div>
+                                <div class="result-unit">cm</div>
+                            </div>
+                            <div class="result-card">
+                                <h3>Módulo k Efetivo</h3>
+                                <div class="result-value" id="res-keff">-</div>
+                                <div class="result-unit">MPa/m</div>
+                            </div>
+                            <div class="result-card">
+                                <h3>Tensão Admissível</h3>
+                                <div class="result-value" id="res-stress">-</div>
+                                <div class="result-unit">MPa</div>
+                            </div>
+                            <div class="result-card">
+                                <h3>Fator de Fadiga</h3>
+                                <div class="result-value" id="res-fatigue">-</div>
+                                <div class="result-unit"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pav-panel">
+                        <h2>📋 Estrutura do Pavimento</h2>
+                        <table class="layer-table">
+                            <thead>
+                                <tr>
+                                    <th>Camada</th>
+                                    <th>Material</th>
+                                    <th>Espessura</th>
+                                    <th>Característica</th>
+                                </tr>
+                            </thead>
+                            <tbody id="layers-table"></tbody>
+                        </table>
+                    </div>
+
+                    <div class="pav-panel">
+                        <h2>🔩 Especificação das Juntas</h2>
+                        <table class="layer-table">
+                            <thead>
+                                <tr>
+                                    <th>Elemento</th>
+                                    <th>Especificação</th>
+                                    <th>Espaçamento</th>
+                                </tr>
+                            </thead>
+                            <tbody id="joints-table"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Drawing Panel -->
+                <div id="panel-drawing" style="display:none;">
+                    <div class="pav-panel">
+                        <h2>📐 Seção Transversal do Pavimento Rígido</h2>
+                        <div class="drawing-container">
+                            <canvas id="crossSectionCanvas" class="drawing-canvas" width="800" height="350"></canvas>
+                        </div>
+                    </div>
+                    <div class="pav-panel">
+                        <h2>📐 Detalhe das Juntas</h2>
+                        <div class="drawing-container">
+                            <canvas id="jointCanvas" class="drawing-canvas" width="800" height="300"></canvas>
                         </div>
                     </div>
                 </div>
 
-                <div class="pav-panel">
-                    <h2>🚛 Dados de Tráfego</h2>
-                    <div class="info-box">
-                        <h4>ℹ️ Orientação</h4>
-                        <p style="margin:0;font-size:0.85rem;">O número de repetições do eixo padrão (N) deve considerar
-                            todo o período de projeto. Para rodovias, tipicamente 20-30 anos. Para áreas industriais, 20
-                            anos.</p>
+                <!-- Report Panel -->
+                <div id="panel-report" style="display:none;">
+                    <div class="pav-panel report-section">
+                        <h2>📋 Memorial de Cálculo - Pavimento Rígido</h2>
+                        <div id="report-header"></div>
                     </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Número N (repetições eixo 8,2tf)</label>
-                            <input type="number" id="designN" value="10000000" min="100000">
-                        </div>
-                        <div class="form-group">
-                            <label>Período de Projeto (anos)</label>
-                            <input type="number" id="designPeriod" value="20" min="10" max="40">
-                        </div>
-                        <div class="form-group">
-                            <label>Carga por Eixo Simples (kN)</label>
-                            <input type="number" id="axleLoad" value="80" min="40" max="150">
-                        </div>
-                        <div class="form-group">
-                            <label>Tipo de Via</label>
-                            <select id="roadType">
-                                <option value="highway">Rodovia Principal</option>
-                                <option value="urban">Via Urbana</option>
-                                <option value="industrial">Pátio Industrial</option>
-                                <option value="airport">Área Aeroportuária</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
 
-                <div class="pav-panel">
-                    <h2>🏔️ Dados do Subleito</h2>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>CBR do Subleito (%)</label>
-                            <input type="number" id="cbrSubgrade" value="5" min="2" max="30" step="0.5">
-                        </div>
-                        <div class="form-group">
-                            <label>Módulo de Reação k (MPa/m)</label>
-                            <input type="number" id="kValue" value="0" min="0" step="1"
-                                placeholder="Deixe 0 para calcular do CBR">
-                        </div>
-                        <div class="form-group">
-                            <label>Tipo de Sub-base</label>
-                            <select id="subbaseType">
-                                <option value="granular">Granular (BGS)</option>
-                                <option value="stabilized">Estabilizada com Cimento</option>
-                                <option value="lean">Concreto Magro (CCR)</option>
-                                <option value="none">Sem Sub-base</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Espessura da Sub-base (cm)</label>
-                            <input type="number" id="subbaseThickness" value="15" min="0" max="30">
-                        </div>
+                    <div class="pav-panel report-section">
+                        <h3>1. Dados de Entrada</h3>
+                        <div id="report-input"></div>
+                    </div>
+
+                    <div class="pav-panel report-section">
+                        <h3>2. Metodologia de Cálculo</h3>
+                        <div id="report-method"></div>
+                    </div>
+
+                    <div class="pav-panel report-section">
+                        <h3>3. Memorial de Cálculo Detalhado</h3>
+                        <div id="report-steps"></div>
+                    </div>
+
+                    <div class="pav-panel report-section">
+                        <h3>4. Resultados e Especificações</h3>
+                        <div id="report-results"></div>
+                    </div>
+
+                    <div class="pav-panel report-section">
+                        <h3>5. Conclusões e Recomendações</h3>
+                        <div id="report-conclusions"></div>
                     </div>
                 </div>
-
-                <div class="pav-panel">
-                    <h2>🧱 Propriedades do Concreto</h2>
-                    <div class="info-box">
-                        <h4>ℹ️ Referência DNIT</h4>
-                        <p style="margin:0;font-size:0.85rem;">A resistência à tração na flexão (fctM,k) típica para
-                            pavimentos rígidos varia de 4,0 a 5,0 MPa aos 28 dias. O módulo de elasticidade típico é de
-                            28.000 a 35.000 MPa.</p>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Resistência fck (MPa)</label>
-                            <input type="number" id="fck" value="35" min="25" max="50">
-                        </div>
-                        <div class="form-group">
-                            <label>Resistência à Tração na Flexão fctM,k (MPa)</label>
-                            <input type="number" id="flexuralStrength" value="4.5" min="3.0" max="6.0" step="0.1">
-                        </div>
-                        <div class="form-group">
-                            <label>Módulo de Elasticidade Ec (MPa)</label>
-                            <input type="number" id="concreteModulus" value="30000" min="20000" max="40000">
-                        </div>
-                        <div class="form-group">
-                            <label>Coeficiente de Poisson</label>
-                            <input type="number" id="poissonRatio" value="0.15" min="0.10" max="0.20" step="0.01">
-                        </div>
-                    </div>
-                </div>
-
-                <div class="pav-panel">
-                    <h2>📐 Geometria e Juntas</h2>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Largura da Placa (m)</label>
-                            <input type="number" id="slabWidth" value="3.5" min="2.5" max="5.0" step="0.1">
-                        </div>
-                        <div class="form-group">
-                            <label>Comprimento da Placa (m)</label>
-                            <input type="number" id="slabLength" value="4.5" min="3.0" max="6.0" step="0.1">
-                        </div>
-                        <div class="form-group">
-                            <label>Tipo de Junta Transversal</label>
-                            <select id="jointType">
-                                <option value="doweled">Com Barras de Transferência</option>
-                                <option value="undoweled">Sem Barras (Agregado Intertravado)</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Transferência de Carga (%)</label>
-                            <input type="number" id="loadTransfer" value="45" min="25" max="50">
-                        </div>
-                    </div>
-                </div>
-
-                <div class="pav-panel">
-                    <h2>🔧 Fatores de Projeto</h2>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Fator de Segurança</label>
-                            <select id="safetyFactor">
-                                <option value="1.0">1,0 (Áreas industriais)</option>
-                                <option value="1.1">1,1 (Vias secundárias)</option>
-                                <option value="1.2" selected>1,2 (Rodovias principais)</option>
-                                <option value="1.3">1,3 (Aeroportos)</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Confiabilidade (%)</label>
-                            <select id="reliability">
-                                <option value="80">80%</option>
-                                <option value="85">85%</option>
-                                <option value="90" selected>90%</option>
-                                <option value="95">95%</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
-                <button class="btn-primary" onclick="calculate()">
-                    🔢 Calcular Espessura da Placa
-                </button>
-            </div>
-
-            <!-- Results Panel -->
-            <div id="panel-results" style="display:none;">
-                <div class="pav-panel">
-                    <h2>📊 Resultados do Dimensionamento</h2>
-                    <div class="result-grid">
-                        <div class="result-card">
-                            <h3>Espessura da Placa</h3>
-                            <div class="result-value" id="res-thickness">-</div>
-                            <div class="result-unit">cm</div>
-                        </div>
-                        <div class="result-card">
-                            <h3>Módulo k Efetivo</h3>
-                            <div class="result-value" id="res-keff">-</div>
-                            <div class="result-unit">MPa/m</div>
-                        </div>
-                        <div class="result-card">
-                            <h3>Tensão Admissível</h3>
-                            <div class="result-value" id="res-stress">-</div>
-                            <div class="result-unit">MPa</div>
-                        </div>
-                        <div class="result-card">
-                            <h3>Fator de Fadiga</h3>
-                            <div class="result-value" id="res-fatigue">-</div>
-                            <div class="result-unit"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="pav-panel">
-                    <h2>📋 Estrutura do Pavimento</h2>
-                    <table class="layer-table">
-                        <thead>
-                            <tr>
-                                <th>Camada</th>
-                                <th>Material</th>
-                                <th>Espessura</th>
-                                <th>Característica</th>
-                            </tr>
-                        </thead>
-                        <tbody id="layers-table"></tbody>
-                    </table>
-                </div>
-
-                <div class="pav-panel">
-                    <h2>🔩 Especificação das Juntas</h2>
-                    <table class="layer-table">
-                        <thead>
-                            <tr>
-                                <th>Elemento</th>
-                                <th>Especificação</th>
-                                <th>Espaçamento</th>
-                            </tr>
-                        </thead>
-                        <tbody id="joints-table"></tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- Drawing Panel -->
-            <div id="panel-drawing" style="display:none;">
-                <div class="pav-panel">
-                    <h2>📐 Seção Transversal do Pavimento Rígido</h2>
-                    <div class="drawing-container">
-                        <canvas id="crossSectionCanvas" class="drawing-canvas" width="800" height="350"></canvas>
-                    </div>
-                </div>
-                <div class="pav-panel">
-                    <h2>📐 Detalhe das Juntas</h2>
-                    <div class="drawing-container">
-                        <canvas id="jointCanvas" class="drawing-canvas" width="800" height="300"></canvas>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Report Panel -->
-            <div id="panel-report" style="display:none;">
-                <div class="pav-panel report-section">
-                    <h2>📋 Memorial de Cálculo - Pavimento Rígido</h2>
-                    <div id="report-header"></div>
-                </div>
-
-                <div class="pav-panel report-section">
-                    <h3>1. Dados de Entrada</h3>
-                    <div id="report-input"></div>
-                </div>
-
-                <div class="pav-panel report-section">
-                    <h3>2. Metodologia de Cálculo</h3>
-                    <div id="report-method"></div>
-                </div>
-
-                <div class="pav-panel report-section">
-                    <h3>3. Memorial de Cálculo Detalhado</h3>
-                    <div id="report-steps"></div>
-                </div>
-
-                <div class="pav-panel report-section">
-                    <h3>4. Resultados e Especificações</h3>
-                    <div id="report-results"></div>
-                </div>
-
-                <div class="pav-panel report-section">
-                    <h3>5. Conclusões e Recomendações</h3>
-                    <div id="report-conclusions"></div>
-                </div>
-            </div>
             </main>
         </div>
     </div>
@@ -1272,11 +1276,5 @@
 
     // Initialize
     document.getElementById('projectDate').value = new Date().toISOString().split('T')[0];
-</script>
-{% endblock %}
-
-{% block extra_js %}
-<script>
-// Additional initialization if needed
 </script>
 {% endblock %}
